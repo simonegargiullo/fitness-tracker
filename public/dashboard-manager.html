@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Manager - Fitness Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light d-flex flex-column min-vh-100">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#"><i class="bi bi-shield-lock"></i> Area Manager</a>
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-white fw-bold" id="nome-manager">Caricamento...</span>
+                <button id="btn-logout" class="btn btn-outline-light btn-sm">Esci</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <h2 class="mb-4">Pannello di Controllo</h2>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100 border-0">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0"><i class="bi bi-person-badge"></i> Crea Account Allenatore</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="form-allenatore">
+                            <div class="mb-2">
+                                <label class="form-label">Nome e Cognome</label>
+                                <input type="text" id="nome-all" class="form-control" required>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Email Lavorativa</label>
+                                <input type="email" id="email-all" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Password Provvisoria</label>
+                                <input type="password" id="pass-all" class="form-control" required>
+                            </div>
+                            <button type="submit" class="btn btn-dark w-100">Registra Allenatore</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                
+                <div class="card shadow-sm mb-4 border-0">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-dumbbell"></i> Aggiungi Esercizio</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="form-esercizio" class="row g-2">
+                            <div class="col-md-7">
+                                <input type="text" id="nome-ex" class="form-control" placeholder="Nome (es. Panca piana)" required>
+                            </div>
+                            <div class="col-md-5">
+                                <select id="gruppo-ex" class="form-select" required>
+                                    <option value="">Gruppo...</option>
+                                    <option value="Petto">Petto</option>
+                                    <option value="Dorso">Dorso</option>
+                                    <option value="Gambe">Gambe</option>
+                                    <option value="Spalle">Spalle</option>
+                                    <option value="Braccia">Braccia</option>
+                                    <option value="Core">Core</option>
+                                    <option value="Cardio">Cardio</option>
+                                </select>
+                            </div>
+                            <div class="col-12 mt-2">
+                                <button type="submit" class="btn btn-primary w-100">Aggiungi al Catalogo</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-apple"></i> Aggiungi Alimento (per 100g)</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="form-alimento" class="row g-2">
+                            <div class="col-12">
+                                <input type="text" id="nome-cibo" class="form-control" placeholder="Nome alimento (es. Riso Basmati)" required>
+                            </div>
+                            <div class="col-3">
+                                <input type="number" id="cal" class="form-control" placeholder="Kcal" required>
+                            </div>
+                            <div class="col-3">
+                                <input type="number" id="pro" class="form-control" placeholder="Pro (g)" step="0.1" required>
+                            </div>
+                            <div class="col-3">
+                                <input type="number" id="car" class="form-control" placeholder="Car (g)" step="0.1" required>
+                            </div>
+                            <div class="col-3">
+                                <input type="number" id="fat" class="form-control" placeholder="Fat (g)" step="0.1" required>
+                            </div>
+                            <div class="col-12 mt-2">
+                                <button type="submit" class="btn btn-success w-100">Aggiungi al Catalogo</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // 1. Controllo Sicurezza: Verifica chi è loggato
+            $.get('/api/sessione', function(res) {
+                if (!res.loggato || res.utente.ruolo !== 'manager') {
+                    alert('Accesso non autorizzato!');
+                    window.location.href = 'login.html';
+                } else {
+                    $('#nome-manager').text('Ciao, ' + res.utente.nome);
+                }
+            });
+
+            // 2. Logout
+            $('#btn-logout').click(function() {
+                $.post('/api/logout', () => window.location.href = 'index.html');
+            });
+
+            // 3. Inserimento Allenatore
+            $('#form-allenatore').submit(function(e) {
+                e.preventDefault();
+                $.post('/api/manager/allenatori', {
+                    nome: $('#nome-all').val(),
+                    email: $('#email-all').val(),
+                    password: $('#pass-all').val()
+                }, function() {
+                    alert('Allenatore creato con successo!');
+                    $('#form-allenatore')[0].reset();
+                }).fail(function() { alert('Errore: Email già in uso.'); });
+            });
+
+            // 4. Inserimento Esercizio
+            $('#form-esercizio').submit(function(e) {
+                e.preventDefault();
+                $.post('/api/manager/esercizi', {
+                    nome: $('#nome-ex').val(),
+                    gruppo_muscolare: $('#gruppo-ex').val()
+                }, function() {
+                    alert('Esercizio aggiunto!');
+                    $('#form-esercizio')[0].reset();
+                });
+            });
+
+            // 5. Inserimento Alimento
+            $('#form-alimento').submit(function(e) {
+                e.preventDefault();
+                $.post('/api/manager/alimenti', {
+                    nome: $('#nome-cibo').val(),
+                    calorie: $('#cal').val(),
+                    proteine: $('#pro').val(),
+                    carboidrati: $('#car').val(),
+                    grassi: $('#fat').val()
+                }, function() {
+                    alert('Alimento aggiunto!');
+                    $('#form-alimento')[0].reset();
+                });
+            });
+        });
+    </script>
+</body>
+</html>
