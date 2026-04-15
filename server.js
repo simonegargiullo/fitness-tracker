@@ -9,11 +9,14 @@ const PORT = 3000;
 
 // Configurazione della connessione a PostgreSQL
 const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'fitness_tracker',
-    password: 'admin',
-    port: 5432,
+    host: 'aws-0-eu-west-1.pooler.supabase.com',
+    port: 6543,
+    user: 'postgres.zgsmezhausuhdflhfnuq',
+    password: 'v5vz/HNXbS-!?.r', // Ora i caratteri speciali non daranno fastidio!
+    database: 'postgres',
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
 
 // Verifica della connessione al database

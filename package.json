@@ -1,10 +1,18 @@
 {
+  "dependencies": {
+    "connect-pg-simple": "^10.0.0",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "pg": "^8.20.0"
+  },
   "name": "fitness-tracker",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
+  "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "repository": {
     "type": "git",
@@ -17,11 +25,5 @@
   "bugs": {
     "url": "https://github.com/simonegargiullo/fitness-tracker/issues"
   },
-  "homepage": "https://github.com/simonegargiullo/fitness-tracker#readme",
-  "dependencies": {
-    "connect-pg-simple": "^10.0.0",
-    "express": "^5.2.1",
-    "express-session": "^1.19.0",
-    "pg": "^8.20.0"
-  }
+  "homepage": "https://github.com/simonegargiullo/fitness-tracker#readme"
 }
