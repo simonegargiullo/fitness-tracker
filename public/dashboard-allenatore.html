@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Area Allenatore - Fitness Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light d-flex flex-column min-vh-100">
+
+    <div id="app" class="d-flex flex-column min-vh-100">
+        
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-info">
+            <div class="container">
+                <a class="navbar-brand fw-bold text-info" href="#"><i class="bi bi-stopwatch"></i> Area Coach</a>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="text-white fw-bold">Ciao, {{ nomeAllenatore }}</span>
+                    <button @click="logout" class="btn btn-outline-light btn-sm">Esci</button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container my-5 flex-grow-1">
+            <h2 class="mb-4 text-info fw-bold">La tua Scrivania</h2>
+
+            <div class="row g-4">
+                
+                <div class="col-md-5">
+                    <div class="card shadow-sm border-0 border-top border-warning border-4 h-100">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0 fw-bold"><i class="bi bi-bell-fill text-warning"></i> Nuove Richieste ({{ richieste.length }})</h5>
+                        </div>
+                        <div class="card-body bg-light">
+                            <p v-if="richieste.length === 0" class="text-muted text-center mt-3">Nessuna nuova richiesta in attesa.</p>
+                            <div v-for="req in richieste" :key="req.id_utente" class="card mb-3 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title fw-bold">{{ req.nome }}</h5>
+                                    <p class="mb-1"><strong>Obiettivo:</strong> <span class="badge bg-secondary">{{ req.obiettivo }}</span></p>
+                                    <p class="small text-muted mb-3"><strong>Esperienza:</strong> {{ req.esperienza_pregressa || 'Nessuna specificata' }}</p>
+                                    <button @click="accettaRichiesta(req.id_utente)" class="btn btn-warning w-100 fw-bold text-dark">Accetta Atleta</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-7">
+                    <div class="card shadow-sm border-0 border-top border-success border-4 h-100">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0 fw-bold"><i class="bi bi-people-fill text-success"></i> I tuoi Atleti ({{ sportiviAttivi.length }})</h5>
+                        </div>
+                        <div class="card-body">
+                            <p v-if="sportiviAttivi.length === 0" class="text-muted text-center mt-3">Non hai ancora nessun atleta attivo.</p>
+                            <div class="row g-3">
+                                <div v-for="sportivo in sportiviAttivi" :key="sportivo.id_utente" class="col-md-6">
+                                    <div class="card border-0 bg-light h-100 shadow-sm">
+                                        <div class="card-body text-center">
+                                            <i class="bi bi-person-circle display-4 text-success mb-2"></i>
+                                            <h5 class="fw-bold">{{ sportivo.nome }}</h5>
+                                            <p class="mb-2 text-muted small">{{ sportivo.eta }} anni | {{ sportivo.peso }} kg | {{ sportivo.obiettivo }}</p>
+                                            <button @click="apriModaleScheda(sportivo)" class="btn btn-success btn-sm w-100 fw-bold"><i class="bi bi-plus-circle"></i> Crea Scheda</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalScheda" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title fw-bold">Crea Scheda per {{ schedaCorrente.nome_sportivo }}</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body bg-light">
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Nome della Scheda</label>
+                            <input v-model="schedaCorrente.titolo" type="text" class="form-control" placeholder="Es. Massa Mese 1">
+                        </div>
+
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-body">
+                                <h6 class="fw-bold text-primary mb-3">Aggiungi un Esercizio</h6>
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Esercizio dal Catalogo</label>
+                                        <select v-model="esercizioTemp.id_esercizio" class="form-select">
+                                            <option value="">Scegli...</option>
+                                            <optgroup v-for="(esercizi, gruppo) in eserciziRaggruppati" :key="gruppo" :label="gruppo">
+                                                <option v-for="ex in esercizi" :value="ex.id">{{ ex.nome }}</option>
+                                            </optgroup>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label small">Serie</label>
+                                        <input v-model.number="esercizioTemp.serie" type="number" class="form-control" min="1">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label small">Ripetizioni</label>
+                                        <input v-model.number="esercizioTemp.ripetizioni" type="number" class="form-control" min="1">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label small">Recupero</label>
+                                        <input v-model="esercizioTemp.recupero" type="text" class="form-control" placeholder="es. 90s">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button @click="aggiungiEsercizio" class="btn btn-primary w-100"><i class="bi bi-plus"></i> Add</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold">Esercizi in questa Scheda ({{ schedaCorrente.listaEsercizi.length }})</h6>
+                        <ul class="list-group shadow-sm">
+                            <li v-if="schedaCorrente.listaEsercizi.length === 0" class="list-group-item text-muted text-center py-3">
+                                Nessun esercizio aggiunto.
+                            </li>
+                            <li v-for="(ex, index) in schedaCorrente.listaEsercizi" :key="index" class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong class="text-primary">{{ ex.nome_esercizio }}</strong><br>
+                                    <small class="text-muted">{{ ex.serie }} Serie x {{ ex.ripetizioni }} Rip | Rec: {{ ex.recupero }}</small>
+                                </div>
+                                <button @click="rimuoviEsercizio(index)" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
+                            </li>
+                        </ul>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                        <button @click="salvaSchedaDefinitiva" type="button" class="btn btn-success fw-bold"><i class="bi bi-save"></i> Salva e Invia Scheda</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="bg-dark text-white text-center py-3 mt-auto border-top border-secondary">
+            <p class="mb-0">© 2024 Fitness Tracker - Progetto Esame</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    nomeAllenatore: 'Caricamento...',
+                    richieste: [],
+                    sportiviAttivi: [],
+                    catalogoEsercizi: [],
+                    
+                    // Contiene i dati della scheda che stiamo compilando
+                    schedaCorrente: {
+                        id_sportivo: null,
+                        nome_sportivo: '',
+                        titolo: '',
+                        listaEsercizi: []
+                    },
+                    
+                    // Contiene i valori temporanei degli input prima di premere "Add"
+                    esercizioTemp: {
+                        id_esercizio: '',
+                        serie: 3,
+                        ripetizioni: 10,
+                        recupero: '90s'
+                    }
+                }
+            },
+            computed: {
+                // Vue raggruppa in automatico gli esercizi per gruppo muscolare!
+                eserciziRaggruppati() {
+                    const raggruppati = {};
+                    this.catalogoEsercizi.forEach(ex => {
+                        if (!raggruppati[ex.gruppo_muscolare]) {
+                            raggruppati[ex.gruppo_muscolare] = [];
+                        }
+                        raggruppati[ex.gruppo_muscolare].push(ex);
+                    });
+                    return raggruppati;
+                }
+            },
+            mounted() {
+                this.controllaSicurezza();
+            },
+            methods: {
+                async controllaSicurezza() {
+                    const res = await fetch('/api/sessione');
+                    const dati = await res.json();
+                    
+                    if (!dati.loggato || dati.utente.ruolo !== 'allenatore') {
+                        window.location.href = 'login.html';
+                    } else {
+                        this.nomeAllenatore = dati.utente.nome;
+                        this.caricaDati();
+                        this.caricaCatalogo(); // Scarica gli esercizi disponibili
+                    }
+                },
+                async caricaDati() {
+                    const resRichieste = await fetch('/api/allenatore/richieste');
+                    this.richieste = await resRichieste.json();
+
+                    const resAttivi = await fetch('/api/allenatore/miei-sportivi');
+                    this.sportiviAttivi = await resAttivi.json();
+                },
+                async caricaCatalogo() {
+                    const res = await fetch('/api/esercizi');
+                    this.catalogoEsercizi = await res.json();
+                },
+                async accettaRichiesta(idSportivo) {
+                    await fetch('/api/allenatore/accetta-richiesta', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id_sportivo: idSportivo })
+                    });
+                    this.caricaDati();
+                },
+                // Apre il pop-up per creare la scheda
+                apriModaleScheda(sportivo) {
+                    this.schedaCorrente.id_sportivo = sportivo.id_utente;
+                    this.schedaCorrente.nome_sportivo = sportivo.nome;
+                    this.schedaCorrente.titolo = `Scheda di ${sportivo.nome}`;
+                    this.schedaCorrente.listaEsercizi = []; // Svuota la scheda precedente
+                    
+                    const modal = new bootstrap.Modal(document.getElementById('modalScheda'));
+                    modal.show();
+                },
+                // Aggiunge un esercizio alla lista provvisoria (memoria locale, non database)
+                aggiungiEsercizio() {
+                    if (!this.esercizioTemp.id_esercizio) return alert("Scegli un esercizio dal catalogo!");
+                    
+                    // Troviamo il nome dell'esercizio partendo dal suo ID
+                    const exTrovato = this.catalogoEsercizi.find(e => e.id === this.esercizioTemp.id_esercizio);
+
+                    this.schedaCorrente.listaEsercizi.push({
+                        id_esercizio: exTrovato.id,
+                        nome_esercizio: exTrovato.nome,
+                        serie: this.esercizioTemp.serie,
+                        ripetizioni: this.esercizioTemp.ripetizioni,
+                        recupero: this.esercizioTemp.recupero
+                    });
+
+                    // Resetta solo la tendina dell'esercizio
+                    this.esercizioTemp.id_esercizio = ''; 
+                },
+                // Rimuove un esercizio se l'allenatore ha sbagliato
+                rimuoviEsercizio(index) {
+                    this.schedaCorrente.listaEsercizi.splice(index, 1);
+                },
+                // Invia la scheda completa al Backend!
+                async salvaSchedaDefinitiva() {
+                    if (this.schedaCorrente.listaEsercizi.length === 0) {
+                        return alert("La scheda è vuota! Aggiungi almeno un esercizio.");
+                    }
+
+                    try {
+                        const res = await fetch('/api/allenatore/crea-scheda', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.schedaCorrente)
+                        });
+                        
+                        const data = await res.json();
+                        alert(data.message);
+
+                        // Chiudiamo il modale
+                        const modalEl = document.getElementById('modalScheda');
+                        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                        modalInstance.hide();
+
+                    } catch (error) {
+                        alert("Errore durante il salvataggio della scheda.");
+                    }
+                },
+                async logout() {
+                    await fetch('/api/logout', { method: 'POST' });
+                    window.location.href = 'index.html';
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

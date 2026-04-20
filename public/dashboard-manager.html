@@ -10,7 +10,7 @@
 </head>
 <body class="bg-light d-flex flex-column min-vh-100">
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger border-bottom border-dark border-3">
         <div class="container">
             <a class="navbar-brand fw-bold" href="#"><i class="bi bi-shield-lock"></i> Area Manager</a>
             <div class="d-flex align-items-center gap-3">
@@ -20,30 +20,30 @@
         </div>
     </nav>
 
-    <div class="container my-5">
-        <h2 class="mb-4">Pannello di Controllo</h2>
+    <div class="container my-5 flex-grow-1">
+        <h2 class="mb-4 fw-bold">Pannello di Controllo Generale</h2>
 
         <div class="row g-4">
             <div class="col-md-6">
                 <div class="card shadow-sm h-100 border-0">
                     <div class="card-header bg-dark text-white">
-                        <h5 class="mb-0"><i class="bi bi-person-badge"></i> Crea Account Allenatore</h5>
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-person-badge"></i> Crea Account Allenatore</h5>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body bg-white">
                         <form id="form-allenatore">
-                            <div class="mb-2">
-                                <label class="form-label">Nome e Cognome</label>
-                                <input type="text" id="nome-all" class="form-control" required>
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label">Email Lavorativa</label>
-                                <input type="email" id="email-all" class="form-control" required>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small">Nome e Cognome</label>
+                                <input type="text" id="nome-all" class="form-control bg-light" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Password Provvisoria</label>
-                                <input type="password" id="pass-all" class="form-control" required>
+                                <label class="form-label fw-bold small">Email Lavorativa</label>
+                                <input type="email" id="email-all" class="form-control bg-light" required>
                             </div>
-                            <button type="submit" class="btn btn-dark w-100">Registra Allenatore</button>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold small">Password Provvisoria</label>
+                                <input type="password" id="pass-all" class="form-control bg-light" required>
+                            </div>
+                            <button type="submit" class="btn btn-dark w-100 fw-bold"><i class="bi bi-person-plus"></i> Registra Allenatore</button>
                         </form>
                     </div>
                 </div>
@@ -53,27 +53,35 @@
                 
                 <div class="card shadow-sm mb-4 border-0">
                     <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0"><i class="bi bi-dumbbell"></i> Aggiungi Esercizio</h5>
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-dumbbell"></i> Aggiungi Esercizio</h5>
                     </div>
-                    <div class="card-body">
-                        <form id="form-esercizio" class="row g-2">
+                    <div class="card-body bg-white">
+                        <form id="form-esercizio" class="row g-3">
                             <div class="col-md-7">
-                                <input type="text" id="nome-ex" class="form-control" placeholder="Nome (es. Panca piana)" required>
+                                <label class="form-label fw-bold small mb-1">Nome Esercizio</label>
+                                <input type="text" id="nome-ex" class="form-control bg-light" placeholder="es. Panca piana" required>
                             </div>
                             <div class="col-md-5">
-                                <select id="gruppo-ex" class="form-select" required>
-                                    <option value="">Gruppo...</option>
+                                <label class="form-label fw-bold small mb-1">Gruppo</label>
+                                <select id="gruppo-ex" class="form-select bg-light" required>
+                                    <option value="">Scegli...</option>
                                     <option value="Petto">Petto</option>
                                     <option value="Dorso">Dorso</option>
                                     <option value="Gambe">Gambe</option>
                                     <option value="Spalle">Spalle</option>
                                     <option value="Braccia">Braccia</option>
                                     <option value="Core">Core</option>
-                                    <option value="Cardio">Cardio</option>
                                 </select>
                             </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label fw-bold small mb-1">Carica Immagine/GIF dal PC</label>
+                                <input type="file" id="file-immagine-ex" class="form-control bg-light" accept="image/*">
+                                <div class="form-text small">Tipi consentiti: .jpg, .png, .gif</div>
+                            </div>
+                            
                             <div class="col-12 mt-2">
-                                <button type="submit" class="btn btn-primary w-100">Aggiungi al Catalogo</button>
+                                <button type="submit" class="btn btn-primary w-100 fw-bold"><i class="bi bi-plus-circle"></i> Aggiungi al Catalogo</button>
                             </div>
                         </form>
                     </div>
@@ -81,27 +89,32 @@
 
                 <div class="card shadow-sm border-0">
                     <div class="card-header bg-success text-white">
-                        <h5 class="mb-0"><i class="bi bi-apple"></i> Aggiungi Alimento (per 100g)</h5>
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-apple"></i> Aggiungi Alimento (valori per 100g)</h5>
                     </div>
-                    <div class="card-body">
-                        <form id="form-alimento" class="row g-2">
-                            <div class="col-12">
-                                <input type="text" id="nome-cibo" class="form-control" placeholder="Nome alimento (es. Riso Basmati)" required>
+                    <div class="card-body bg-white">
+                        <form id="form-alimento" class="row g-2 align-items-end">
+                            <div class="col-12 mb-2">
+                                <label class="form-label fw-bold small mb-1">Nome Alimento</label>
+                                <input type="text" id="nome-cibo" class="form-control bg-light" placeholder="es. Riso Basmati" required>
                             </div>
                             <div class="col-3">
-                                <input type="number" id="cal" class="form-control" placeholder="Kcal" required>
+                                <label class="form-label fw-bold small mb-0 text-muted">Kcal</label>
+                                <input type="number" id="cal" class="form-control bg-light px-1 text-center" required>
                             </div>
                             <div class="col-3">
-                                <input type="number" id="pro" class="form-control" placeholder="Pro (g)" step="0.1" required>
+                                <label class="form-label fw-bold small mb-0 text-muted">Pro (g)</label>
+                                <input type="number" id="pro" class="form-control bg-light px-1 text-center" step="0.1" required>
                             </div>
                             <div class="col-3">
-                                <input type="number" id="car" class="form-control" placeholder="Car (g)" step="0.1" required>
+                                <label class="form-label fw-bold small mb-0 text-muted">Car (g)</label>
+                                <input type="number" id="car" class="form-control bg-light px-1 text-center" step="0.1" required>
                             </div>
                             <div class="col-3">
-                                <input type="number" id="fat" class="form-control" placeholder="Fat (g)" step="0.1" required>
+                                <label class="form-label fw-bold small mb-0 text-muted">Fat (g)</label>
+                                <input type="number" id="fat" class="form-control bg-light px-1 text-center" step="0.1" required>
                             </div>
-                            <div class="col-12 mt-2">
-                                <button type="submit" class="btn btn-success w-100">Aggiungi al Catalogo</button>
+                            <div class="col-12 mt-3">
+                                <button type="submit" class="btn btn-success w-100 fw-bold"><i class="bi bi-plus-circle"></i> Aggiungi Alimento</button>
                             </div>
                         </form>
                     </div>
@@ -111,9 +124,16 @@
         </div>
     </div>
 
+    <footer class="bg-dark text-white text-center py-3 mt-auto">
+        <p class="mb-0">© 2024 Fitness Tracker - Progetto Esame Marconi</p>
+    </footer>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
         $(document).ready(function() {
+            
             // 1. Controllo Sicurezza: Verifica chi è loggato
             $.get('/api/sessione', function(res) {
                 if (!res.loggato || res.utente.ruolo !== 'manager') {
@@ -139,18 +159,49 @@
                 }, function() {
                     alert('Allenatore creato con successo!');
                     $('#form-allenatore')[0].reset();
-                }).fail(function() { alert('Errore: Email già in uso.'); });
+                }).fail(function() { 
+                    alert('Errore: Email già in uso.'); 
+                });
             });
 
-            // 4. Inserimento Esercizio
+            // 4. Inserimento Esercizio (CON CARICAMENTO FILE MULTIMEDIALE)
             $('#form-esercizio').submit(function(e) {
                 e.preventDefault();
-                $.post('/api/manager/esercizi', {
-                    nome: $('#nome-ex').val(),
-                    gruppo_muscolare: $('#gruppo-ex').val()
-                }, function() {
-                    alert('Esercizio aggiunto!');
-                    $('#form-esercizio')[0].reset();
+
+                // Cambiamo il testo del bottone per mostrare il caricamento
+                const btn = $(this).find('button[type="submit"]');
+                const testoOriginale = btn.html();
+                btn.html('<span class="spinner-border spinner-border-sm"></span> Caricamento...').prop('disabled', true);
+
+                // Creiamo l'oggetto FormData
+                let formData = new FormData();
+                formData.append('nome', $('#nome-ex').val());
+                formData.append('gruppo_muscolare', $('#gruppo-ex').val());
+
+                // Intercettiamo il file e lo infiliamo nel pacchetto
+                let fileInput = $('#file-immagine-ex')[0].files[0];
+                if (fileInput) {
+                    formData.append('immagine_file', fileInput);
+                }
+
+                // Invio speciale per file fisici
+                $.ajax({
+                    url: '/api/manager/esercizi',
+                    method: 'POST',
+                    data: formData,
+                    processData: false, // Obbligatorio per i file
+                    contentType: false, // Obbligatorio per i file
+                    success: function() {
+                        alert('Esercizio aggiunto al catalogo con successo!');
+                        $('#form-esercizio')[0].reset();
+                    },
+                    error: function(xhr) { 
+                        alert('Errore: ' + (xhr.responseJSON ? xhr.responseJSON.message : 'Upload fallito')); 
+                    },
+                    complete: function() {
+                        // Rimettiamo il bottone allo stato normale
+                        btn.html(testoOriginale).prop('disabled', false);
+                    }
                 });
             });
 
@@ -164,8 +215,10 @@
                     carboidrati: $('#car').val(),
                     grassi: $('#fat').val()
                 }, function() {
-                    alert('Alimento aggiunto!');
+                    alert('Alimento aggiunto con successo!');
                     $('#form-alimento')[0].reset();
+                }).fail(function(xhr) {
+                    alert('Errore: ' + (xhr.responseJSON ? xhr.responseJSON.message : 'Inserimento fallito'));
                 });
             });
         });
