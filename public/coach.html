@@ -18,41 +18,95 @@
 
         <app-navbar></app-navbar>
 
-        <header class="page-header">
+        <header class="page-header bg-coach">
             <div class="container">
                 <h6 class="text-primary fw-bold text-uppercase tracking-wide">I professionisti</h6>
                 <h1 class="display-4 fw-bold mb-3">Il Nostro <span class="text-primary">Team</span></h1>
                 <p class="lead text-light opacity-75 mx-auto" style="max-width: 600px;">
-                    Scegli l'allenatore certificatopiù adatto alle tue esigenze. Ogni coach è pronto a seguirti passo
+                    Scegli l'allenatore certificato più adatto alle tue esigenze. Ogni coach è pronto a seguirti passo
                     dopo passo nel tuo percorso.
                 </p>
             </div>
         </header>
 
         <section class="container my-5 py-4 flex-grow-1">
-            <div class="row g-4 justify-content-center">
+            
+            <div v-if="coaches.length === 0" class="text-center text-muted py-5">
+                <i class="bi bi-people-fill display-1 opacity-25"></i>
+                <h3 class="mt-3">Nessun coach ancora disponibile</h3>
+                <p>I nostri manager stanno inserendo i professionisti. Torna a trovarci presto!</p>
+            </div>
 
+            <div v-else class="row g-4 justify-content-center">
                 <div class="col-md-6 col-lg-4" v-for="coach in coaches" :key="coach.id">
                     <div class="card hover-card bg-white h-100 shadow-sm border-0">
-                        <img :src="coach.foto" class="card-img-top coach-img" :alt="coach.nome">
+                        <img :src="coach.foto || 'img/default-user.jpg'" class="card-img-top coach-img" :alt="coach.nome">
 
-                        <div class="card-body p-4 d-flex flex-column">
-                            <h4 class="fw-bold mb-1">{{ coach.nome }}</h4>
-                            <p class="text-primary fw-semibold small text-uppercase mb-3">
-                                <i class="bi bi-star-fill me-1"></i> {{ coach.specialita }}
+                        <div class="card-body p-4 d-flex flex-column text-center">
+                            <h4 class="fw-bold mb-1">{{ coach.nome }} {{ coach.cognome }}</h4>
+                            <p class="text-primary fw-semibold small text-uppercase mb-4 flex-grow-1">
+                                <i class="bi bi-star-fill me-1"></i> {{ coach.specialita || 'Personal Trainer' }}
                             </p>
-                            <p class="text-muted flex-grow-1">
-                                "{{ coach.descrizione }}"
-                            </p>
-                            <a href="registrati.html" class="btn btn-outline-primary fw-bold w-100 rounded-pill mt-3">
-                                Scegli {{ coach.nome.split(' ')[0] }}
-                            </a>
+                            
+                            <button @click="apriDettagli(coach)" class="btn btn-outline-primary fw-bold w-100 rounded-pill mt-auto">
+                                Scopri di più
+                            </button>
                         </div>
                     </div>
                 </div>
-
             </div>
         </section>
+
+        <div class="modal fade" id="coachModal" tabindex="-1" aria-labelledby="coachModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content border-0 rounded-4 shadow position-relative">
+                    
+                    <button type="button" class="btn-close position-absolute top-0 end-0 m-4" style="z-index: 1055;" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+                    
+                    <div class="modal-body p-4 p-md-5" v-if="selectedCoach">
+                        <div class="row g-4">
+                            <div class="col-12 mt-2">
+                                
+                                <div class="text-center mb-4">
+                                    <h2 class="fw-bold mb-1 display-6 pe-4 pe-md-0">{{ selectedCoach.nome }} {{ selectedCoach.cognome }}</h2>
+                                </div>
+
+                                <div class="text-center mb-4">
+                                    <img :src="selectedCoach.foto || 'img/default-user.jpg'" class="img-fluid rounded-4 shadow" :alt="selectedCoach.nome" style="max-height: 400px; object-fit: cover;">
+                                </div>
+
+                                <div class="text-center mb-4">
+                                    <p class="text-primary fw-semibold text-uppercase mb-0 fs-5">
+                                        <i class="bi bi-star-fill me-1"></i> {{ selectedCoach.specialita || 'Personal Trainer' }}
+                                    </p>
+                                </div>
+
+                                <div class="row justify-content-center mt-3">
+                                    <div class="col-md-10 col-lg-8">
+                                        <p class="text-muted mb-4 lead fs-6 text-center">
+                                            {{ selectedCoach.descrizione || 'Nessuna descrizione fornita per questo professionista.' }}
+                                        </p>
+
+                                        <div class="border-top pt-3 mt-2 text-center">
+                                            <ul class="list-inline mb-0 text-muted small d-flex flex-column flex-md-row justify-content-center gap-2 gap-md-4">
+                                                <li class="list-inline-item mx-0" v-if="selectedCoach.email">
+                                                    <i class="bi bi-envelope-fill me-1 text-primary"></i> {{ selectedCoach.email }}
+                                                </li>
+                                                <li class="list-inline-item mx-0" v-if="selectedCoach.telefono">
+                                                    <i class="bi bi-telephone-fill me-1 text-primary"></i> {{ selectedCoach.telefono }}
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
 
         <app-footer></app-footer>
 

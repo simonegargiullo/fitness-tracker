@@ -186,23 +186,48 @@ const verificaManager = (req, res, next) => {
     }
 };
 
-// 5. Creazione di un nuovo Allenatore
-app.post('/api/manager/allenatori', verificaManager, async (req, res) => {
-    const { nome, email, password } = req.body;
+// 5. Creazione di un nuovo Allenatore (AGGIORNATA con Foto e Dettagli)
+app.post('/api/manager/allenatori', verificaManager, upload.single('foto'), async (req, res) => {
+    const { nome, cognome, email, password, specialita, descrizione, telefono } = req.body;
     
     if (!password || password.length < 8) {
-        return res.status(400).json({ message: "La password dell'allenatore deve essere di almeno 8 caratteri." });
+        return res.status(400).json({ message: "La password deve essere di almeno 8 caratteri." });
     }
 
+    // Se il manager carica una foto, salviamo il percorso, altrimenti null
+    const foto_url = req.file ? '/uploads/' + req.file.filename : null;
+
     try {
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-        await pool.query(
-            "INSERT INTO utenti (nome, email, password, ruolo) VALUES ($1, $2, $3, 'allenatore')",
-            [nome, email, hashedPassword]
-        );
-        res.json({ message: 'Allenatore creato con password sicura!' });
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN'); // Inizio transazione
+            
+            // 1. Creiamo l'utente base
+            const hashedPassword = await bcrypt.hash(password, saltRounds);
+            const insertUtente = await client.query(
+                "INSERT INTO utenti (nome, email, password, ruolo) VALUES ($1, $2, $3, 'allenatore') RETURNING id",
+                [nome, email, hashedPassword]
+            );
+            
+            const nuovoId = insertUtente.rows[0].id;
+            
+            // 2. Salviamo i dettagli nel profilo allenatore
+            await client.query(
+                "INSERT INTO profili_allenatori (id_utente, cognome, specialita, descrizione, foto, telefono) VALUES ($1, $2, $3, $4, $5, $6)",
+                [nuovoId, cognome, specialita, descrizione, foto_url, telefono]
+            );
+            
+            await client.query('COMMIT'); // Confermiamo il salvataggio
+            res.json({ message: 'Allenatore creato con successo!' });
+        } catch (error) {
+            await client.query('ROLLBACK'); // In caso di errore, annulliamo tutto
+            throw error;
+        } finally {
+            client.release();
+        }
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        console.error("Errore salvataggio allenatore:", err);
+        res.status(500).json({ error: err.message });
     }
 });
 
@@ -274,12 +299,20 @@ app.get('/api/sportivo/stato', verificaSportivo, async (req, res) => {
     }
 });
 
-// 9. Ottieni la lista di tutti gli allenatori disponibili
+// 9. Ottieni la lista di tutti gli allenatori disponibili (AGGIORNATA per coach.html)
 app.get('/api/allenatori', async (req, res) => {
     try {
-        const result = await pool.query("SELECT id, nome, email FROM utenti WHERE ruolo = 'allenatore'");
+        const query = `
+            SELECT u.id, u.nome, u.email, 
+                   pa.cognome, pa.specialita, pa.descrizione, pa.foto, pa.telefono
+            FROM utenti u
+            LEFT JOIN profili_allenatori pa ON u.id = pa.id_utente
+            WHERE u.ruolo = 'allenatore'
+        `;
+        const result = await pool.query(query);
         res.json(result.rows);
     } catch (err) {
+        console.error("Errore recupero allenatori:", err);
         res.status(500).json({ error: err.message });
     }
 });

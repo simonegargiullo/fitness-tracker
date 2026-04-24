@@ -23,9 +23,9 @@ body {
 
 /* Animazione per la freccia che invita a scorrere */
 @keyframes bounce {
-    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-10px); }
-    60% { transform: translateY(-5px); }
+    0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+    40% { transform: translateX(-50%) translateY(-10px); }
+    60% { transform: translateX(-50%) translateY(-5px); }
 }
 
 .scroll-indicator {
@@ -109,21 +109,30 @@ body {
    PAGINE INTERNE (Coach, Contatti, ecc.)
    ========================================= */
 
-/* Intestazione per le pagine interne con immagine di sfondo */
 .page-header {
-    /* Il gradiente scuro serve a far risaltare il testo bianco sopra l'immagine */
     background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)), url('../img/team-bg.jpg');
     background-size: cover;
-    background-position: center 1%; /* Centra l'immagine spostandola leggermente per far vedere bene i volti */
+    
+    /* 1. AGGANCIATA SEMPRE IN ALTO: Nessuna testa tagliata, sia su PC che su Mobile */
+    background-position: center top; 
+    
+    /* 2. TRANSIZIONE MORBIDA: Evita lo "scatto" quando stringi o allarghi la finestra */
+    transition: padding 0.5s ease, margin-top 0.5s ease;
+    
     padding: 160px 0 80px 0; 
     text-align: center;
     color: white;
 }
 
-/* Regola per le foto degli allenatori nelle card */
-.coach-img {
-    height: 350px;
-    object-fit: cover; /* Taglia l'immagine senza deformarla per riempire lo spazio */
-    border-top-left-radius: 15px; /* Arrotonda gli angoli come la card */
-    border-top-right-radius: 15px;
+/* =========================================
+   REGOLE RESPONSIVE (Smartphone e Tablet)
+   ========================================= */
+
+@media (max-width: 768px) {
+    .page-header {
+        /* Applica la spinta verso il basso sotto la navbar del telefono. 
+           Grazie alla 'transition' qui sopra, lo spostamento avverrà morbidamente! */
+        margin-top: 60px; 
+        padding: 80px 0 50px 0; 
+    }
 }

@@ -5,31 +5,39 @@ const { createApp } = Vue;
 const app = createApp({
     data() {
         return {
-            // Simuliamo il database degli allenatori
-            // In futuro, questo array si riempirà tramite una fetch() al tuo server!
-            coaches: [
-                { 
-                    id: 1, 
-                    nome: 'Marco Valeri', 
-                    specialita: 'Forza e Ipertrofia', 
-                    foto: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=800&auto=format&fit=crop', 
-                    descrizione: 'Specializzato in powerlifting e aumento della massa muscolare. Ti aiuterò a superare i tuoi limiti in sala pesi.' 
-                },
-                { 
-                    id: 2, 
-                    nome: 'Giulia Bianchi', 
-                    specialita: 'Dimagrimento e Tonificazione', 
-                    foto: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=800&auto=format&fit=crop', 
-                    descrizione: 'Esperta in circuit training e HIIT. Insieme costruiremo un percorso divertente per raggiungere il tuo peso forma ideale.' 
-                },
-                { 
-                    id: 3, 
-                    nome: 'Alessandro Costa', 
-                    specialita: 'Riabilitazione e Postura', 
-                    foto: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?q=80&w=800&auto=format&fit=crop', 
-                    descrizione: 'Fisioterapista e personal trainer. Il mio obiettivo è farti allenare in totale sicurezza, correggendo la postura ed eliminando i dolori.' 
+            coaches: [], // Inizia vuoto, si riempirà tramite il database
+            selectedCoach: null, // Conterrà i dati dell'allenatore cliccato per mostrarli nel pop-up
+            modalInstance: null // Conterrà l'oggetto tecnico del pop-up di Bootstrap
+        }
+    },
+    mounted() {
+        // Appena la pagina è caricata, prepariamo il pop-up (nascosto) per poterlo aprire dopo
+        this.modalInstance = new bootstrap.Modal(document.getElementById('coachModal'));
+        
+        // E lanciamo subito la richiesta al server per scaricare i coach
+        this.caricaAllenatori();
+    },
+    methods: {
+        // Funzione che contatta il tuo server (sostituisci l'URL con la tua vera rotta API se diversa)
+        async caricaAllenatori() {
+            try {
+                // Esempio: supponiamo che il backend abbia una rotta che restituisce gli utenti con ruolo "allenatore"
+                const res = await fetch('/api/allenatori'); 
+                if (res.ok) {
+                    const dati = await res.json();
+                    this.coaches = dati; // Salviamo i coach reali provenienti dal DB!
+                } else {
+                    console.error("Errore nel recupero degli allenatori.");
                 }
-            ]
+            } catch (error) {
+                console.error("Errore di connessione al server:", error);
+            }
+        },
+        
+        // Funzione chiamata quando si clicca il bottone sulla card
+        apriDettagli(coach) {
+            this.selectedCoach = coach; // Copiamo i dati del coach specifico in selectedCoach
+            this.modalInstance.show(); // Apriamo il pop-up
         }
     }
 });
