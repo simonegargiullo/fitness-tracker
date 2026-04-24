@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,13 +11,15 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body class="bg-light d-flex flex-column min-vh-100">
 
     <div id="app" class="d-flex flex-column min-vh-100">
-        
+
         <app-navbar></app-navbar>
 
-        <header class="page-header" style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)), url('https://images.unsplash.com/photo-1574680096145-d05b474e2155?q=80&w=1920&auto=format&fit=crop');">
+        <header class="page-header"
+            style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)), url('https://images.unsplash.com/photo-1574680096145-d05b474e2155?q=80&w=1920&auto=format&fit=crop');">
             <div class="container">
                 <h6 class="text-primary fw-bold text-uppercase tracking-wide">Siamo qui per te</h6>
                 <h1 class="display-4 fw-bold mb-3">Mettiti in <span class="text-primary">Contatto</span></h1>
@@ -30,12 +33,13 @@
 
         <section class="container my-5 py-4 flex-grow-1">
             <div class="row g-5">
-                
+
                 <div class="col-lg-7">
                     <div class="card shadow-sm border-0 p-4 p-md-5 rounded-4">
                         <h3 class="fw-bold mb-4">Inviaci un messaggio</h3>
-                        
-                        <div v-if="messaggioInviato" class="alert alert-success d-flex align-items-center mb-4" role="alert">
+
+                        <div v-if="messaggioInviato" class="alert alert-success d-flex align-items-center mb-4"
+                            role="alert">
                             <i class="bi bi-check-circle-fill fs-4 me-3"></i>
                             <div>
                                 <strong>Messaggio inviato!</strong> Il nostro team ti risponderà al più presto.
@@ -46,11 +50,13 @@
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold">Nome e Cognome</label>
-                                    <input type="text" class="form-control form-control-lg bg-light" v-model="form.nome" required placeholder="Es. Mario Rossi">
+                                    <input type="text" class="form-control form-control-lg bg-light" v-model="form.nome"
+                                        required placeholder="Es. Mario Rossi">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold">Indirizzo Email</label>
-                                    <input type="email" class="form-control form-control-lg bg-light" v-model="form.email" required placeholder="Es. mario@email.com">
+                                    <input type="email" class="form-control form-control-lg bg-light"
+                                        v-model="form.email" required placeholder="Es. mario@email.com">
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label fw-semibold">Oggetto</label>
@@ -65,10 +71,13 @@
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label fw-semibold">Messaggio</label>
-                                    <textarea class="form-control form-control-lg bg-light" rows="5" v-model="form.messaggio" required placeholder="Scrivi qui la tua richiesta..."></textarea>
+                                    <textarea class="form-control form-control-lg bg-light" rows="5"
+                                        v-model="form.messaggio" required
+                                        placeholder="Scrivi qui la tua richiesta..."></textarea>
                                 </div>
                                 <div class="col-12 mt-4">
-                                    <button type="submit" class="btn btn-primary btn-lg fw-bold px-5 py-3 w-100 rounded-pill shadow-sm">
+                                    <button type="submit"
+                                        class="btn btn-primary btn-lg fw-bold px-5 py-3 w-100 rounded-pill shadow-sm">
                                         <i class="bi bi-send-fill me-2"></i> Invia Richiesta
                                     </button>
                                 </div>
@@ -79,7 +88,7 @@
 
                 <div class="col-lg-5">
                     <div class="d-flex flex-column gap-4 h-100 justify-content-center">
-                        
+
                         <div class="card hover-card border-0 shadow-sm p-4 text-center">
                             <div class="text-primary mb-3">
                                 <i class="bi bi-geo-alt-fill display-5"></i>
@@ -112,12 +121,13 @@
 
         <app-footer></app-footer>
 
-    </div> 
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    
+
     <script src="js/components.js"></script>
     <script src="js/contatti.js"></script>
 </body>
+
 </html>
