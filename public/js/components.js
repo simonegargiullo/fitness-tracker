@@ -15,7 +15,7 @@ const NavbarComponent = {
                             <a class="nav-link" :class="{ active: paginaAttuale === 'index.html' || paginaAttuale === '' }" href="index.html">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" :class="{ active: paginaAttuale === 'team.html' }" href="team.html">Coach</a>
+                            <a class="nav-link" :class="{ active: paginaAttuale === 'coach.html' }" href="coach.html">Coach</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" :class="{ active: paginaAttuale === 'contatti.html' }" href="contatti.html">Contatti</a>

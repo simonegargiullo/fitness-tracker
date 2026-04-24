@@ -104,3 +104,26 @@ body {
 .bg-primary {
     background-color: #237915 !important;
 }
+
+/* =========================================
+   PAGINE INTERNE (Coach, Contatti, ecc.)
+   ========================================= */
+
+/* Intestazione per le pagine interne con immagine di sfondo */
+.page-header {
+    /* Il gradiente scuro serve a far risaltare il testo bianco sopra l'immagine */
+    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)), url('../img/team-bg.jpg');
+    background-size: cover;
+    background-position: center 1%; /* Centra l'immagine spostandola leggermente per far vedere bene i volti */
+    padding: 160px 0 80px 0; 
+    text-align: center;
+    color: white;
+}
+
+/* Regola per le foto degli allenatori nelle card */
+.coach-img {
+    height: 350px;
+    object-fit: cover; /* Taglia l'immagine senza deformarla per riempire lo spazio */
+    border-top-left-radius: 15px; /* Arrotonda gli angoli come la card */
+    border-top-right-radius: 15px;
+}

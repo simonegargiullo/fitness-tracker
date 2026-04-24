@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness Tracker - Contatti</title>
+    <link rel="icon" type="image/svg+xml" href="img/logo.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light d-flex flex-column min-vh-100">
+
+    <div id="app" class="d-flex flex-column min-vh-100">
+        
+        <app-navbar></app-navbar>
+
+        <header class="page-header" style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)), url('https://images.unsplash.com/photo-1574680096145-d05b474e2155?q=80&w=1920&auto=format&fit=crop');">
+            <div class="container">
+                <h6 class="text-primary fw-bold text-uppercase tracking-wide">Siamo qui per te</h6>
+                <h1 class="display-4 fw-bold mb-3">Mettiti in <span class="text-primary">Contatto</span></h1>
+                <p class="lead text-light opacity-75 mx-auto" style="max-width: 600px;">
+                    Hai dubbi sul funzionamento della piattaforma?
+                    <br>Vuoi informazioni sui nostri piani?
+                    <br>Scrivici, ti risponderemo entro 24 ore!
+                </p>
+            </div>
+        </header>
+
+        <section class="container my-5 py-4 flex-grow-1">
+            <div class="row g-5">
+                
+                <div class="col-lg-7">
+                    <div class="card shadow-sm border-0 p-4 p-md-5 rounded-4">
+                        <h3 class="fw-bold mb-4">Inviaci un messaggio</h3>
+                        
+                        <div v-if="messaggioInviato" class="alert alert-success d-flex align-items-center mb-4" role="alert">
+                            <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+                            <div>
+                                <strong>Messaggio inviato!</strong> Il nostro team ti risponderà al più presto.
+                            </div>
+                        </div>
+
+                        <form @submit.prevent="inviaRichiesta">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Nome e Cognome</label>
+                                    <input type="text" class="form-control form-control-lg bg-light" v-model="form.nome" required placeholder="Es. Mario Rossi">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Indirizzo Email</label>
+                                    <input type="email" class="form-control form-control-lg bg-light" v-model="form.email" required placeholder="Es. mario@email.com">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">Oggetto</label>
+                                    <select class="form-select form-select-lg bg-light" v-model="form.oggetto" required>
+                                        <option value="" disabled selected>Seleziona un argomento...</option>
+                                        <option value="Info Generali">Informazioni Generali</option>
+                                        <option value="Supporto Tecnico">Supporto Tecnico</option>
+                                        <option value="Lavora con Noi">Diventa un Nostro Coach</option>
+                                        <option value="Reclami">Reclami</option>
+                                        <option value="Altro">Altro</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">Messaggio</label>
+                                    <textarea class="form-control form-control-lg bg-light" rows="5" v-model="form.messaggio" required placeholder="Scrivi qui la tua richiesta..."></textarea>
+                                </div>
+                                <div class="col-12 mt-4">
+                                    <button type="submit" class="btn btn-primary btn-lg fw-bold px-5 py-3 w-100 rounded-pill shadow-sm">
+                                        <i class="bi bi-send-fill me-2"></i> Invia Richiesta
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="d-flex flex-column gap-4 h-100 justify-content-center">
+                        
+                        <div class="card hover-card border-0 shadow-sm p-4 text-center">
+                            <div class="text-primary mb-3">
+                                <i class="bi bi-geo-alt-fill display-5"></i>
+                            </div>
+                            <h5 class="fw-bold">La nostra Sede</h5>
+                            <p class="text-muted mb-0">Viale dello Scalo San Lorenzo, 82<br>00159 Roma (RM), Italia</p>
+                        </div>
+
+                        <div class="card hover-card border-0 shadow-sm p-4 text-center">
+                            <div class="text-primary mb-3">
+                                <i class="bi bi-envelope-paper-fill display-5"></i>
+                            </div>
+                            <h5 class="fw-bold">Scrivici</h5>
+                            <p class="text-muted mb-0">manager@fitnesstracker.it<br>coach@fitnesstracker.it</p>
+                        </div>
+
+                        <div class="card hover-card border-0 shadow-sm p-4 text-center">
+                            <div class="text-primary mb-3">
+                                <i class="bi bi-telephone-fill display-5"></i>
+                            </div>
+                            <h5 class="fw-bold">Chiamaci</h5>
+                            <p class="text-muted mb-0">Lun - Ven, 09:00 - 18:00<br>+39 06 3241 7856</p>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <app-footer></app-footer>
+
+    </div> 
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <script src="js/components.js"></script>
+    <script src="js/contatti.js"></script>
+</body>
+</html>
