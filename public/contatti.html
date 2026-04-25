@@ -35,7 +35,7 @@
             <div class="row g-5">
 
                 <div class="col-lg-7">
-                    <div class="card shadow-sm border-0 p-4 p-md-5 rounded-4">
+                    <div class="card shadow-sm border-0 p-4 p-md-5 rounded-4 h-100 d-flex flex-column">
                         <h3 class="fw-bold mb-4">Inviaci un messaggio</h3>
 
                         <div v-if="messaggioInviato" class="alert alert-success d-flex align-items-center mb-4"
@@ -46,7 +46,7 @@
                             </div>
                         </div>
 
-                        <form @submit.prevent="inviaRichiesta">
+                        <form @submit.prevent="inviaRichiesta" class="d-flex flex-column flex-grow-1">
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold">Nome e Cognome</label>
@@ -69,18 +69,20 @@
                                         <option value="Altro">Altro</option>
                                     </select>
                                 </div>
-                                <div class="col-12">
-                                    <label class="form-label fw-semibold">Messaggio</label>
-                                    <textarea class="form-control form-control-lg bg-light" rows="5"
-                                        v-model="form.messaggio" required
-                                        placeholder="Scrivi qui la tua richiesta..."></textarea>
-                                </div>
-                                <div class="col-12 mt-4">
-                                    <button type="submit"
-                                        class="btn btn-primary btn-lg fw-bold px-5 py-3 w-100 rounded-pill shadow-sm">
-                                        <i class="bi bi-send-fill me-2"></i> Invia Richiesta
-                                    </button>
-                                </div>
+                            </div>
+
+                            <div class="d-flex flex-column flex-grow-1 mt-3 mb-4">
+                                <label class="form-label fw-semibold">Messaggio</label>
+                                <textarea class="form-control form-control-lg bg-light flex-grow-1"
+                                    v-model="form.messaggio" required placeholder="Scrivi qui la tua richiesta..."
+                                    style="resize: none;"></textarea>
+                            </div>
+
+                            <div class="mt-auto">
+                                <button type="submit"
+                                    class="btn btn-primary btn-lg fw-bold px-5 py-3 w-100 rounded-pill shadow-sm">
+                                    <i class="bi bi-send-fill me-2"></i> Invia Richiesta
+                                </button>
                             </div>
                         </form>
                     </div>
