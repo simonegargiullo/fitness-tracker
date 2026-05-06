@@ -733,48 +733,170 @@ app.post(
   },
 );
 
-// 16. Lo sportivo visualizza la sua scheda di allenamento
-app.get("/api/sportivo/mia-scheda", verificaSportivo, async (req, res) => {
+// NUOVA API: Salva un nuovo Piano Alimentare
+app.post("/api/allenatore/crea-dieta", verificaAllenatore, async (req, res) => {
+  const { id_sportivo, titolo, listaAlimenti } = req.body;
+  const id_allenatore = req.session.utenteId;
+
   try {
-    // 1. Cerchiamo la scheda più recente di questo sportivo
-    const schedaResult = await pool.query(
-      `
-            SELECT id, titolo, data_creazione 
-            FROM schede_allenamento 
-            WHERE id_sportivo = $1 
-            ORDER BY data_creazione DESC LIMIT 1
-        `,
-      [req.session.utenteId],
-    );
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
 
-    // Se non ha ancora una scheda, avvisiamo il frontend
-    if (schedaResult.rows.length === 0) {
-      return res.json({ haScheda: false });
+      // A. Creiamo la copertina della dieta
+      const insertDietaQuery = `
+          INSERT INTO schede_alimentari (id_sportivo, id_allenatore, titolo) 
+          VALUES ($1, $2, $3) RETURNING id;
+      `;
+      const resultDieta = await client.query(insertDietaQuery, [id_sportivo, id_allenatore, titolo]);
+      const idNuovaDieta = resultDieta.rows[0].id;
+
+      // B. Inseriamo tutti gli alimenti
+      const insertAlimentoQuery = `
+          INSERT INTO schede_alimenti (id_scheda, id_alimento, quantita_grammi, note_pasto) 
+          VALUES ($1, $2, $3, $4);
+      `;
+
+      for (let alim of listaAlimenti) {
+        await client.query(insertAlimentoQuery, [
+          idNuovaDieta,
+          alim.id_alimento,
+          alim.quantita_grammi,
+          alim.note_pasto
+        ]);
+      }
+
+      await client.query("COMMIT");
+      res.json({ message: "Piano alimentare inviato con successo all'atleta!" });
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
     }
-
-    const scheda = schedaResult.rows[0];
-
-    // 2. Se c'è la scheda, peschiamo tutti i suoi esercizi con una JOIN (ORA INCLUSA L'IMMAGINE!)
-    const eserciziResult = await pool.query(
-      `
-            SELECT e.nome, e.gruppo_muscolare, e.url_immagine, se.serie, se.ripetizioni, se.recupero 
-            FROM schede_esercizi se
-            JOIN esercizi e ON se.id_esercizio = e.id
-            WHERE se.id_scheda = $1
-        `,
-      [scheda.id],
-    );
-
-    // Impacchettiamo tutto e spediamo al frontend
-    res.json({
-      haScheda: true,
-      titolo: scheda.titolo,
-      esercizi: eserciziResult.rows,
-    });
   } catch (err) {
-    console.error("Errore recupero scheda:", err);
+    console.error("Errore salvataggio dieta:", err);
     res.status(500).json({ error: err.message });
   }
+});
+
+// 16. Lo sportivo visualizza lo STORICO di tutte le sue schede di allenamento
+app.get("/api/sportivo/mie-schede", verificaSportivo, async (req, res) => {
+  try {
+    // Estraiamo in un colpo solo tutte le schede e tutti gli esercizi collegati, 
+    // ordinando dalle schede più recenti a quelle più vecchie.
+    const query = `
+        SELECT s.id as scheda_id, s.titolo, s.data_creazione,
+               e.id as ex_id, e.nome, e.gruppo_muscolare, e.url_immagine,
+               se.serie, se.ripetizioni, se.recupero, se.note
+        FROM schede_allenamento s
+        LEFT JOIN schede_esercizi se ON s.id = se.id_scheda
+        LEFT JOIN esercizi e ON se.id_esercizio = e.id
+        WHERE s.id_sportivo = $1
+        ORDER BY s.data_creazione DESC, se.id ASC
+    `;
+    
+    const result = await pool.query(query, [req.session.utenteId]);
+
+    // Strutturiamo i dati: raggruppiamo gli esercizi dentro ogni singola scheda
+    const schedeMap = {};
+    
+    result.rows.forEach(row => {
+        // Se la scheda non esiste ancora nella nostra mappa, la creiamo
+        if (!schedeMap[row.scheda_id]) {
+            schedeMap[row.scheda_id] = {
+                id: row.scheda_id,
+                titolo: row.titolo,
+                data_creazione: row.data_creazione,
+                esercizi: []
+            };
+        }
+        
+        // Se c'è un esercizio associato a questa riga, lo spingiamo nell'array della scheda
+        if (row.ex_id) {
+            schedeMap[row.scheda_id].esercizi.push({
+                id: row.ex_id,
+                nome: row.nome,
+                gruppo_muscolare: row.gruppo_muscolare,
+                url_immagine: row.url_immagine,
+                serie: row.serie,
+                ripetizioni: row.ripetizioni,
+                recupero: row.recupero,
+                note: row.note
+            });
+        }
+    });
+
+    // Convertiamo l'oggetto in un array e ordiniamo dalla data più recente a quella più vecchia
+    const elencoSchede = Object.values(schedeMap).sort((a, b) => {
+        return new Date(b.data_creazione) - new Date(a.data_creazione);
+    });
+    
+    res.json(elencoSchede);
+
+  } catch (err) {
+    console.error("Errore recupero storico schede:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// --- Ottieni TUTTO lo storico delle diete di uno sportivo ---
+app.get("/api/sportivo/mie-diete", verificaSportivo, async (req, res) => {
+  try {
+    const query = `
+        SELECT sa.id as dieta_id, sa.titolo, sa.data_creazione,
+               a.id as alim_id, a.nome, a.calorie, a.proteine, a.carboidrati, a.grassi,
+               sal.quantita_grammi, sal.note_pasto
+        FROM schede_alimentari sa
+        LEFT JOIN schede_alimenti sal ON sa.id = sal.id_scheda
+        LEFT JOIN alimenti a ON sal.id_alimento = a.id
+        WHERE sa.id_sportivo = $1
+        ORDER BY sa.data_creazione DESC, sal.id ASC
+    `;
+    
+    const result = await pool.query(query, [req.session.utenteId]);
+
+    const dieteMap = {};
+    
+    result.rows.forEach(row => {
+        if (!dieteMap[row.dieta_id]) {
+            dieteMap[row.dieta_id] = {
+                id: row.dieta_id,
+                titolo: row.titolo,
+                data_creazione: row.data_creazione,
+                alimenti: []
+            };
+        }
+        
+        if (row.alim_id) {
+            dieteMap[row.dieta_id].alimenti.push({
+                id: row.alim_id,
+                nome: row.nome,
+                calorie: row.calorie,
+                proteine: row.proteine,
+                carboidrati: row.carboidrati,
+                grassi: row.grassi,
+                quantita_grammi: row.quantita_grammi,
+                note_pasto: row.note_pasto
+            });
+        }
+    });
+
+    const elencoDiete = Object.values(dieteMap).sort((a, b) => new Date(b.data_creazione) - new Date(a.data_creazione));
+    res.json(elencoDiete);
+
+  } catch (err) {
+    console.error("Errore recupero storico diete:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- GESTIONE ERRORI 404 ---
+// Questo blocco DEVE essere l'ultima rotta definita prima di app.listen!
+// Intercetta tutte le richieste che non corrispondono a nessuna API o file esistente.
+app.use((req, res) => {
+    res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
 // Avvio del server

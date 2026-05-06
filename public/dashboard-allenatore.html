@@ -1,70 +1,105 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Area Allenatore - Fitness Tracker</title>
+    <title>Area Coach - Fitness Tracker</title>
+    <link rel="icon" type="image/svg+xml" href="img/logo.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body class="bg-light d-flex flex-column min-vh-100">
 
     <div id="app" class="d-flex flex-column min-vh-100">
         
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-info">
+        <app-navbar></app-navbar>
+
+        <!-- Intestazione -->
+        <header class="bg-primary text-white text-center pb-4" style="padding-top: 110px;">
             <div class="container">
-                <a class="navbar-brand fw-bold text-info" href="#"><i class="bi bi-stopwatch"></i> Area Coach</a>
-                <div class="d-flex align-items-center gap-3">
-                    <span class="text-white fw-bold">Ciao, {{ nomeAllenatore }}</span>
-                    <button @click="logout" class="btn btn-outline-light btn-sm">Esci</button>
-                </div>
+                <h1 class="display-6 fw-bold mb-1"><i class="bi bi-stopwatch text-white"></i> Pannello Coach</h1>
+                <p class="mb-0 opacity-75 text-light" v-if="utente.nome">Ciao {{ utente.nome }}, gestisci i tuoi atleti</p>
             </div>
-        </nav>
+        </header>
 
         <div class="container my-5 flex-grow-1">
-            <h2 class="mb-4 text-info fw-bold">La tua Scrivania</h2>
-
             <div class="row g-4">
                 
-                <div class="col-md-5">
-                    <div class="card shadow-sm border-0 border-top border-warning border-4 h-100">
-                        <div class="card-header bg-white">
-                            <h5 class="mb-0 fw-bold"><i class="bi bi-bell-fill text-warning"></i> Nuove Richieste ({{ richieste.length }})</h5>
+                <!-- COLONNA SINISTRA: NUOVE RICHIESTE -->
+                <div class="col-lg-4">
+                    <div class="card shadow-sm border-0 rounded-4 h-100">
+                        <div class="card-header bg-white border-bottom-0 py-4 px-4 rounded-top-4 d-flex align-items-center justify-content-center">
+                            <h5 class="mb-0 fw-bold"><i class="bi bi-bell-fill text-primary me-2"></i> Richieste in Attesa ({{ richieste.length }})</h5>
                         </div>
-                        <div class="card-body bg-light">
-                            <p v-if="richieste.length === 0" class="text-muted text-center mt-3">Nessuna nuova richiesta in attesa.</p>
-                            <div v-for="req in richieste" :key="req.id_utente" class="card mb-3 border-0 shadow-sm">
+                        <div class="card-body bg-light rounded-bottom-4 d-flex flex-column gap-3 p-4">
+                            
+                            <div v-if="richieste.length === 0" class="text-center text-muted my-auto py-4">
+                                <i class="bi bi-check2-circle fs-1"></i>
+                                <p class="mt-2 mb-0">Nessuna nuova richiesta.</p>
+                            </div>
+
+                            <div v-for="req in richieste" :key="req.id_utente" class="card border-0 shadow-sm rounded-4">
                                 <div class="card-body">
-                                    <h5 class="card-title fw-bold">{{ req.nome }}</h5>
-                                    <p class="mb-1"><strong>Obiettivo:</strong> <span class="badge bg-secondary">{{ req.obiettivo }}</span></p>
-                                    <p class="small text-muted mb-3"><strong>Esperienza:</strong> {{ req.esperienza_pregressa || 'Nessuna specificata' }}</p>
-                                    <button @click="accettaRichiesta(req.id_utente)" class="btn btn-warning w-100 fw-bold text-dark">Accetta Atleta</button>
+                                    <h5 class="card-title fw-bold text-primary">{{ req.nome }}</h5>
+                                    <div class="mb-2">
+                                        <span class="badge bg-secondary me-1">{{ req.obiettivo }}</span>
+                                    </div>
+                                    <p class="small text-muted mb-3"><i class="bi bi-info-circle me-1"></i> {{ req.esperienza_pregressa || 'Nessuna nota fornita' }}</p>
+                                    <button @click="accettaRichiesta(req.id_utente)" class="btn btn-primary w-100 fw-bold rounded-pill shadow-sm text-white">
+                                        <i class="bi bi-person-check-fill me-1"></i> Accetta Atleta
+                                    </button>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
 
-                <div class="col-md-7">
-                    <div class="card shadow-sm border-0 border-top border-success border-4 h-100">
-                        <div class="card-header bg-white">
-                            <h5 class="mb-0 fw-bold"><i class="bi bi-people-fill text-success"></i> I tuoi Atleti ({{ sportiviAttivi.length }})</h5>
+                <!-- COLONNA DESTRA: I TUOI ATLETI -->
+                <div class="col-lg-8">
+                    <div class="card shadow-sm border-0 rounded-4 h-100">
+                        <div class="card-header bg-white border-bottom-0 py-4 px-4 rounded-top-4 d-flex align-items-center justify-content-center">
+                            <h5 class="mb-0 fw-bold"><i class="bi bi-people-fill text-primary me-2"></i> I tuoi Atleti Attivi ({{ sportiviAttivi.length }})</h5>
                         </div>
-                        <div class="card-body">
-                            <p v-if="sportiviAttivi.length === 0" class="text-muted text-center mt-3">Non hai ancora nessun atleta attivo.</p>
-                            <div class="row g-3">
-                                <div v-for="sportivo in sportiviAttivi" :key="sportivo.id_utente" class="col-md-6">
-                                    <div class="card border-0 bg-light h-100 shadow-sm">
-                                        <div class="card-body text-center">
-                                            <i class="bi bi-person-circle display-4 text-success mb-2"></i>
-                                            <h5 class="fw-bold">{{ sportivo.nome }}</h5>
-                                            <p class="mb-2 text-muted small">{{ sportivo.eta }} anni | {{ sportivo.peso }} kg | {{ sportivo.obiettivo }}</p>
-                                            <button @click="apriModaleScheda(sportivo)" class="btn btn-success btn-sm w-100 fw-bold"><i class="bi bi-plus-circle"></i> Crea Scheda</button>
+                        <div class="card-body p-4 bg-light rounded-bottom-4">
+                            
+                            <div v-if="sportiviAttivi.length === 0" class="text-center text-muted py-5">
+                                <i class="bi bi-people fs-1"></i>
+                                <p class="mt-2">Non hai ancora nessun atleta. Accetta le richieste per iniziare.</p>
+                            </div>
+
+                            <div class="row g-4">
+                                <div v-for="sportivo in sportiviAttivi" :key="sportivo.id_utente" class="col-md-6 col-xl-4">
+                                    <div class="card border-0 bg-white h-100 shadow-sm rounded-4 text-center">
+                                        <div class="card-body d-flex flex-column align-items-center p-4">
+                                            
+                                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 80px; height: 80px;">
+                                                <i class="bi bi-person text-success" style="font-size: 2.5rem;"></i>
+                                            </div>
+                                            
+                                            <h5 class="fw-bold mb-1">{{ sportivo.nome }}</h5>
+                                            <p class="mb-3 text-muted small">{{ sportivo.eta }} anni &bull; {{ sportivo.peso }} kg &bull; {{ sportivo.sesso }}</p>
+                                            
+                                            <span class="badge bg-light text-dark border w-100 mb-4 py-2">{{ sportivo.obiettivo }}</span>
+                                            
+                                            <div class="d-flex flex-column w-100 gap-2 mt-auto">
+                                                <button @click="apriModaleScheda(sportivo)" class="btn btn-primary btn-sm fw-bold rounded-pill shadow-sm">
+                                                    <i class="bi bi-clipboard2-pulse"></i> Nuova Scheda
+                                                </button>
+                                                <button @click="apriModaleDieta(sportivo)" class="btn btn-primary btn-sm fw-bold rounded-pill shadow-sm">
+                                                    <i class="bi bi-apple"></i> Nuova Dieta
+                                                </button>
+                                            </div>
+                                            
                                         </div>
                                     </div>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -72,221 +107,186 @@
             </div>
         </div>
 
-        <div class="modal fade" id="modalScheda" tabindex="-1">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header bg-success text-white">
-                        <h5 class="modal-title fw-bold">Crea Scheda per {{ schedaCorrente.nome_sportivo }}</h5>
+        <!-- ========================================== -->
+        <!-- MODALE CREAZIONE SCHEDA ALLENAMENTO        -->
+        <!-- ========================================== -->
+        <div class="modal fade" id="modalScheda" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content rounded-4 border-0 shadow">
+                    
+                    <div class="modal-header bg-primary text-white rounded-top-4 py-3">
+                        <h5 class="modal-title fw-bold"><i class="bi bi-clipboard2-pulse me-2"></i> Compila Scheda</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
-                    <div class="modal-body bg-light">
-                        
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Nome della Scheda</label>
-                            <input v-model="schedaCorrente.titolo" type="text" class="form-control" placeholder="Es. Massa Mese 1">
+                    
+                    <div class="modal-body bg-light p-4">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small">Titolo Scheda *</label>
+                                <input v-model="schedaCorrente.titolo" type="text" class="form-control bg-white" placeholder="Es. Ipertrofia Mese 1">
+                            </div>
+                            <div class="col-md-6 d-flex align-items-end">
+                                <p class="mb-2 text-muted"><strong>Atleta:</strong> {{ schedaCorrente.nome_sportivo }}</p>
+                            </div>
                         </div>
 
-                        <div class="card border-0 shadow-sm mb-4">
-                            <div class="card-body">
-                                <h6 class="fw-bold text-primary mb-3">Aggiungi un Esercizio</h6>
+                        <!-- Form Aggiunta Esercizio -->
+                        <div class="card border-0 shadow-sm rounded-4 mb-4">
+                            <div class="card-body p-4">
+                                <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">1. Seleziona Esercizio</h6>
                                 <div class="row g-2 align-items-end">
                                     <div class="col-md-4">
-                                        <label class="form-label small">Esercizio dal Catalogo</label>
-                                        <select v-model="esercizioTemp.id_esercizio" class="form-select">
-                                            <option value="">Scegli...</option>
+                                        <label class="form-label small text-muted fw-bold">Esercizio dal Catalogo</label>
+                                        <select v-model="esercizioTemp.id_esercizio" class="form-select bg-light">
+                                            <option value="" disabled>Scegli...</option>
                                             <optgroup v-for="(esercizi, gruppo) in eserciziRaggruppati" :key="gruppo" :label="gruppo">
                                                 <option v-for="ex in esercizi" :value="ex.id">{{ ex.nome }}</option>
                                             </optgroup>
                                         </select>
                                     </div>
-                                    <div class="col-md-2">
-                                        <label class="form-label small">Serie</label>
-                                        <input v-model.number="esercizioTemp.serie" type="number" class="form-control" min="1">
+                                    <div class="col-md-2 col-4">
+                                        <label class="form-label small text-muted fw-bold">Serie</label>
+                                        <input v-model.number="esercizioTemp.serie" type="number" class="form-control bg-light text-center" min="1">
                                     </div>
-                                    <div class="col-md-2">
-                                        <label class="form-label small">Ripetizioni</label>
-                                        <input v-model.number="esercizioTemp.ripetizioni" type="number" class="form-control" min="1">
+                                    <div class="col-md-2 col-4">
+                                        <label class="form-label small text-muted fw-bold">Ripetizioni</label>
+                                        <input v-model.number="esercizioTemp.ripetizioni" type="number" class="form-control bg-light text-center" min="1">
                                     </div>
-                                    <div class="col-md-2">
-                                        <label class="form-label small">Recupero</label>
-                                        <input v-model="esercizioTemp.recupero" type="text" class="form-control" placeholder="es. 90s">
+                                    <div class="col-md-2 col-4">
+                                        <label class="form-label small text-muted fw-bold">Recupero</label>
+                                        <input v-model="esercizioTemp.recupero" type="text" class="form-control bg-light text-center" placeholder="es. 90s">
                                     </div>
-                                    <div class="col-md-2">
-                                        <button @click="aggiungiEsercizio" class="btn btn-primary w-100"><i class="bi bi-plus"></i> Add</button>
+                                    <div class="col-md-12 col-lg-2 mt-3 mt-lg-0">
+                                        <button @click="aggiungiEsercizio" class="btn btn-dark w-100 fw-bold"><i class="bi bi-plus-lg"></i> Inserisci</button>
+                                    </div>
+                                    <div class="col-12 mt-2">
+                                        <input v-model="esercizioTemp.note" type="text" class="form-control form-control-sm bg-light" placeholder="Note (opzionale) es. Lento e controllato">
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <h6 class="fw-bold">Esercizi in questa Scheda ({{ schedaCorrente.listaEsercizi.length }})</h6>
-                        <ul class="list-group shadow-sm">
-                            <li v-if="schedaCorrente.listaEsercizi.length === 0" class="list-group-item text-muted text-center py-3">
-                                Nessun esercizio aggiunto.
+                        <!-- Lista Esercizi Aggiunti -->
+                        <h6 class="fw-bold mb-3">2. Riepilogo Scheda ({{ schedaCorrente.listaEsercizi.length }})</h6>
+                        <ul class="list-group shadow-sm rounded-4">
+                            <li v-if="schedaCorrente.listaEsercizi.length === 0" class="list-group-item text-muted text-center py-4 bg-white border-0">
+                                Nessun esercizio inserito. Compila i campi qui sopra.
                             </li>
-                            <li v-for="(ex, index) in schedaCorrente.listaEsercizi" :key="index" class="list-group-item d-flex justify-content-between align-items-center">
+                            <li v-for="(ex, index) in schedaCorrente.listaEsercizi" :key="index" class="list-group-item d-flex justify-content-between align-items-center bg-white border-bottom">
                                 <div>
-                                    <strong class="text-primary">{{ ex.nome_esercizio }}</strong><br>
-                                    <small class="text-muted">{{ ex.serie }} Serie x {{ ex.ripetizioni }} Rip | Rec: {{ ex.recupero }}</small>
+                                    <strong class="text-primary fs-5">{{ ex.nome_esercizio }}</strong> <span class="badge bg-secondary ms-2">{{ ex.gruppo_muscolare }}</span><br>
+                                    <small class="text-dark fw-bold">{{ ex.serie }} Serie x {{ ex.ripetizioni }} Rip | Rec: {{ ex.recupero }}</small>
+                                    <small class="text-muted d-block" v-if="ex.note"><i class="bi bi-info-circle"></i> {{ ex.note }}</small>
                                 </div>
-                                <button @click="rimuoviEsercizio(index)" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
+                                <button @click="rimuoviEsercizio(index)" class="btn btn-outline-danger btn-sm rounded-circle"><i class="bi bi-trash"></i></button>
                             </li>
                         </ul>
 
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-                        <button @click="salvaSchedaDefinitiva" type="button" class="btn btn-success fw-bold"><i class="bi bi-save"></i> Salva e Invia Scheda</button>
+                    <div class="modal-footer bg-white rounded-bottom-4">
+                        <button type="button" class="btn btn-light fw-bold px-4" data-bs-dismiss="modal">Annulla</button>
+                        <button @click="salvaSchedaDefinitiva" type="button" class="btn btn-primary fw-bold rounded-pill px-4 shadow-sm" :disabled="loading">
+                            <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                            <i v-else class="bi bi-send-fill me-2 text-white"></i> Invia Scheda
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <footer class="bg-dark text-white text-center py-3 mt-auto border-top border-secondary">
-            <p class="mb-0">© 2024 Fitness Tracker - Progetto Esame</p>
-        </footer>
+        <!-- ========================================== -->
+        <!-- MODALE CREAZIONE PIANO ALIMENTARE          -->
+        <!-- ========================================== -->
+        <div class="modal fade" id="modalDieta" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content rounded-4 border-0 shadow">
+                    
+                    <div class="modal-header bg-primary text-white rounded-top-4 py-3">
+                        <h5 class="modal-title fw-bold"><i class="bi bi-apple me-2"></i> Compila Dieta</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    
+                    <div class="modal-body bg-light p-4">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small">Titolo Dieta *</label>
+                                <input v-model="dietaCorrente.titolo" type="text" class="form-control bg-white" placeholder="Es. Dieta Definizione">
+                            </div>
+                            <div class="col-md-6 d-flex align-items-end">
+                                <p class="mb-2 text-muted"><strong>Atleta:</strong> {{ dietaCorrente.nome_sportivo }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Form Aggiunta Alimento -->
+                        <div class="card border-0 shadow-sm rounded-4 mb-4">
+                            <div class="card-body p-4">
+                                <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">1. Seleziona Alimento</h6>
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-md-4">
+                                        <label class="form-label small text-muted fw-bold">Alimento dal Catalogo</label>
+                                        <select v-model="alimentoTemp.id_alimento" class="form-select bg-light">
+                                            <option value="" disabled>Scegli...</option>
+                                            <option v-for="a in catalogoAlimenti" :key="a.id" :value="a.id">{{ a.nome }}</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3 col-6">
+                                        <label class="form-label small text-muted fw-bold">Pasto / Fase</label>
+                                        <select v-model="alimentoTemp.note_pasto" class="form-select bg-light">
+                                            <option value="Colazione">Colazione</option>
+                                            <option value="Spuntino Mattina">Spuntino Mattina</option>
+                                            <option value="Pranzo">Pranzo</option>
+                                            <option value="Spuntino Pomeriggio">Spuntino Pomeriggio</option>
+                                            <option value="Cena">Cena</option>
+                                            <option value="Pre-Workout">Pre-Workout</option>
+                                            <option value="Post-Workout">Post-Workout</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3 col-6">
+                                        <label class="form-label small text-muted fw-bold">Grammi</label>
+                                        <input v-model.number="alimentoTemp.quantita_grammi" type="number" class="form-control bg-light text-center" min="1" step="5">
+                                    </div>
+                                    <div class="col-md-12 col-lg-2 mt-3 mt-lg-0">
+                                        <button @click="aggiungiAlimento" class="btn btn-dark w-100 fw-bold"><i class="bi bi-plus-lg"></i> Inserisci</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lista Alimenti Aggiunti -->
+                        <h6 class="fw-bold mb-3">2. Riepilogo Pasti ({{ dietaCorrente.listaAlimenti.length }})</h6>
+                        <ul class="list-group shadow-sm rounded-4">
+                            <li v-if="dietaCorrente.listaAlimenti.length === 0" class="list-group-item text-muted text-center py-4 bg-white border-0">
+                                Nessun alimento inserito.
+                            </li>
+                            <li v-for="(alim, index) in dietaCorrente.listaAlimenti" :key="index" class="list-group-item d-flex justify-content-between align-items-center bg-white border-bottom">
+                                <div>
+                                    <strong class="text-primary fs-5">{{ alim.nome_alimento }}</strong> <span class="badge bg-warning text-dark ms-2">{{ alim.note_pasto }}</span><br>
+                                    <small class="text-dark fw-bold fs-6">{{ alim.quantita_grammi }}g <span class="text-muted fw-normal ms-2">Circa {{ alim.kcal_calc }} Kcal</span></small>
+                                </div>
+                                <button @click="rimuoviAlimento(index)" class="btn btn-outline-danger btn-sm rounded-circle"><i class="bi bi-trash"></i></button>
+                            </li>
+                        </ul>
+
+                    </div>
+                    <div class="modal-footer bg-white rounded-bottom-4">
+                        <button type="button" class="btn btn-light fw-bold px-4" data-bs-dismiss="modal">Annulla</button>
+                        <button @click="salvaDietaDefinitiva" type="button" class="btn btn-primary fw-bold rounded-pill px-4 shadow-sm" :disabled="loading">
+                            <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                            <i v-else class="bi bi-send-fill me-2 text-white"></i> Invia Dieta
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <app-footer></app-footer>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script>
-        const { createApp } = Vue;
-
-        createApp({
-            data() {
-                return {
-                    nomeAllenatore: 'Caricamento...',
-                    richieste: [],
-                    sportiviAttivi: [],
-                    catalogoEsercizi: [],
-                    
-                    // Contiene i dati della scheda che stiamo compilando
-                    schedaCorrente: {
-                        id_sportivo: null,
-                        nome_sportivo: '',
-                        titolo: '',
-                        listaEsercizi: []
-                    },
-                    
-                    // Contiene i valori temporanei degli input prima di premere "Add"
-                    esercizioTemp: {
-                        id_esercizio: '',
-                        serie: 3,
-                        ripetizioni: 10,
-                        recupero: '90s'
-                    }
-                }
-            },
-            computed: {
-                // Vue raggruppa in automatico gli esercizi per gruppo muscolare!
-                eserciziRaggruppati() {
-                    const raggruppati = {};
-                    this.catalogoEsercizi.forEach(ex => {
-                        if (!raggruppati[ex.gruppo_muscolare]) {
-                            raggruppati[ex.gruppo_muscolare] = [];
-                        }
-                        raggruppati[ex.gruppo_muscolare].push(ex);
-                    });
-                    return raggruppati;
-                }
-            },
-            mounted() {
-                this.controllaSicurezza();
-            },
-            methods: {
-                async controllaSicurezza() {
-                    const res = await fetch('/api/sessione');
-                    const dati = await res.json();
-                    
-                    if (!dati.loggato || dati.utente.ruolo !== 'allenatore') {
-                        window.location.href = 'login.html';
-                    } else {
-                        this.nomeAllenatore = dati.utente.nome;
-                        this.caricaDati();
-                        this.caricaCatalogo(); // Scarica gli esercizi disponibili
-                    }
-                },
-                async caricaDati() {
-                    const resRichieste = await fetch('/api/allenatore/richieste');
-                    this.richieste = await resRichieste.json();
-
-                    const resAttivi = await fetch('/api/allenatore/miei-sportivi');
-                    this.sportiviAttivi = await resAttivi.json();
-                },
-                async caricaCatalogo() {
-                    const res = await fetch('/api/esercizi');
-                    this.catalogoEsercizi = await res.json();
-                },
-                async accettaRichiesta(idSportivo) {
-                    await fetch('/api/allenatore/accetta-richiesta', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id_sportivo: idSportivo })
-                    });
-                    this.caricaDati();
-                },
-                // Apre il pop-up per creare la scheda
-                apriModaleScheda(sportivo) {
-                    this.schedaCorrente.id_sportivo = sportivo.id_utente;
-                    this.schedaCorrente.nome_sportivo = sportivo.nome;
-                    this.schedaCorrente.titolo = `Scheda di ${sportivo.nome}`;
-                    this.schedaCorrente.listaEsercizi = []; // Svuota la scheda precedente
-                    
-                    const modal = new bootstrap.Modal(document.getElementById('modalScheda'));
-                    modal.show();
-                },
-                // Aggiunge un esercizio alla lista provvisoria (memoria locale, non database)
-                aggiungiEsercizio() {
-                    if (!this.esercizioTemp.id_esercizio) return alert("Scegli un esercizio dal catalogo!");
-                    
-                    // Troviamo il nome dell'esercizio partendo dal suo ID
-                    const exTrovato = this.catalogoEsercizi.find(e => e.id === this.esercizioTemp.id_esercizio);
-
-                    this.schedaCorrente.listaEsercizi.push({
-                        id_esercizio: exTrovato.id,
-                        nome_esercizio: exTrovato.nome,
-                        serie: this.esercizioTemp.serie,
-                        ripetizioni: this.esercizioTemp.ripetizioni,
-                        recupero: this.esercizioTemp.recupero
-                    });
-
-                    // Resetta solo la tendina dell'esercizio
-                    this.esercizioTemp.id_esercizio = ''; 
-                },
-                // Rimuove un esercizio se l'allenatore ha sbagliato
-                rimuoviEsercizio(index) {
-                    this.schedaCorrente.listaEsercizi.splice(index, 1);
-                },
-                // Invia la scheda completa al Backend!
-                async salvaSchedaDefinitiva() {
-                    if (this.schedaCorrente.listaEsercizi.length === 0) {
-                        return alert("La scheda è vuota! Aggiungi almeno un esercizio.");
-                    }
-
-                    try {
-                        const res = await fetch('/api/allenatore/crea-scheda', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(this.schedaCorrente)
-                        });
-                        
-                        const data = await res.json();
-                        alert(data.message);
-
-                        // Chiudiamo il modale
-                        const modalEl = document.getElementById('modalScheda');
-                        const modalInstance = bootstrap.Modal.getInstance(modalEl);
-                        modalInstance.hide();
-
-                    } catch (error) {
-                        alert("Errore durante il salvataggio della scheda.");
-                    }
-                },
-                async logout() {
-                    await fetch('/api/logout', { method: 'POST' });
-                    window.location.href = 'index.html';
-                }
-            }
-        }).mount('#app');
-    </script>
+    <script src="js/components.js"></script>
+    <script src="js/dashboard-allenatore.js"></script>
 </body>
+
 </html>

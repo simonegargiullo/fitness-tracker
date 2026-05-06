@@ -79,14 +79,26 @@ body {
     --bs-primary-rgb: 35, 121, 21;
 }
 
-/* Forziamo i bottoni primari a usare il nuovo verde e un verde più scuro al passaggio del mouse */
+/* Forziamo i bottoni primari a usare il nuovo verde in TUTTI i suoi stati */
 .btn-primary {
     --bs-btn-bg: #237915;
     --bs-btn-border-color: #237915;
-    --bs-btn-hover-bg: #1a5a10; /* Un po' più scuro per l'effetto hover */
+    
+    /* Stato Hover (passaggio del mouse) */
+    --bs-btn-hover-bg: #1a5a10; 
     --bs-btn-hover-border-color: #17500e;
+    
+    /* Stato Attivo (mentre lo clicchi) */
     --bs-btn-active-bg: #17500e;
     --bs-btn-active-border-color: #14450c;
+    
+    /* Stato Disabilitato (es. durante i caricamenti) */
+    --bs-btn-disabled-bg: #237915;
+    --bs-btn-disabled-border-color: #237915;
+    --bs-btn-disabled-opacity: 0.65; /* Lo rende un po' trasparente per far capire che sta caricando */
+    
+    /* Colore dell'alone luminoso quando lo clicchi o navighi con la tastiera */
+    --bs-btn-focus-box-shadow: 0 0 0 0.25rem rgba(35, 121, 21, 0.5);
 }
 
 .btn-outline-primary {
