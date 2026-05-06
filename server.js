@@ -36,12 +36,29 @@ const pool = new Pool({
 });
 
 // Verifica della connessione al database
-pool.connect((err, client, release) => {
+pool.connect(async (err, client, release) => {
   if (err) {
     return console.error("Errore di connessione al database", err.stack);
   }
   console.log("Connesso al database PostgreSQL");
-  release(); // Rilascia il client dopo il test
+  try {
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS messaggi_contatto (
+        id SERIAL PRIMARY KEY,
+        nome VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        oggetto VARCHAR(255),
+        messaggio TEXT NOT NULL,
+        letto BOOLEAN DEFAULT FALSE,
+        data_invio TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    console.log("Tabella messaggi_contatto verificata.");
+  } catch (e) {
+    console.error("Errore creazione tabella messaggi:", e.message);
+  } finally {
+    release();
+  }
 });
 
 // Configuraazione delle sessioni sicure (salvate nel DB)
@@ -888,6 +905,49 @@ app.get("/api/sportivo/mie-diete", verificaSportivo, async (req, res) => {
 
   } catch (err) {
     console.error("Errore recupero storico diete:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Salva messaggio dalla pagina Contatti
+app.post('/api/contatti', async (req, res) => {
+  const { nome, email, oggetto, messaggio } = req.body;
+  if (!nome || !email || !messaggio) {
+    return res.status(400).json({ error: 'Campi obbligatori mancanti.' });
+  }
+  try {
+    await pool.query(
+      'INSERT INTO messaggi_contatto (nome, email, oggetto, messaggio) VALUES ($1, $2, $3, $4)',
+      [nome, email, oggetto || 'Nessun oggetto', messaggio]
+    );
+    res.json({ message: 'Messaggio inviato con successo!' });
+  } catch (err) {
+    console.error('Errore salvataggio messaggio:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+ 
+// Manager: leggi tutti i messaggi (non letti prima, poi per data)
+app.get('/api/manager/messaggi', verificaManager, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM messaggi_contatto ORDER BY letto ASC, data_invio DESC'
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+ 
+// Manager: segna un messaggio come letto
+app.put('/api/manager/messaggi/:id/letto', verificaManager, async (req, res) => {
+  try {
+    await pool.query(
+      'UPDATE messaggi_contatto SET letto = TRUE WHERE id = $1',
+      [req.params.id]
+    );
+    res.json({ message: 'Messaggio marcato come letto.' });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });

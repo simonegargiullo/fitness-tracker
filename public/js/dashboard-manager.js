@@ -44,14 +44,23 @@ const app = createApp({
 
       // --- MODIFICA ---
       editCoach: {},
-      fotoEditCoach: null, // Nuova foto eventuale
+      fotoEditCoach: null,
 
       editEsercizio: {},
-      fotoEditEsercizio: null, // Nuova foto eventuale
+      fotoEditEsercizio: null,
 
       editAlimento: {},
       loadingEdit: false,
+
+      // --- MESSAGGI ---
+      listaMessaggi: [],
+      messaggioSelezionato: null,
     };
+  },
+  computed: {
+    messaggiNonLetti() {
+      return this.listaMessaggi.filter(m => !m.letto).length;
+    }
   },
   mounted() {
     this.verificaAccesso();
@@ -73,6 +82,8 @@ const app = createApp({
       this.vistaAttiva = vista;
       if (vista === "cataloghi") {
         this.caricaTuttiIcataloghi();
+      } else if (vista === "messaggi") {
+        this.caricaMessaggi();
       }
     },
 
@@ -89,6 +100,38 @@ const app = createApp({
       } catch (error) {
         console.error("Errore caricamento cataloghi", error);
       }
+    },
+
+    // --- MESSAGGI ---
+    async caricaMessaggi() {
+      try {
+        const res = await fetch("/api/manager/messaggi");
+        if (res.ok) this.listaMessaggi = await res.json();
+      } catch (error) {
+        console.error("Errore caricamento messaggi", error);
+      }
+    },
+
+    async apriMessaggio(msg) {
+      this.messaggioSelezionato = msg;
+      if (!msg.letto) {
+        try {
+          await fetch(`/api/manager/messaggi/${msg.id}/letto`, { method: "PUT" });
+          msg.letto = true;
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      new bootstrap.Modal(document.getElementById("modalMessaggio")).show();
+    },
+
+    formattaData(dataStr) {
+      if (!dataStr) return "";
+      const d = new Date(dataStr);
+      return d.toLocaleDateString("it-IT", {
+        day: "2-digit", month: "short", year: "numeric",
+        hour: "2-digit", minute: "2-digit"
+      });
     },
 
     // --- GESTIONE FILE (Inserimento) ---
@@ -124,13 +167,8 @@ const app = createApp({
         if (res.ok) {
           this.msgCoach = { testo: "Allenatore creato!", tipo: "success" };
           this.coach = {
-            nome: "",
-            cognome: "",
-            email: "",
-            password: "",
-            specialita: "",
-            telefono: "",
-            descrizione: "",
+            nome: "", cognome: "", email: "", password: "",
+            specialita: "", telefono: "", descrizione: "",
           };
           this.fotoCoach = null;
           document.getElementById("file-coach").value = "";
@@ -150,8 +188,7 @@ const app = createApp({
       let formData = new FormData();
       formData.append("nome", this.esercizio.nome);
       formData.append("gruppo_muscolare", this.esercizio.gruppo_muscolare);
-      if (this.fotoEsercizio)
-        formData.append("immagine_file", this.fotoEsercizio);
+      if (this.fotoEsercizio) formData.append("immagine_file", this.fotoEsercizio);
 
       try {
         const res = await fetch("/api/manager/esercizi", {
@@ -165,10 +202,7 @@ const app = createApp({
           this.fotoEsercizio = null;
           document.getElementById("file-esercizio").value = "";
         } else {
-          this.msgEsercizio = {
-            testo: data.message || data.error,
-            tipo: "danger",
-          };
+          this.msgEsercizio = { testo: data.message || data.error, tipo: "danger" };
         }
       } catch (error) {
         this.msgEsercizio = { testo: "Errore di rete.", tipo: "danger" };
@@ -189,18 +223,9 @@ const app = createApp({
         const data = await res.json();
         if (res.ok) {
           this.msgAlimento = { testo: "Alimento aggiunto!", tipo: "success" };
-          this.alimento = {
-            nome: "",
-            calorie: "",
-            proteine: "",
-            carboidrati: "",
-            grassi: "",
-          };
+          this.alimento = { nome: "", calorie: "", proteine: "", carboidrati: "", grassi: "" };
         } else {
-          this.msgAlimento = {
-            testo: data.message || data.error,
-            tipo: "danger",
-          };
+          this.msgAlimento = { testo: data.message || data.error, tipo: "danger" };
         }
       } catch (error) {
         this.msgAlimento = { testo: "Errore di rete.", tipo: "danger" };
@@ -212,7 +237,7 @@ const app = createApp({
     // --- APERTURA MODALI ---
     apriModificaCoach(c) {
       this.editCoach = { ...c };
-      this.fotoEditCoach = null; // Resettiamo eventuale foto in sospeso
+      this.fotoEditCoach = null;
       new bootstrap.Modal(document.getElementById("modalEditCoach")).show();
     },
 
@@ -231,18 +256,13 @@ const app = createApp({
     async salvaModificaAlimento() {
       this.loadingEdit = true;
       try {
-        const res = await fetch(
-          `/api/manager/alimenti/${this.editAlimento.id}`,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(this.editAlimento),
-          },
-        );
+        const res = await fetch(`/api/manager/alimenti/${this.editAlimento.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(this.editAlimento),
+        });
         if (res.ok) {
-          bootstrap.Modal.getInstance(
-            document.getElementById("modalEditAlimento"),
-          ).hide();
+          bootstrap.Modal.getInstance(document.getElementById("modalEditAlimento")).hide();
           this.caricaTuttiIcataloghi();
         } else {
           alert("Errore durante l'aggiornamento");
@@ -259,22 +279,15 @@ const app = createApp({
       let formData = new FormData();
       formData.append("nome", this.editEsercizio.nome);
       formData.append("gruppo_muscolare", this.editEsercizio.gruppo_muscolare);
-      // Selezionata nuova foto?
-      if (this.fotoEditEsercizio)
-        formData.append("immagine_file", this.fotoEditEsercizio);
+      if (this.fotoEditEsercizio) formData.append("immagine_file", this.fotoEditEsercizio);
 
       try {
-        const res = await fetch(
-          `/api/manager/esercizi/${this.editEsercizio.id}`,
-          {
-            method: "PUT",
-            body: formData, // Niente Content-Type se usiamo FormData!
-          },
-        );
+        const res = await fetch(`/api/manager/esercizi/${this.editEsercizio.id}`, {
+          method: "PUT",
+          body: formData,
+        });
         if (res.ok) {
-          bootstrap.Modal.getInstance(
-            document.getElementById("modalEditEsercizio"),
-          ).hide();
+          bootstrap.Modal.getInstance(document.getElementById("modalEditEsercizio")).hide();
           this.caricaTuttiIcataloghi();
         } else {
           alert("Errore durante l'aggiornamento");
@@ -289,29 +302,21 @@ const app = createApp({
     async salvaModificaCoach() {
       this.loadingEdit = true;
       let formData = new FormData();
-
-      // Aggiungiamo '|| ""' per assicurarci di non inviare mai 'null' come testo
       formData.append("nome", this.editCoach.nome || "");
       formData.append("cognome", this.editCoach.cognome || "");
       formData.append("email", this.editCoach.email || "");
       formData.append("specialita", this.editCoach.specialita || "");
       formData.append("telefono", this.editCoach.telefono || "");
       formData.append("descrizione", this.editCoach.descrizione || "");
-
       if (this.fotoEditCoach) formData.append("foto", this.fotoEditCoach);
 
       try {
-        const res = await fetch(
-          `/api/manager/allenatori/${this.editCoach.id}`,
-          {
-            method: "PUT",
-            body: formData,
-          },
-        );
+        const res = await fetch(`/api/manager/allenatori/${this.editCoach.id}`, {
+          method: "PUT",
+          body: formData,
+        });
         if (res.ok) {
-          bootstrap.Modal.getInstance(
-            document.getElementById("modalEditCoach"),
-          ).hide();
+          bootstrap.Modal.getInstance(document.getElementById("modalEditCoach")).hide();
           this.caricaTuttiIcataloghi();
         } else {
           alert("Errore durante l'aggiornamento");
@@ -322,21 +327,13 @@ const app = createApp({
         this.loadingEdit = false;
       }
     },
-    // Aggiungi questi metodi all'interno di "methods:" in dashboard-manager.js
 
     async eliminaAlimento(id) {
-      if (
-        !confirm(
-          "Sei sicuro di voler eliminare questo alimento? L'azione è irreversibile.",
-        )
-      )
-        return;
+      if (!confirm("Sei sicuro di voler eliminare questo alimento? L'azione è irreversibile.")) return;
       try {
-        const res = await fetch(`/api/manager/alimenti/${id}`, {
-          method: "DELETE",
-        });
+        const res = await fetch(`/api/manager/alimenti/${id}`, { method: "DELETE" });
         if (res.ok) {
-          this.caricaTuttiIcataloghi(); // Aggiorna la lista
+          this.caricaTuttiIcataloghi();
         } else {
           alert("Errore durante l'eliminazione.");
         }
@@ -346,24 +343,14 @@ const app = createApp({
     },
 
     async eliminaEsercizio(id) {
-      if (
-        !confirm(
-          "Eliminare questo esercizio? Potrebbe essere presente in alcune schede allenamento.",
-        )
-      )
-        return;
+      if (!confirm("Eliminare questo esercizio? Potrebbe essere presente in alcune schede allenamento.")) return;
       try {
-        const res = await fetch(`/api/manager/esercizi/${id}`, {
-          method: "DELETE",
-        });
+        const res = await fetch(`/api/manager/esercizi/${id}`, { method: "DELETE" });
         if (res.ok) {
           this.caricaTuttiIcataloghi();
         } else {
           const data = await res.json();
-          alert(
-            data.error ||
-              "Errore durante l'eliminazione. Controlla che non sia usato in una scheda.",
-          );
+          alert(data.error || "Errore durante l'eliminazione. Controlla che non sia usato in una scheda.");
         }
       } catch (err) {
         console.error(err);
@@ -371,16 +358,9 @@ const app = createApp({
     },
 
     async eliminaCoach(id) {
-      if (
-        !confirm(
-          "ATTENZIONE: Eliminando l'allenatore eliminerai anche il suo account di accesso. Procedere?",
-        )
-      )
-        return;
+      if (!confirm("ATTENZIONE: Eliminando l'allenatore eliminerai anche il suo account di accesso. Procedere?")) return;
       try {
-        const res = await fetch(`/api/manager/allenatori/${id}`, {
-          method: "DELETE",
-        });
+        const res = await fetch(`/api/manager/allenatori/${id}`, { method: "DELETE" });
         if (res.ok) {
           this.caricaTuttiIcataloghi();
         } else {
