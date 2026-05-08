@@ -11,15 +11,13 @@ const app = createApp({
                 oggetto: '',
                 messaggio: ''
             },
-            messaggioInviato: false,
-            loading: false,
-            errore: ''
+            loading: false
+            // rimosse le vecchie variabili "messaggioInviato" ed "errore"
         }
     },
     methods: {
         async inviaRichiesta() {
             this.loading = true;
-            this.errore = '';
 
             try {
                 const res = await fetch('/api/contatti', {
@@ -31,14 +29,15 @@ const app = createApp({
                 const data = await res.json();
 
                 if (res.ok) {
-                    this.messaggioInviato = true;
+                    // Chiamiamo il nostro nuovo pop-up globale
+                    mostraNotifica("Messaggio inviato con successo! Ti risponderemo presto.", "success");
+                    // Svuotiamo il form
                     this.form = { nome: '', email: '', oggetto: '', messaggio: '' };
-                    setTimeout(() => { this.messaggioInviato = false; }, 5000);
                 } else {
-                    this.errore = data.error || 'Errore durante l\'invio. Riprova più tardi.';
+                    mostraNotifica(data.error || "Errore durante l'invio. Riprova più tardi.", "danger");
                 }
             } catch (error) {
-                this.errore = 'Errore di connessione al server.';
+                mostraNotifica("Errore di connessione al server.", "danger");
             } finally {
                 this.loading = false;
             }

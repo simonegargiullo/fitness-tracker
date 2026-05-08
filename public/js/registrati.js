@@ -17,14 +17,12 @@ const app = createApp({
                 attitudini: '',
                 esperienza_pregressa: ''
             },
-            loading: false, // Per lo spinner del bottone
-            msg: { testo: '', tipo: '' } // Per il banner di avviso
+            loading: false // Per lo spinner del bottone
         }
     },
     methods: {
         async eseguiRegistrazione() {
             this.loading = true;
-            this.msg = { testo: '', tipo: '' };
 
             try {
                 const res = await fetch('/api/registrati', {
@@ -38,25 +36,25 @@ const app = createApp({
                 const data = await res.json();
 
                 if (res.ok) {
-                    // Successo
-                    this.msg = { testo: data.message + ' Reindirizzamento al login...', tipo: 'success' };
+                    // Successo: mostriamo la notifica globale
+                    mostraNotifica(data.message + ' Reindirizzamento in corso...', 'success');
                     
                     // Svuota il form
                     for(let key in this.form) {
                         this.form[key] = '';
                     }
 
-                    // Rimanda alla pagina di login dopo 2 secondi
+                    // Rimanda alla pagina di login dopo 2 secondi per far leggere il messaggio
                     setTimeout(() => {
                         window.location.href = 'login.html';
                     }, 2000);
                 } else {
                     // Errore dal server (es. email già esistente)
-                    this.msg = { testo: data.message || data.error || 'Errore durante la registrazione.', tipo: 'danger' };
+                    mostraNotifica(data.message || data.error || 'Errore durante la registrazione.', 'danger');
                 }
             } catch (error) {
                 console.error("Errore registrazione:", error);
-                this.msg = { testo: 'Errore di connessione al server. Riprova più tardi.', tipo: 'danger' };
+                mostraNotifica('Errore di connessione al server. Riprova più tardi.', 'danger');
             } finally {
                 this.loading = false;
             }

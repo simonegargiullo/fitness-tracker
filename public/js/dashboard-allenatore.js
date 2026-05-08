@@ -9,6 +9,19 @@ const app = createApp({
             richieste: [],
             sportiviAttivi: [],
             
+            // Dati Profilo Allenatore
+            profilo: {
+                nome: '',
+                cognome: '',
+                email: '',
+                specialita: '',
+                descrizione: '',
+                telefono: '',
+                foto: null // url della foto esistente per l'anteprima
+            },
+            nuovaFotoProfilo: null, // conterrà il file vero e proprio se ne carica uno nuovo
+            loadingProfilo: false,
+
             // Cataloghi
             catalogoEsercizi: [],
             catalogoAlimenti: [],
@@ -45,7 +58,6 @@ const app = createApp({
         }
     },
     computed: {
-        // Raggruppa gli esercizi per il menu a tendina
         eserciziRaggruppati() {
             const raggruppati = {};
             this.catalogoEsercizi.forEach(ex => {
@@ -76,30 +88,112 @@ const app = createApp({
             }
         },
 
-        async caricaDati() {
-            const resRichieste = await fetch('/api/allenatore/richieste');
-            this.richieste = await resRichieste.json();
+        // ==========================================
+        // GESTIONE PROFILO ALLENATORE
+        // ==========================================
+        async apriModaleProfilo() {
+            try {
+                const res = await fetch('/api/allenatore/profilo');
+                if (res.ok) {
+                    this.profilo = await res.json();
+                    this.nuovaFotoProfilo = null; 
+                    const modale = new bootstrap.Modal(document.getElementById('modaleProfilo'));
+                    modale.show();
+                } else {
+                    mostraNotifica("Errore nel recupero dei dati del profilo.", "danger");
+                }
+            } catch (error) {
+                console.error("Errore profilo:", error);
+                mostraNotifica("Errore di connessione al server.", "danger");
+            }
+        },
 
-            const resAttivi = await fetch('/api/allenatore/miei-sportivi');
-            this.sportiviAttivi = await resAttivi.json();
+        selezionaFotoProfilo(event) {
+            this.nuovaFotoProfilo = event.target.files[0];
+            if (this.nuovaFotoProfilo) {
+                this.profilo.foto = URL.createObjectURL(this.nuovaFotoProfilo);
+            }
+        },
+
+        async salvaProfilo() {
+            this.loadingProfilo = true;
+            
+            const formData = new FormData();
+            formData.append('nome', this.profilo.nome);
+            formData.append('email', this.profilo.email);
+            formData.append('cognome', this.profilo.cognome || '');
+            formData.append('specialita', this.profilo.specialita || '');
+            formData.append('descrizione', this.profilo.descrizione || '');
+            formData.append('telefono', this.profilo.telefono || '');
+            
+            if (this.nuovaFotoProfilo) {
+                formData.append('foto', this.nuovaFotoProfilo);
+            }
+
+            try {
+                const res = await fetch('/api/allenatore/profilo', {
+                    method: 'PUT',
+                    body: formData 
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    mostraNotifica(data.message, "success");
+                    this.utente.nome = this.profilo.nome;
+                    bootstrap.Modal.getInstance(document.getElementById('modaleProfilo')).hide();
+                } else {
+                    mostraNotifica(data.error || "Errore durante il salvataggio.", "danger");
+                }
+            } catch (error) {
+                console.error("Errore salvataggio profilo:", error);
+                mostraNotifica("Errore di connessione. Impossibile salvare.", "danger");
+            } finally {
+                this.loadingProfilo = false;
+            }
+        },
+
+        // ==========================================
+
+        async caricaDati() {
+            try {
+                const resRichieste = await fetch('/api/allenatore/richieste');
+                this.richieste = await resRichieste.json();
+
+                const resAttivi = await fetch('/api/allenatore/miei-sportivi');
+                this.sportiviAttivi = await resAttivi.json();
+            } catch (err) {
+                console.error(err);
+            }
         },
 
         async caricaCataloghi() {
-            // Scarica sia esercizi che alimenti dal database
-            const resEs = await fetch('/api/esercizi');
-            this.catalogoEsercizi = await resEs.json();
+            try {
+                const resEs = await fetch('/api/esercizi');
+                this.catalogoEsercizi = await resEs.json();
 
-            const resAl = await fetch('/api/alimenti');
-            this.catalogoAlimenti = await resAl.json();
+                const resAl = await fetch('/api/alimenti');
+                this.catalogoAlimenti = await resAl.json();
+            } catch (err) {
+                console.error(err);
+            }
         },
 
         async accettaRichiesta(idSportivo) {
-            await fetch('/api/allenatore/accetta-richiesta', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id_sportivo: idSportivo })
-            });
-            this.caricaDati(); // Aggiorna le liste
+            try {
+                const res = await fetch('/api/allenatore/accetta-richiesta', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_sportivo: idSportivo })
+                });
+                if (res.ok) {
+                    mostraNotifica("Richiesta accettata! Atleta aggiunto.", "success");
+                    this.caricaDati(); 
+                } else {
+                    mostraNotifica("Impossibile accettare la richiesta.", "danger");
+                }
+            } catch (err) {
+                mostraNotifica("Errore di rete.", "danger");
+            }
         },
 
         // ==========================================
@@ -116,7 +210,9 @@ const app = createApp({
         },
 
         aggiungiEsercizio() {
-            if (!this.esercizioTemp.id_esercizio) return alert("Scegli un esercizio dal catalogo!");
+            if (!this.esercizioTemp.id_esercizio) {
+                return mostraNotifica("Scegli un esercizio dal catalogo!", "warning");
+            }
             const exTrovato = this.catalogoEsercizi.find(e => e.id === this.esercizioTemp.id_esercizio);
 
             this.schedaCorrente.listaEsercizi.push({
@@ -138,7 +234,9 @@ const app = createApp({
         },
 
         async salvaSchedaDefinitiva() {
-            if (this.schedaCorrente.listaEsercizi.length === 0) return alert("La scheda è vuota!");
+            if (this.schedaCorrente.listaEsercizi.length === 0) {
+                return mostraNotifica("La scheda è vuota!", "warning");
+            }
             this.loading = true;
             try {
                 const res = await fetch('/api/allenatore/crea-scheda', {
@@ -147,9 +245,15 @@ const app = createApp({
                     body: JSON.stringify(this.schedaCorrente)
                 });
                 const data = await res.json();
-                alert(data.message);
-                bootstrap.Modal.getInstance(document.getElementById('modalScheda')).hide();
-            } catch (err) { alert("Errore salvataggio scheda."); }
+                if (res.ok) {
+                    mostraNotifica(data.message, "success");
+                    bootstrap.Modal.getInstance(document.getElementById('modalScheda')).hide();
+                } else {
+                    mostraNotifica(data.error || "Errore salvataggio scheda.", "danger");
+                }
+            } catch (err) { 
+                mostraNotifica("Errore di connessione.", "danger"); 
+            }
             this.loading = false;
         },
 
@@ -167,7 +271,9 @@ const app = createApp({
         },
 
         aggiungiAlimento() {
-            if (!this.alimentoTemp.id_alimento) return alert("Scegli un alimento dal catalogo!");
+            if (!this.alimentoTemp.id_alimento) {
+                return mostraNotifica("Scegli un alimento dal catalogo!", "warning");
+            }
             const alimTrovato = this.catalogoAlimenti.find(a => a.id === this.alimentoTemp.id_alimento);
 
             this.dietaCorrente.listaAlimenti.push({
@@ -175,7 +281,6 @@ const app = createApp({
                 nome_alimento: alimTrovato.nome,
                 quantita_grammi: this.alimentoTemp.quantita_grammi,
                 note_pasto: this.alimentoTemp.note_pasto,
-                // Calcoliamo i macros per la visualizzazione istantanea per l'allenatore
                 kcal_calc: Math.round((alimTrovato.calorie * this.alimentoTemp.quantita_grammi) / 100)
             });
             
@@ -187,7 +292,9 @@ const app = createApp({
         },
 
         async salvaDietaDefinitiva() {
-            if (this.dietaCorrente.listaAlimenti.length === 0) return alert("La dieta è vuota!");
+            if (this.dietaCorrente.listaAlimenti.length === 0) {
+                return mostraNotifica("La dieta è vuota!", "warning");
+            }
             this.loading = true;
             try {
                 const res = await fetch('/api/allenatore/crea-dieta', {
@@ -196,9 +303,15 @@ const app = createApp({
                     body: JSON.stringify(this.dietaCorrente)
                 });
                 const data = await res.json();
-                alert(data.message);
-                bootstrap.Modal.getInstance(document.getElementById('modalDieta')).hide();
-            } catch (err) { alert("Errore salvataggio dieta."); }
+                if (res.ok) {
+                    mostraNotifica(data.message, "success");
+                    bootstrap.Modal.getInstance(document.getElementById('modalDieta')).hide();
+                } else {
+                    mostraNotifica(data.error || "Errore salvataggio dieta.", "danger");
+                }
+            } catch (err) { 
+                mostraNotifica("Errore di connessione.", "danger"); 
+            }
             this.loading = false;
         }
     }

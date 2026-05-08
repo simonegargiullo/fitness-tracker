@@ -28,7 +28,7 @@ const pool = new Pool({
   host: "aws-0-eu-west-1.pooler.supabase.com",
   port: 6543,
   user: "postgres.zgsmezhausuhdflhfnuq",
-  password: "v5vz/HNXbS-!?.r", // Ora i caratteri speciali non daranno fastidio!
+  password: "v5vz/HNXbS-!?.r", 
   database: "postgres",
   ssl: {
     rejectUnauthorized: false,
@@ -66,7 +66,7 @@ app.use(
   session({
     store: new pgSession({
       pool: pool, // Usa la connessione
-      tableName: "session", // In questa tabella di salva chi ha fatto login
+      tableName: "session", // In questa tabella si salva chi ha fatto login
       createTableIfMissing: true, // Crea la tabella se non esiste
     }),
     secret: "chiave_segreta__fitness_123", // Usata per criptare i dati
@@ -81,26 +81,16 @@ app.use(express.json()); // Permette di leggere i dati inviati dai form
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public"))); // Serve i file statici (HTML, CSS, JS)
 
-// 1. Registrazione di un nuovo Sportivo
-app.post("/api/registrati", async (req, res) => {
-  const {
-    nome,
-    email,
-    password,
-    sesso,
-    eta,
-    peso,
-    altezza,
-    obiettivo,
-    attitudini,
-    esperienza_pregressa,
-  } = req.body;
+// ==========================================
+// 1. REGISTRAZIONE E ACCESSO
+// ==========================================
 
-  // 1. Controllo lunghezza minima
+// Registrazione di un nuovo Sportivo
+app.post("/api/registrati", async (req, res) => {
+  const { nome, email, password, sesso, eta, peso, altezza, obiettivo, attitudini, esperienza_pregressa } = req.body;
+
   if (!password || password.length < 8) {
-    return res
-      .status(400)
-      .json({ message: "La password deve contenere almeno 8 caratteri." });
+    return res.status(400).json({ message: "La password deve contenere almeno 8 caratteri." });
   }
 
   try {
@@ -108,42 +98,24 @@ app.post("/api/registrati", async (req, res) => {
     try {
       await client.query("BEGIN");
 
-      // 2. Crittografia della password
       const hashedPassword = await bcrypt.hash(password, saltRounds);
 
       const insertUtenteQuery = `
-                INSERT INTO utenti (nome, email, password, ruolo)
-                VALUES ($1, $2, $3, 'sportivo')
-                RETURNING id;
-            `;
-      // Salviamo hashedPassword invece di password
-      const resultUtente = await client.query(insertUtenteQuery, [
-        nome,
-        email,
-        hashedPassword,
-      ]);
+          INSERT INTO utenti (nome, email, password, ruolo)
+          VALUES ($1, $2, $3, 'sportivo')
+          RETURNING id;
+      `;
+      const resultUtente = await client.query(insertUtenteQuery, [nome, email, hashedPassword]);
       const nuovoUtenteId = resultUtente.rows[0].id;
 
-      // ... (il resto del codice dei profili rimane uguale)
       const insertProfiloQuery = `
-                INSERT INTO profili_sportivi (id_utente, sesso, eta, peso, altezza, obiettivo, attitudini, esperienza_pregressa)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
-            `;
-      await client.query(insertProfiloQuery, [
-        nuovoUtenteId,
-        sesso,
-        eta,
-        peso,
-        altezza,
-        obiettivo,
-        attitudini,
-        esperienza_pregressa,
-      ]);
+          INSERT INTO profili_sportivi (id_utente, sesso, eta, peso, altezza, obiettivo, attitudini, esperienza_pregressa)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
+      `;
+      await client.query(insertProfiloQuery, [nuovoUtenteId, sesso, eta, peso, altezza, obiettivo, attitudini, esperienza_pregressa]);
 
       await client.query("COMMIT");
-      res
-        .status(201)
-        .json({ message: "Registrazione completata con successo!" });
+      res.status(201).json({ message: "Registrazione completata con successo!" });
     } catch (error) {
       await client.query("ROLLBACK");
       throw error;
@@ -151,33 +123,29 @@ app.post("/api/registrati", async (req, res) => {
       client.release();
     }
   } catch (err) {
-    // ... gestione errori esistente
+    console.error(err);
+    res.status(500).json({ message: "Errore durante la registrazione." });
   }
 });
 
-// 2. Login dell'utente
+// Login dell'utente
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const result = await pool.query("SELECT * FROM utenti WHERE email = $1", [
-      email,
-    ]);
+    const result = await pool.query("SELECT * FROM utenti WHERE email = $1", [email]);
 
     if (result.rows.length === 0) {
       return res.status(401).json({ message: "Email o password errati." });
     }
 
     const utente = result.rows[0];
-
-    // 3. Confronto sicuro tra password inserita e hash nel DB
     const match = await bcrypt.compare(password, utente.password);
 
     if (!match) {
       return res.status(401).json({ message: "Email o password errati." });
     }
 
-    // Se arriviamo qui, la password è corretta
     req.session.utenteId = utente.id;
     req.session.ruolo = utente.ruolo;
     req.session.nome = utente.nome;
@@ -189,21 +157,22 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// 3. Logout dell'utente
+// Logout dell'utente
 app.post("/api/logout", (req, res) => {
-  // Distruggiamo la sessione (il lasciapassare viene strappato)
   req.session.destroy((err) => {
     if (err) {
       return res.status(500).json({ message: "Errore durante il logout." });
     }
-    res.clearCookie("connect.sid"); // Cancelliamo il biscottino dal browser
+    res.clearCookie("connect.sid"); 
     res.json({ message: "Logout effettuato." });
   });
 });
 
+// ==========================================
 // --- API DI SICUREZZA ---
+// ==========================================
 
-// 4. Controlla chi è attualmente loggato
+// Controlla chi è attualmente loggato
 app.get("/api/sessione", (req, res) => {
   if (req.session.utenteId) {
     res.json({
@@ -219,107 +188,78 @@ app.get("/api/sessione", (req, res) => {
   }
 });
 
+// ==========================================
 // --- API DEL MANAGER ---
+// ==========================================
 
-// Middleware per proteggere le rotte del manager
-// (Se non sei manager, il server blocca la richiesta)
 const verificaManager = (req, res, next) => {
   if (req.session.ruolo === "manager") {
-    next(); // Vai pure avanti
+    next(); 
   } else {
-    res.status(403).json({
-      message: "Accesso negato. Solo i manager possono eseguire questa azione.",
-    });
+    res.status(403).json({ message: "Accesso negato. Solo i manager possono eseguire questa azione." });
   }
 };
 
-// 5. Creazione di un nuovo Allenatore (AGGIORNATA con Foto e Dettagli)
-app.post(
-  "/api/manager/allenatori",
-  verificaManager,
-  upload.single("foto"),
-  async (req, res) => {
-    const {
-      nome,
-      cognome,
-      email,
-      password,
-      specialita,
-      descrizione,
-      telefono,
-    } = req.body;
+// MANAGER: Creazione nuovo Allenatore
+app.post("/api/manager/allenatori", verificaManager, upload.single("foto"), async (req, res) => {
+  const { nome, cognome, email, password, specialita, descrizione, telefono } = req.body;
 
-    if (!password || password.length < 8) {
-      return res
-        .status(400)
-        .json({ message: "La password deve essere di almeno 8 caratteri." });
-    }
+  if (!password || password.length < 8) {
+    return res.status(400).json({ message: "La password deve essere di almeno 8 caratteri." });
+  }
 
-    // Se il manager carica una foto, salviamo il percorso, altrimenti null
-    const foto_url = req.file ? "/uploads/" + req.file.filename : null;
+  const foto_url = req.file ? "/uploads/" + req.file.filename : null;
 
+  try {
+    const client = await pool.connect();
     try {
-      const client = await pool.connect();
-      try {
-        await client.query("BEGIN"); // Inizio transazione
+      await client.query("BEGIN"); 
 
-        // 1. Creiamo l'utente base
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-        const insertUtente = await client.query(
-          "INSERT INTO utenti (nome, email, password, ruolo) VALUES ($1, $2, $3, 'allenatore') RETURNING id",
-          [nome, email, hashedPassword],
-        );
-
-        const nuovoId = insertUtente.rows[0].id;
-
-        // 2. Salviamo i dettagli nel profilo allenatore
-        await client.query(
-          "INSERT INTO profili_allenatori (id_utente, cognome, specialita, descrizione, foto, telefono) VALUES ($1, $2, $3, $4, $5, $6)",
-          [nuovoId, cognome, specialita, descrizione, foto_url, telefono],
-        );
-
-        await client.query("COMMIT"); // Confermiamo il salvataggio
-        res.json({ message: "Allenatore creato con successo!" });
-      } catch (error) {
-        await client.query("ROLLBACK"); // In caso di errore, annulliamo tutto
-        throw error;
-      } finally {
-        client.release();
-      }
-    } catch (err) {
-      console.error("Errore salvataggio allenatore:", err);
-      res.status(500).json({ error: err.message });
-    }
-  },
-);
-
-// 6. Inserimento Esercizio nel Catalogo (Con Upload Immagine)
-// Aggiungiamo "upload.single('immagine_file')" per intercettare il file
-app.post(
-  "/api/manager/esercizi",
-  verificaManager,
-  upload.single("immagine_file"),
-  async (req, res) => {
-    const { nome, gruppo_muscolare } = req.body;
-
-    // Se il manager ha caricato un file, salviamo il percorso (es. "/uploads/foto123.jpg")
-    // Se non l'ha caricato, salviamo null.
-    const url_immagine = req.file ? "/uploads/" + req.file.filename : null;
-
-    try {
-      await pool.query(
-        "INSERT INTO esercizi (nome, gruppo_muscolare, url_immagine) VALUES ($1, $2, $3)",
-        [nome, gruppo_muscolare, url_immagine],
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      const insertUtente = await client.query(
+        "INSERT INTO utenti (nome, email, password, ruolo) VALUES ($1, $2, $3, 'allenatore') RETURNING id",
+        [nome, email, hashedPassword],
       );
-      res.json({ message: "Esercizio e immagine aggiunti al catalogo!" });
-    } catch (err) {
-      console.error("Errore salvataggio esercizio:", err);
-      res.status(500).json({ error: err.message });
-    }
-  },
-);
 
-// 7. Inserimento Alimento nel Catalogo
+      const nuovoId = insertUtente.rows[0].id;
+
+      await client.query(
+        "INSERT INTO profili_allenatori (id_utente, cognome, specialita, descrizione, foto, telefono) VALUES ($1, $2, $3, $4, $5, $6)",
+        [nuovoId, cognome, specialita, descrizione, foto_url, telefono],
+      );
+
+      await client.query("COMMIT"); 
+      res.json({ message: "Allenatore creato con successo!" });
+    } catch (error) {
+      await client.query("ROLLBACK"); 
+      throw error;
+    } finally {
+      client.release();
+    }
+  } catch (err) {
+    console.error("Errore salvataggio allenatore:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// MANAGER: Inserimento Esercizio 
+app.post("/api/manager/esercizi", verificaManager, upload.single("immagine_file"), async (req, res) => {
+  const { nome, gruppo_muscolare } = req.body;
+  const url_immagine = req.file ? "/uploads/" + req.file.filename : null;
+
+  try {
+    await pool.query(
+      "INSERT INTO esercizi (nome, gruppo_muscolare, url_immagine) VALUES ($1, $2, $3)",
+      [nome, gruppo_muscolare, url_immagine],
+    );
+    res.json({ message: "Esercizio e immagine aggiunti al catalogo!" });
+  } catch (err) {
+    console.error("Errore salvataggio esercizio:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// MANAGER: Inserimento Alimento
 app.post("/api/manager/alimenti", verificaManager, async (req, res) => {
   const { nome, calorie, proteine, carboidrati, grassi } = req.body;
   try {
@@ -333,7 +273,7 @@ app.post("/api/manager/alimenti", verificaManager, async (req, res) => {
   }
 });
 
-// 17. Modifica un alimento esistente
+// MANAGER: Modifica Alimento
 app.put("/api/manager/alimenti/:id", verificaManager, async (req, res) => {
   const { id } = req.params;
   const { nome, calorie, proteine, carboidrati, grassi } = req.body;
@@ -348,138 +288,78 @@ app.put("/api/manager/alimenti/:id", verificaManager, async (req, res) => {
   }
 });
 
-// 17. Ottieni tutto il catalogo degli alimenti
-app.get("/api/alimenti", async (req, res) => {
-  try {
-    const result = await pool.query("SELECT * FROM alimenti ORDER BY nome");
-    res.json(result.rows);
-  } catch (err) {
-    console.error("Errore recupero alimenti:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// 18. MANAGER: Modifica un alimento esistente
-app.put("/api/manager/alimenti/:id", verificaManager, async (req, res) => {
+// MANAGER: Modifica Esercizio
+app.put("/api/manager/esercizi/:id", verificaManager, upload.single("immagine_file"), async (req, res) => {
   const id = req.params.id;
-  const { nome, calorie, proteine, carboidrati, grassi } = req.body;
+  const { nome, gruppo_muscolare } = req.body;
 
   try {
-    await pool.query(
-      "UPDATE alimenti SET nome = $1, calorie = $2, proteine = $3, carboidrati = $4, grassi = $5 WHERE id = $6",
-      [nome, calorie, proteine, carboidrati, grassi, id],
-    );
-    res.json({ message: "Alimento aggiornato con successo!" });
+    if (req.file) {
+      const url_immagine = "/uploads/" + req.file.filename;
+      await pool.query(
+        "UPDATE esercizi SET nome=$1, gruppo_muscolare=$2, url_immagine=$3 WHERE id=$4",
+        [nome, gruppo_muscolare, url_immagine, id],
+      );
+    } else {
+      await pool.query(
+        "UPDATE esercizi SET nome=$1, gruppo_muscolare=$2 WHERE id=$3",
+        [nome, gruppo_muscolare, id],
+      );
+    }
+    res.json({ message: "Esercizio aggiornato!" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// 19. MANAGER: Modifica Esercizio (e opzionale nuova foto)
-app.put(
-  "/api/manager/esercizi/:id",
-  verificaManager,
-  upload.single("immagine_file"),
-  async (req, res) => {
-    const id = req.params.id;
-    const { nome, gruppo_muscolare } = req.body;
+// MANAGER: Modifica Allenatore
+app.put("/api/manager/allenatori/:id", verificaManager, upload.single("foto"), async (req, res) => {
+  const id = req.params.id;
+  const pulisci = (val) => val === "null" || val === "undefined" || val === "" ? null : val;
 
+  const nome = pulisci(req.body.nome);
+  const cognome = pulisci(req.body.cognome);
+  const email = pulisci(req.body.email);
+  const specialita = pulisci(req.body.specialita);
+  const descrizione = pulisci(req.body.descrizione);
+  const telefono = pulisci(req.body.telefono);
+
+  const nuovaFotoUrl = req.file ? "/uploads/" + req.file.filename : null;
+
+  try {
+    const client = await pool.connect();
     try {
-      if (req.file) {
-        // Se c'è una nuova immagine, aggiorniamo anche quella
-        const url_immagine = "/uploads/" + req.file.filename;
-        await pool.query(
-          "UPDATE esercizi SET nome=$1, gruppo_muscolare=$2, url_immagine=$3 WHERE id=$4",
-          [nome, gruppo_muscolare, url_immagine, id],
-        );
-      } else {
-        // Solo testo, non tocchiamo l'immagine vecchia
-        await pool.query(
-          "UPDATE esercizi SET nome=$1, gruppo_muscolare=$2 WHERE id=$3",
-          [nome, gruppo_muscolare, id],
-        );
-      }
-      res.json({ message: "Esercizio aggiornato!" });
+      await client.query("BEGIN");
+
+      await client.query("UPDATE utenti SET nome=$1, email=$2 WHERE id=$3", [nome, email, id]);
+
+      const queryProfilo = `
+          INSERT INTO profili_allenatori (id_utente, cognome, specialita, descrizione, telefono, foto)
+          VALUES ($1, $2, $3, $4, $5, $6)
+          ON CONFLICT (id_utente) DO UPDATE SET
+              cognome = EXCLUDED.cognome,
+              specialita = EXCLUDED.specialita,
+              descrizione = EXCLUDED.descrizione,
+              telefono = EXCLUDED.telefono,
+              foto = COALESCE(EXCLUDED.foto, profili_allenatori.foto);
+      `;
+
+      await client.query(queryProfilo, [id, cognome, specialita, descrizione, telefono, nuovaFotoUrl]);
+
+      await client.query("COMMIT");
+      res.json({ message: "Coach aggiornato con successo!" });
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      await client.query("ROLLBACK");
+      throw err;
+    } finally {
+      client.release();
     }
-  },
-);
+  } catch (err) {
+    res.status(500).json({ error: "Errore durante il salvataggio nel database." });
+  }
+});
 
-// 20. MANAGER: Modifica Allenatore (Corretto e Blindato)
-app.put(
-  "/api/manager/allenatori/:id",
-  verificaManager,
-  upload.single("foto"),
-  async (req, res) => {
-    const id = req.params.id;
-
-    // 1. Funzione di pulizia: trasforma i "null" finti di FormData in veri null per il DB
-    const pulisci = (val) =>
-      val === "null" || val === "undefined" || val === "" ? null : val;
-
-    const nome = pulisci(req.body.nome);
-    const cognome = pulisci(req.body.cognome);
-    const email = pulisci(req.body.email);
-    const specialita = pulisci(req.body.specialita);
-    const descrizione = pulisci(req.body.descrizione);
-    const telefono = pulisci(req.body.telefono);
-
-    // Se è stata caricata una nuova foto, prepariamo il link, altrimenti passiamo null
-    const nuovaFotoUrl = req.file ? "/uploads/" + req.file.filename : null;
-
-    try {
-      const client = await pool.connect();
-      try {
-        await client.query("BEGIN");
-
-        // 2. Aggiorna i dati obbligatori nella tabella base 'utenti'
-        await client.query("UPDATE utenti SET nome=$1, email=$2 WHERE id=$3", [
-          nome,
-          email,
-          id,
-        ]);
-
-        // 3. Aggiorna o Crea (UPSERT) la riga nella tabella 'profili_allenatori'
-        // Usiamo COALESCE per la foto: se 'nuovaFotoUrl' è vuota, il DB mantiene la foto che aveva già.
-        const queryProfilo = `
-                INSERT INTO profili_allenatori (id_utente, cognome, specialita, descrizione, telefono, foto)
-                VALUES ($1, $2, $3, $4, $5, $6)
-                ON CONFLICT (id_utente) DO UPDATE SET
-                    cognome = EXCLUDED.cognome,
-                    specialita = EXCLUDED.specialita,
-                    descrizione = EXCLUDED.descrizione,
-                    telefono = EXCLUDED.telefono,
-                    foto = COALESCE(EXCLUDED.foto, profili_allenatori.foto);
-            `;
-
-        await client.query(queryProfilo, [
-          id,
-          cognome,
-          specialita,
-          descrizione,
-          telefono,
-          nuovaFotoUrl,
-        ]);
-
-        await client.query("COMMIT");
-        res.json({ message: "Coach aggiornato con successo!" });
-      } catch (err) {
-        await client.query("ROLLBACK");
-        throw err;
-      } finally {
-        client.release();
-      }
-    } catch (err) {
-      console.error("Errore fatale aggiornamento coach:", err);
-      res
-        .status(500)
-        .json({ error: "Errore durante il salvataggio nel database." });
-    }
-  },
-);
-
-// 21. MANAGER: Elimina Alimento
+// MANAGER: Elimina Alimento
 app.delete("/api/manager/alimenti/:id", verificaManager, async (req, res) => {
   try {
     await pool.query("DELETE FROM alimenti WHERE id = $1", [req.params.id]);
@@ -489,38 +369,24 @@ app.delete("/api/manager/alimenti/:id", verificaManager, async (req, res) => {
   }
 });
 
-// 22. MANAGER: Elimina Esercizio
+// MANAGER: Elimina Esercizio
 app.delete("/api/manager/esercizi/:id", verificaManager, async (req, res) => {
   try {
-    // Nota: Questo fallirà se l'esercizio è usato in 'schede_esercizi' a meno di ON DELETE CASCADE
     await pool.query("DELETE FROM esercizi WHERE id = $1", [req.params.id]);
     res.json({ message: "Esercizio eliminato" });
   } catch (err) {
-    res
-      .status(400)
-      .json({
-        error:
-          "Impossibile eliminare: l'esercizio è usato in una o più schede.",
-      });
+    res.status(400).json({ error: "Impossibile eliminare: l'esercizio è usato in una o più schede." });
   }
 });
 
-// 23. MANAGER: Elimina Allenatore (Elimina Utente + Profilo a cascata)
+// MANAGER: Elimina Allenatore
 app.delete("/api/manager/allenatori/:id", verificaManager, async (req, res) => {
   try {
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
-      // Eliminiamo prima il profilo (anche se c'è FK, è più pulito)
-      await client.query(
-        "DELETE FROM profili_allenatori WHERE id_utente = $1",
-        [req.params.id],
-      );
-      // Eliminiamo l'utente
-      await client.query(
-        "DELETE FROM utenti WHERE id = $1 AND ruolo = 'allenatore'",
-        [req.params.id],
-      );
+      await client.query("DELETE FROM profili_allenatori WHERE id_utente = $1", [req.params.id]);
+      await client.query("DELETE FROM utenti WHERE id = $1 AND ruolo = 'allenatore'", [req.params.id]);
       await client.query("COMMIT");
       res.json({ message: "Allenatore e relativo account eliminati" });
     } catch (err) {
@@ -534,257 +400,98 @@ app.delete("/api/manager/allenatori/:id", verificaManager, async (req, res) => {
   }
 });
 
-// --- API DELLO SPORTIVO ---
+// ==========================================
+// --- CATALOGHI PUBBLICI ---
+// ==========================================
 
-// Middleware per proteggere le rotte dello sportivo
+app.get("/api/esercizi", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM esercizi ORDER BY gruppo_muscolare, nome");
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/alimenti", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM alimenti ORDER BY nome");
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/allenatori", async (req, res) => {
+  try {
+    const query = `
+        SELECT u.id, u.nome, u.email, 
+               pa.cognome, pa.specialita, pa.descrizione, pa.foto, pa.telefono
+        FROM utenti u
+        LEFT JOIN profili_allenatori pa ON u.id = pa.id_utente
+        WHERE u.ruolo = 'allenatore'
+    `;
+    const result = await pool.query(query);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ==========================================
+// --- API DELLO SPORTIVO ---
+// ==========================================
+
 const verificaSportivo = (req, res, next) => {
   if (req.session.ruolo === "sportivo") {
     next();
   } else {
-    res
-      .status(403)
-      .json({ message: "Accesso negato. Area riservata agli sportivi." });
+    res.status(403).json({ message: "Accesso negato. Area riservata agli sportivi." });
   }
 };
 
-// 8. Ottieni lo stato attuale dello sportivo (per capire in che "Fase" si trova)
-app.get("/api/sportivo/stato", verificaSportivo, async (req, res) => {
+// SPORTIVO: Lettura Profilo
+app.get("/api/sportivo/profilo", verificaSportivo, async (req, res) => {
   try {
-    // Cerchiamo il profilo dello sportivo loggato e, se c'è, il nome del suo allenatore
     const query = `
-            SELECT p.stato_richiesta, u_all.nome AS nome_allenatore 
-            FROM profili_sportivi p
-            LEFT JOIN utenti u_all ON p.id_allenatore_scelto = u_all.id
-            WHERE p.id_utente = $1
-        `;
+        SELECT u.nome, u.email, p.sesso, p.eta, p.peso, p.altezza, p.obiettivo, p.attitudini, p.esperienza_pregressa
+        FROM utenti u
+        JOIN profili_sportivi p ON u.id = p.id_utente
+        WHERE u.id = $1
+    `;
     const result = await pool.query(query, [req.session.utenteId]);
-
     if (result.rows.length > 0) {
-      res.json(result.rows[0]); // Restituisce es: { stato_richiesta: 'nessuna', nome_allenatore: null }
+      res.json(result.rows[0]);
     } else {
-      res.status(404).json({ message: "Profilo non trovato" });
+      res.status(404).json({ message: "Profilo non trovato." });
     }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// 9. Ottieni la lista di tutti gli allenatori disponibili (AGGIORNATA per coach.html)
-app.get("/api/allenatori", async (req, res) => {
-  try {
-    const query = `
-            SELECT u.id, u.nome, u.email, 
-                   pa.cognome, pa.specialita, pa.descrizione, pa.foto, pa.telefono
-            FROM utenti u
-            LEFT JOIN profili_allenatori pa ON u.id = pa.id_utente
-            WHERE u.ruolo = 'allenatore'
-        `;
-    const result = await pool.query(query);
-    res.json(result.rows);
-  } catch (err) {
-    console.error("Errore recupero allenatori:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// 10. Lo sportivo invia la richiesta a un allenatore specifico
-app.post(
-  "/api/sportivo/scegli-allenatore",
-  verificaSportivo,
-  async (req, res) => {
-    const { id_allenatore } = req.body;
-    try {
-      await pool.query(
-        `
-            UPDATE profili_sportivi 
-            SET id_allenatore_scelto = $1, stato_richiesta = 'in_attesa'
-            WHERE id_utente = $2
-        `,
-        [id_allenatore, req.session.utenteId],
-      );
-      res.json({ message: "Richiesta inviata con successo!" });
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  },
-);
-
-// --- API DELL'ALLENATORE ---
-
-const verificaAllenatore = (req, res, next) => {
-  if (req.session.ruolo === "allenatore") {
-    next();
-  } else {
-    res
-      .status(403)
-      .json({ message: "Accesso negato. Area riservata agli allenatori." });
-  }
-};
-
-// 11. Ottieni le richieste "in attesa" per questo allenatore
-app.get("/api/allenatore/richieste", verificaAllenatore, async (req, res) => {
-  try {
-    const query = `
-            SELECT p.id_utente, u.nome, p.obiettivo, p.esperienza_pregressa 
-            FROM profili_sportivi p
-            JOIN utenti u ON p.id_utente = u.id
-            WHERE p.id_allenatore_scelto = $1 AND p.stato_richiesta = 'in_attesa'
-        `;
-    const result = await pool.query(query, [req.session.utenteId]);
-    res.json(result.rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// 12. Accetta la richiesta di uno sportivo
-app.post(
-  "/api/allenatore/accetta-richiesta",
-  verificaAllenatore,
-  async (req, res) => {
-    const { id_sportivo } = req.body;
-    try {
-      await pool.query(
-        `
-            UPDATE profili_sportivi 
-            SET stato_richiesta = 'accettata'
-            WHERE id_utente = $1 AND id_allenatore_scelto = $2
-        `,
-        [id_sportivo, req.session.utenteId],
-      );
-      res.json({ message: "Richiesta accettata con successo!" });
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  },
-);
-
-// 13. Ottieni la lista degli sportivi attivi (già accettati)
-app.get(
-  "/api/allenatore/miei-sportivi",
-  verificaAllenatore,
-  async (req, res) => {
-    try {
-      const query = `
-            SELECT p.id_utente, u.nome, p.obiettivo, p.sesso, p.eta, p.peso, p.altezza
-            FROM profili_sportivi p
-            JOIN utenti u ON p.id_utente = u.id
-            WHERE p.id_allenatore_scelto = $1 AND p.stato_richiesta = 'accettata'
-        `;
-      const result = await pool.query(query, [req.session.utenteId]);
-      res.json(result.rows);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  },
-);
-
-// 14. Ottieni tutto il catalogo degli esercizi (aperto a manager e allenatori)
-app.get("/api/esercizi", async (req, res) => {
-  try {
-    const result = await pool.query(
-      "SELECT * FROM esercizi ORDER BY gruppo_muscolare, nome",
-    );
-    res.json(result.rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// 15. Salva la nuova Scheda di Allenamento
-app.post(
-  "/api/allenatore/crea-scheda",
-  verificaAllenatore,
-  async (req, res) => {
-    // Il frontend ci manderà l'ID dello sportivo e un array con tutti gli esercizi scelti
-    const { id_sportivo, titolo, listaEsercizi } = req.body;
-    const id_allenatore = req.session.utenteId;
-
-    try {
-      // Usiamo una TRANSAZIONE, proprio come per la registrazione!
-      const client = await pool.connect();
-      try {
-        await client.query("BEGIN");
-
-        // A. Creiamo la "copertina" della scheda
-        const insertSchedaQuery = `
-                INSERT INTO schede_allenamento (id_sportivo, id_allenatore, titolo) 
-                VALUES ($1, $2, $3) RETURNING id;
-            `;
-        const resultScheda = await client.query(insertSchedaQuery, [
-          id_sportivo,
-          id_allenatore,
-          titolo,
-        ]);
-        const idNuovaScheda = resultScheda.rows[0].id;
-
-        // B. Inseriamo tutti gli esercizi uno ad uno
-        const insertEsercizioQuery = `
-                INSERT INTO schede_esercizi (id_scheda, id_esercizio, serie, ripetizioni, recupero) 
-                VALUES ($1, $2, $3, $4, $5);
-            `;
-
-        // Cicliamo sull'array degli esercizi inviato da Vue.js
-        for (let es of listaEsercizi) {
-          await client.query(insertEsercizioQuery, [
-            idNuovaScheda,
-            es.id_esercizio,
-            es.serie,
-            es.ripetizioni,
-            es.recupero,
-          ]);
-        }
-
-        await client.query("COMMIT");
-        res.json({ message: "Scheda creata e salvata con successo!" });
-      } catch (error) {
-        await client.query("ROLLBACK");
-        throw error;
-      } finally {
-        client.release();
-      }
-    } catch (err) {
-      console.error("Errore salvataggio scheda:", err);
-      res.status(500).json({ error: err.message });
-    }
-  },
-);
-
-// NUOVA API: Salva un nuovo Piano Alimentare
-app.post("/api/allenatore/crea-dieta", verificaAllenatore, async (req, res) => {
-  const { id_sportivo, titolo, listaAlimenti } = req.body;
-  const id_allenatore = req.session.utenteId;
-
+// SPORTIVO: Modifica Profilo
+app.put("/api/sportivo/profilo", verificaSportivo, async (req, res) => {
+  const { nome, email, eta, peso, altezza, obiettivo, attitudini, esperienza_pregressa } = req.body;
   try {
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
-
-      // A. Creiamo la copertina della dieta
-      const insertDietaQuery = `
-          INSERT INTO schede_alimentari (id_sportivo, id_allenatore, titolo) 
-          VALUES ($1, $2, $3) RETURNING id;
-      `;
-      const resultDieta = await client.query(insertDietaQuery, [id_sportivo, id_allenatore, titolo]);
-      const idNuovaDieta = resultDieta.rows[0].id;
-
-      // B. Inseriamo tutti gli alimenti
-      const insertAlimentoQuery = `
-          INSERT INTO schede_alimenti (id_scheda, id_alimento, quantita_grammi, note_pasto) 
-          VALUES ($1, $2, $3, $4);
-      `;
-
-      for (let alim of listaAlimenti) {
-        await client.query(insertAlimentoQuery, [
-          idNuovaDieta,
-          alim.id_alimento,
-          alim.quantita_grammi,
-          alim.note_pasto
-        ]);
-      }
-
+      
+      await client.query("UPDATE utenti SET nome = $1, email = $2 WHERE id = $3", 
+          [nome, email, req.session.utenteId]
+      );
+      
+      await client.query(`
+          UPDATE profili_sportivi 
+          SET eta = $1, peso = $2, altezza = $3, obiettivo = $4, attitudini = $5, esperienza_pregressa = $6 
+          WHERE id_utente = $7`,
+          [eta, peso, altezza, obiettivo, attitudini, esperienza_pregressa, req.session.utenteId]
+      );
+      
+      req.session.nome = nome; // Aggiorniamo il nome in sessione
       await client.query("COMMIT");
-      res.json({ message: "Piano alimentare inviato con successo all'atleta!" });
+      res.json({ message: "Profilo aggiornato con successo!" });
     } catch (error) {
       await client.query("ROLLBACK");
       throw error;
@@ -792,16 +499,45 @@ app.post("/api/allenatore/crea-dieta", verificaAllenatore, async (req, res) => {
       client.release();
     }
   } catch (err) {
-    console.error("Errore salvataggio dieta:", err);
+    console.error("Errore aggiornamento profilo sportivo:", err);
+    res.status(500).json({ error: "Errore durante il salvataggio." });
+  }
+});
+
+// SPORTIVO: Stato
+app.get("/api/sportivo/stato", verificaSportivo, async (req, res) => {
+  try {
+    const query = `
+        SELECT p.stato_richiesta, u_all.nome AS nome_allenatore 
+        FROM profili_sportivi p
+        LEFT JOIN utenti u_all ON p.id_allenatore_scelto = u_all.id
+        WHERE p.id_utente = $1
+    `;
+    const result = await pool.query(query, [req.session.utenteId]);
+    if (result.rows.length > 0) res.json(result.rows[0]);
+    else res.status(404).json({ message: "Profilo non trovato" });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// 16. Lo sportivo visualizza lo STORICO di tutte le sue schede di allenamento
+// SPORTIVO: Scegli Coach
+app.post("/api/sportivo/scegli-allenatore", verificaSportivo, async (req, res) => {
+  const { id_allenatore } = req.body;
+  try {
+    await pool.query(
+      "UPDATE profili_sportivi SET id_allenatore_scelto = $1, stato_richiesta = 'in_attesa' WHERE id_utente = $2",
+      [id_allenatore, req.session.utenteId],
+    );
+    res.json({ message: "Richiesta inviata con successo!" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// SPORTIVO: Mie Schede Allenamento
 app.get("/api/sportivo/mie-schede", verificaSportivo, async (req, res) => {
   try {
-    // Estraiamo in un colpo solo tutte le schede e tutti gli esercizi collegati, 
-    // ordinando dalle schede più recenti a quelle più vecchie.
     const query = `
         SELECT s.id as scheda_id, s.titolo, s.data_creazione,
                e.id as ex_id, e.nome, e.gruppo_muscolare, e.url_immagine,
@@ -812,53 +548,28 @@ app.get("/api/sportivo/mie-schede", verificaSportivo, async (req, res) => {
         WHERE s.id_sportivo = $1
         ORDER BY s.data_creazione DESC, se.id ASC
     `;
-    
     const result = await pool.query(query, [req.session.utenteId]);
-
-    // Strutturiamo i dati: raggruppiamo gli esercizi dentro ogni singola scheda
     const schedeMap = {};
     
     result.rows.forEach(row => {
-        // Se la scheda non esiste ancora nella nostra mappa, la creiamo
         if (!schedeMap[row.scheda_id]) {
-            schedeMap[row.scheda_id] = {
-                id: row.scheda_id,
-                titolo: row.titolo,
-                data_creazione: row.data_creazione,
-                esercizi: []
-            };
+            schedeMap[row.scheda_id] = { id: row.scheda_id, titolo: row.titolo, data_creazione: row.data_creazione, esercizi: [] };
         }
-        
-        // Se c'è un esercizio associato a questa riga, lo spingiamo nell'array della scheda
         if (row.ex_id) {
             schedeMap[row.scheda_id].esercizi.push({
-                id: row.ex_id,
-                nome: row.nome,
-                gruppo_muscolare: row.gruppo_muscolare,
-                url_immagine: row.url_immagine,
-                serie: row.serie,
-                ripetizioni: row.ripetizioni,
-                recupero: row.recupero,
-                note: row.note
+                id: row.ex_id, nome: row.nome, gruppo_muscolare: row.gruppo_muscolare, url_immagine: row.url_immagine,
+                serie: row.serie, ripetizioni: row.ripetizioni, recupero: row.recupero, note: row.note
             });
         }
     });
-
-    // Convertiamo l'oggetto in un array e ordiniamo dalla data più recente a quella più vecchia
-    const elencoSchede = Object.values(schedeMap).sort((a, b) => {
-        return new Date(b.data_creazione) - new Date(a.data_creazione);
-    });
-    
+    const elencoSchede = Object.values(schedeMap).sort((a, b) => new Date(b.data_creazione) - new Date(a.data_creazione));
     res.json(elencoSchede);
-
   } catch (err) {
-    console.error("Errore recupero storico schede:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-
-// --- Ottieni TUTTO lo storico delle diete di uno sportivo ---
+// SPORTIVO: Mie Diete
 app.get("/api/sportivo/mie-diete", verificaSportivo, async (req, res) => {
   try {
     const query = `
@@ -871,43 +582,223 @@ app.get("/api/sportivo/mie-diete", verificaSportivo, async (req, res) => {
         WHERE sa.id_sportivo = $1
         ORDER BY sa.data_creazione DESC, sal.id ASC
     `;
-    
     const result = await pool.query(query, [req.session.utenteId]);
-
     const dieteMap = {};
     
     result.rows.forEach(row => {
         if (!dieteMap[row.dieta_id]) {
-            dieteMap[row.dieta_id] = {
-                id: row.dieta_id,
-                titolo: row.titolo,
-                data_creazione: row.data_creazione,
-                alimenti: []
-            };
+            dieteMap[row.dieta_id] = { id: row.dieta_id, titolo: row.titolo, data_creazione: row.data_creazione, alimenti: [] };
         }
-        
         if (row.alim_id) {
             dieteMap[row.dieta_id].alimenti.push({
-                id: row.alim_id,
-                nome: row.nome,
-                calorie: row.calorie,
-                proteine: row.proteine,
-                carboidrati: row.carboidrati,
-                grassi: row.grassi,
-                quantita_grammi: row.quantita_grammi,
-                note_pasto: row.note_pasto
+                id: row.alim_id, nome: row.nome, calorie: row.calorie, proteine: row.proteine, carboidrati: row.carboidrati,
+                grassi: row.grassi, quantita_grammi: row.quantita_grammi, note_pasto: row.note_pasto
             });
         }
     });
-
     const elencoDiete = Object.values(dieteMap).sort((a, b) => new Date(b.data_creazione) - new Date(a.data_creazione));
     res.json(elencoDiete);
-
   } catch (err) {
-    console.error("Errore recupero storico diete:", err);
     res.status(500).json({ error: err.message });
   }
 });
+
+
+// ==========================================
+// --- API DELL'ALLENATORE ---
+// ==========================================
+
+const verificaAllenatore = (req, res, next) => {
+  if (req.session.ruolo === "allenatore") {
+    next();
+  } else {
+    res.status(403).json({ message: "Accesso negato. Area riservata agli allenatori." });
+  }
+};
+
+// ALLENATORE: Lettura Profilo
+app.get("/api/allenatore/profilo", verificaAllenatore, async (req, res) => {
+  try {
+      const query = `
+          SELECT u.nome, u.email, p.cognome, p.specialita, p.descrizione, p.telefono, p.foto
+          FROM utenti u
+          JOIN profili_allenatori p ON u.id = p.id_utente
+          WHERE u.id = $1
+      `;
+      const result = await pool.query(query, [req.session.utenteId]);
+      if (result.rows.length > 0) {
+          res.json(result.rows[0]);
+      } else {
+          res.status(404).json({ message: "Profilo non trovato." });
+      }
+  } catch (err) {
+      res.status(500).json({ error: err.message });
+  }
+});
+
+// ALLENATORE: Modifica Profilo
+app.put("/api/allenatore/profilo", verificaAllenatore, upload.single("foto"), async (req, res) => {
+  const pulisci = (val) => val === "null" || val === "undefined" || val === "" ? null : val;
+  
+  const nome = pulisci(req.body.nome);
+  const email = pulisci(req.body.email);
+  const cognome = pulisci(req.body.cognome);
+  const specialita = pulisci(req.body.specialita);
+  const descrizione = pulisci(req.body.descrizione);
+  const telefono = pulisci(req.body.telefono);
+  
+  const nuovaFotoUrl = req.file ? "/uploads/" + req.file.filename : null;
+
+  try {
+      const client = await pool.connect();
+      try {
+          await client.query("BEGIN");
+          
+          await client.query("UPDATE utenti SET nome = $1, email = $2 WHERE id = $3", 
+              [nome, email, req.session.utenteId]
+          );
+          
+          await client.query(`
+              UPDATE profili_allenatori 
+              SET cognome = $1, specialita = $2, descrizione = $3, telefono = $4, 
+                  foto = COALESCE($5, foto)
+              WHERE id_utente = $6`,
+              [cognome, specialita, descrizione, telefono, nuovaFotoUrl, req.session.utenteId]
+          );
+
+          req.session.nome = nome; // Aggiorna nome sessione
+          await client.query("COMMIT");
+          res.json({ message: "Profilo aggiornato con successo!" });
+      } catch (error) {
+          await client.query("ROLLBACK");
+          throw error;
+      } finally {
+          client.release();
+      }
+  } catch (err) {
+      console.error("Errore aggiornamento profilo allenatore:", err);
+      res.status(500).json({ error: "Errore durante il salvataggio." });
+  }
+});
+
+// ALLENATORE: Richieste in attesa
+app.get("/api/allenatore/richieste", verificaAllenatore, async (req, res) => {
+  try {
+    const query = `
+        SELECT p.id_utente, u.nome, p.obiettivo, p.esperienza_pregressa 
+        FROM profili_sportivi p
+        JOIN utenti u ON p.id_utente = u.id
+        WHERE p.id_allenatore_scelto = $1 AND p.stato_richiesta = 'in_attesa'
+    `;
+    const result = await pool.query(query, [req.session.utenteId]);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ALLENATORE: Accetta Richiesta
+app.post("/api/allenatore/accetta-richiesta", verificaAllenatore, async (req, res) => {
+  const { id_sportivo } = req.body;
+  try {
+    await pool.query(
+      "UPDATE profili_sportivi SET stato_richiesta = 'accettata' WHERE id_utente = $1 AND id_allenatore_scelto = $2",
+      [id_sportivo, req.session.utenteId],
+    );
+    res.json({ message: "Richiesta accettata con successo!" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ALLENATORE: I miei atleti
+app.get("/api/allenatore/miei-sportivi", verificaAllenatore, async (req, res) => {
+  try {
+    const query = `
+        SELECT p.id_utente, u.nome, p.obiettivo, p.sesso, p.eta, p.peso, p.altezza
+        FROM profili_sportivi p
+        JOIN utenti u ON p.id_utente = u.id
+        WHERE p.id_allenatore_scelto = $1 AND p.stato_richiesta = 'accettata'
+    `;
+    const result = await pool.query(query, [req.session.utenteId]);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ALLENATORE: Crea Scheda Allenamento
+app.post("/api/allenatore/crea-scheda", verificaAllenatore, async (req, res) => {
+  const { id_sportivo, titolo, listaEsercizi } = req.body;
+  const id_allenatore = req.session.utenteId;
+
+  try {
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      const resultScheda = await client.query(
+        "INSERT INTO schede_allenamento (id_sportivo, id_allenatore, titolo) VALUES ($1, $2, $3) RETURNING id;", 
+        [id_sportivo, id_allenatore, titolo]
+      );
+      const idNuovaScheda = resultScheda.rows[0].id;
+
+      for (let es of listaEsercizi) {
+        await client.query(
+          "INSERT INTO schede_esercizi (id_scheda, id_esercizio, serie, ripetizioni, recupero) VALUES ($1, $2, $3, $4, $5);",
+          [idNuovaScheda, es.id_esercizio, es.serie, es.ripetizioni, es.recupero]
+        );
+      }
+      await client.query("COMMIT");
+      res.json({ message: "Scheda creata e salvata con successo!" });
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ALLENATORE: Crea Piano Alimentare
+app.post("/api/allenatore/crea-dieta", verificaAllenatore, async (req, res) => {
+  const { id_sportivo, titolo, listaAlimenti } = req.body;
+  const id_allenatore = req.session.utenteId;
+
+  try {
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      const resultDieta = await client.query(
+        "INSERT INTO schede_alimentari (id_sportivo, id_allenatore, titolo) VALUES ($1, $2, $3) RETURNING id;", 
+        [id_sportivo, id_allenatore, titolo]
+      );
+      const idNuovaDieta = resultDieta.rows[0].id;
+
+      for (let alim of listaAlimenti) {
+        await client.query(
+          "INSERT INTO schede_alimenti (id_scheda, id_alimento, quantita_grammi, note_pasto) VALUES ($1, $2, $3, $4);",
+          [idNuovaDieta, alim.id_alimento, alim.quantita_grammi, alim.note_pasto]
+        );
+      }
+      await client.query("COMMIT");
+      res.json({ message: "Piano alimentare inviato con successo all'atleta!" });
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// ==========================================
+// --- CONTATTI E MESSAGGI ---
+// ==========================================
 
 // Salva messaggio dalla pagina Contatti
 app.post('/api/contatti', async (req, res) => {
@@ -922,39 +813,35 @@ app.post('/api/contatti', async (req, res) => {
     );
     res.json({ message: 'Messaggio inviato con successo!' });
   } catch (err) {
-    console.error('Errore salvataggio messaggio:', err);
     res.status(500).json({ error: err.message });
   }
 });
- 
-// Manager: leggi tutti i messaggi (non letti prima, poi per data)
+
+// Manager: leggi tutti i messaggi 
 app.get('/api/manager/messaggi', verificaManager, async (req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT * FROM messaggi_contatto ORDER BY letto ASC, data_invio DESC'
-    );
+    const result = await pool.query('SELECT * FROM messaggi_contatto ORDER BY letto ASC, data_invio DESC');
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
- 
-// Manager: segna un messaggio come letto
+
+// Manager: segna messaggio come letto
 app.put('/api/manager/messaggi/:id/letto', verificaManager, async (req, res) => {
   try {
-    await pool.query(
-      'UPDATE messaggi_contatto SET letto = TRUE WHERE id = $1',
-      [req.params.id]
-    );
+    await pool.query('UPDATE messaggi_contatto SET letto = TRUE WHERE id = $1', [req.params.id]);
     res.json({ message: 'Messaggio marcato come letto.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// --- GESTIONE ERRORI 404 ---
-// Questo blocco DEVE essere l'ultima rotta definita prima di app.listen!
-// Intercetta tutte le richieste che non corrispondono a nessuna API o file esistente.
+// ==========================================
+// --- GESTIONE ERRORI 404 E AVVIO ---
+// ==========================================
+
+// Intercetta rotte inesistenti
 app.use((req, res) => {
     res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });

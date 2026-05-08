@@ -9,14 +9,12 @@ const app = createApp({
                 email: '',
                 password: ''
             },
-            loading: false, // Gestisce lo spinner sul bottone
-            msg: { testo: '', tipo: '' } // Gestisce i messaggi di errore
+            loading: false // Gestisce lo spinner sul bottone
         }
     },
     methods: {
         async eseguiLogin() {
             this.loading = true;
-            this.msg = { testo: '', tipo: '' }; // Resetta messaggi precedenti
 
             try {
                 const res = await fetch('/api/login', {
@@ -30,26 +28,30 @@ const app = createApp({
                 const data = await res.json();
 
                 if (res.ok) {
-                    // Login avvenuto con successo: smistamento in base al ruolo
-                    if (data.ruolo === 'manager') {
-                        window.location.href = 'dashboard-manager.html';
-                    } else if (data.ruolo === 'allenatore') {
-                        window.location.href = 'dashboard-allenatore.html';
-                    } else if (data.ruolo === 'sportivo') {
-                        window.location.href = 'dashboard-sportivo.html';
-                    } else {
-                        // Fallback di sicurezza
-                        window.location.href = 'index.html';
-                    }
+                    mostraNotifica("Accesso consentito! Reindirizzamento in corso...", "success");
+                    
+                    // Piccolo ritardo per permettere all'utente di vedere il popup verde prima di cambiare pagina
+                    setTimeout(() => {
+                        if (data.ruolo === 'manager') {
+                            window.location.href = 'dashboard-manager.html';
+                        } else if (data.ruolo === 'allenatore') {
+                            window.location.href = 'dashboard-allenatore.html';
+                        } else if (data.ruolo === 'sportivo') {
+                            window.location.href = 'dashboard-sportivo.html';
+                        } else {
+                            window.location.href = 'index.html';
+                        }
+                    }, 800);
+                    
                 } else {
                     // Errore restituito dal server (es. password errata)
-                    this.msg = { testo: data.message || 'Credenziali non valide.', tipo: 'danger' };
+                    mostraNotifica(data.message || 'Credenziali non valide.', 'danger');
+                    this.loading = false;
                 }
             } catch (error) {
                 // Errore di rete / Server offline
                 console.error("Errore di login:", error);
-                this.msg = { testo: 'Errore di connessione al server. Riprova più tardi.', tipo: 'danger' };
-            } finally {
+                mostraNotifica('Errore di connessione al server. Riprova più tardi.', 'danger');
                 this.loading = false;
             }
         }

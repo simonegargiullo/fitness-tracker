@@ -27,7 +27,6 @@
 
         <div class="container my-4 flex-grow-1">
 
-            <!-- NAVIGAZIONE A PILLOLE -->
             <ul class="nav nav-pills nav-fill bg-white shadow-sm rounded-pill p-2 mb-5">
                 <li class="nav-item">
                     <button class="nav-link rounded-pill fw-bold"
@@ -57,7 +56,6 @@
                 </li>
             </ul>
 
-            <!-- VISTA: INSERIMENTO DATI -->
             <div class="row g-4" v-if="vistaAttiva === 'inserimento'">
 
                 <div class="col-lg-6">
@@ -68,10 +66,6 @@
                         <div class="card-body bg-white p-4 d-flex flex-column">
 
                             <p class="text-muted small mb-3 fst-italic">I campi contrassegnati da * sono obbligatori.</p>
-
-                            <div v-if="msgCoach.testo" :class="'alert alert-' + msgCoach.tipo" class="small fw-semibold py-2">
-                                {{ msgCoach.testo }}
-                            </div>
 
                             <form @submit.prevent="creaAllenatore" class="d-flex flex-column flex-grow-1">
                                 <div class="row g-3">
@@ -127,9 +121,7 @@
                         </div>
                         <div class="card-body bg-white p-4">
                             <p class="text-muted small mb-3 fst-italic">I campi contrassegnati da * sono obbligatori.</p>
-                            <div v-if="msgEsercizio.testo" :class="'alert alert-' + msgEsercizio.tipo" class="small fw-semibold py-2">
-                                {{ msgEsercizio.testo }}
-                            </div>
+                            
                             <form @submit.prevent="aggiungiEsercizio" class="row g-3">
                                 <div class="col-md-7">
                                     <label class="form-label fw-bold small">Nome Esercizio *</label>
@@ -168,9 +160,7 @@
                         </div>
                         <div class="card-body bg-white p-4 d-flex flex-column">
                             <p class="text-muted small mb-3 fst-italic">I campi contrassegnati da * sono obbligatori.</p>
-                            <div v-if="msgAlimento.testo" :class="'alert alert-' + msgAlimento.tipo" class="small fw-semibold py-2">
-                                {{ msgAlimento.testo }}
-                            </div>
+                            
                             <form @submit.prevent="aggiungiAlimento" class="row g-2 align-items-end flex-grow-1">
                                 <div class="col-12 mb-2">
                                     <label class="form-label fw-bold small">Nome Alimento *</label>
@@ -205,7 +195,6 @@
                 </div>
             </div>
 
-            <!-- VISTA: GESTIONE CATALOGHI -->
             <div class="card shadow-sm border-0 rounded-4" v-if="vistaAttiva === 'cataloghi'">
                 <div class="card-header bg-white border-bottom-0 pt-4 px-4">
                     <ul class="nav nav-tabs card-header-tabs">
@@ -251,7 +240,7 @@
                                         <td class="text-end">
                                             <div class="btn-group shadow-sm">
                                                 <button class="btn btn-sm btn-outline-dark" @click="apriModificaCoach(c)" title="Modifica"><i class="bi bi-pencil"></i></button>
-                                                <button class="btn btn-sm btn-outline-danger" @click="eliminaCoach(c.id)" title="Elimina"><i class="bi bi-trash"></i></button>
+                                                <button class="btn btn-sm btn-outline-danger" @click="chiediConferma(c.id, 'coach')" title="Elimina"><i class="bi bi-trash"></i></button>
                                             </div>
                                         </td>
                                     </tr>
@@ -266,7 +255,7 @@
                                     <p class="text-muted small mb-3">{{ c.email }}</p>
                                     <div class="d-flex gap-2">
                                         <button class="btn btn-sm btn-outline-dark flex-grow-1" @click="apriModificaCoach(c)">Modifica</button>
-                                        <button class="btn btn-sm btn-outline-danger px-3" @click="eliminaCoach(c.id)"><i class="bi bi-trash"></i></button>
+                                        <button class="btn btn-sm btn-outline-danger px-3" @click="chiediConferma(c.id, 'coach')"><i class="bi bi-trash"></i></button>
                                     </div>
                                 </div>
                             </div>
@@ -293,7 +282,7 @@
                                         <td class="text-end">
                                             <div class="btn-group shadow-sm">
                                                 <button class="btn btn-sm btn-outline-dark" @click="apriModificaEsercizio(e)" title="Modifica"><i class="bi bi-pencil"></i></button>
-                                                <button class="btn btn-sm btn-outline-danger" @click="eliminaEsercizio(e.id)" title="Elimina"><i class="bi bi-trash"></i></button>
+                                                <button class="btn btn-sm btn-outline-danger" @click="chiediConferma(e.id, 'esercizio')" title="Elimina"><i class="bi bi-trash"></i></button>
                                             </div>
                                         </td>
                                     </tr>
@@ -307,7 +296,7 @@
                                     <h6 class="fw-bold">{{ e.nome }} <span class="badge bg-secondary ms-2">{{ e.gruppo_muscolare }}</span></h6>
                                     <div class="d-flex gap-2 mt-3">
                                         <button class="btn btn-sm btn-outline-dark flex-grow-1" @click="apriModificaEsercizio(e)">Modifica</button>
-                                        <button class="btn btn-sm btn-outline-danger px-3" @click="eliminaEsercizio(e.id)"><i class="bi bi-trash"></i></button>
+                                        <button class="btn btn-sm btn-outline-danger px-3" @click="chiediConferma(e.id, 'esercizio')"><i class="bi bi-trash"></i></button>
                                     </div>
                                 </div>
                             </div>
@@ -336,7 +325,7 @@
                                         <td class="text-end">
                                             <div class="btn-group shadow-sm">
                                                 <button class="btn btn-sm btn-outline-dark" @click="apriModificaAlimento(a)" title="Modifica"><i class="bi bi-pencil"></i></button>
-                                                <button class="btn btn-sm btn-outline-danger" @click="eliminaAlimento(a.id)" title="Elimina"><i class="bi bi-trash"></i></button>
+                                                <button class="btn btn-sm btn-outline-danger" @click="chiediConferma(a.id, 'alimento')" title="Elimina"><i class="bi bi-trash"></i></button>
                                             </div>
                                         </td>
                                     </tr>
@@ -351,7 +340,7 @@
                                     <p class="text-muted small mb-3">Proteine: {{ a.proteine }}g | Carbo: {{ a.carboidrati }}g | Grassi: {{ a.grassi }}g</p>
                                     <div class="d-flex gap-2">
                                         <button class="btn btn-sm btn-outline-dark flex-grow-1" @click="apriModificaAlimento(a)">Modifica</button>
-                                        <button class="btn btn-sm btn-outline-danger px-3" @click="eliminaAlimento(a.id)"><i class="bi bi-trash"></i></button>
+                                        <button class="btn btn-sm btn-outline-danger px-3" @click="chiediConferma(a.id, 'alimento')"><i class="bi bi-trash"></i></button>
                                     </div>
                                 </div>
                             </div>
@@ -361,7 +350,6 @@
                 </div>
             </div>
 
-            <!-- VISTA: MESSAGGI -->
             <div v-if="vistaAttiva === 'messaggi'">
 
                 <div v-if="listaMessaggi.length === 0" class="text-center py-5 text-muted">
@@ -379,7 +367,6 @@
                             <div class="card-body p-3 p-md-4">
                                 <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
 
-                                    <!-- Icona stato + mittente -->
                                     <div class="d-flex align-items-center gap-3 flex-grow-1 min-w-0">
                                         <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
                                             :class="msg.letto ? 'bg-light text-muted' : 'bg-primary text-white'"
@@ -396,7 +383,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Data + anteprima -->
                                     <div class="text-end flex-shrink-0">
                                         <small class="text-muted d-block mb-1">
                                             <i class="bi bi-clock me-1"></i>{{ formattaData(msg.data_invio) }}
@@ -415,10 +401,6 @@
             </div>
 
         </div>
-
-        <!-- ============================== -->
-        <!-- MODALI CATALOGHI (invariati)   -->
-        <!-- ============================== -->
 
         <div class="modal fade" id="modalEditCoach" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -575,9 +557,28 @@
             </div>
         </div>
 
-        <!-- ============================== -->
-        <!-- MODALE DETTAGLIO MESSAGGIO     -->
-        <!-- ============================== -->
+        <div class="modal fade" id="modalConfermaEliminazione" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-4 border-0 shadow">
+                    <div class="modal-header bg-danger text-white rounded-top-4">
+                        <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>{{ deleteModal.titolo }}</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4 text-center">
+                        <i class="bi bi-trash text-danger mb-3" style="font-size: 3rem;"></i>
+                        <p class="fs-5 mb-0">{{ deleteModal.testo }}</p>
+                    </div>
+                    <div class="modal-footer bg-light rounded-bottom-4 justify-content-center">
+                        <button type="button" class="btn btn-secondary fw-bold px-4" data-bs-dismiss="modal">Annulla</button>
+                        <button type="button" class="btn btn-danger fw-bold px-4" @click="eseguiEliminazione" :disabled="deleteModal.loading">
+                            <span v-if="deleteModal.loading" class="spinner-border spinner-border-sm me-2"></span>
+                            <i v-else class="bi bi-trash me-2 text-white"></i>Sì, Elimina
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="modal fade" id="modalMessaggio" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content rounded-4 border-0 shadow" v-if="messaggioSelezionato">
@@ -591,8 +592,6 @@
                     </div>
 
                     <div class="modal-body p-4 p-md-5">
-
-                        <!-- Metadati mittente -->
                         <div class="d-flex align-items-center gap-3 mb-4 pb-4 border-bottom">
                             <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0 fs-4 fw-bold"
                                 style="width: 54px; height: 54px;">
@@ -612,12 +611,10 @@
                             </div>
                         </div>
 
-                        <!-- Corpo del messaggio -->
                         <div class="bg-light rounded-3 p-4" style="white-space: pre-wrap; line-height: 1.8;">
                             {{ messaggioSelezionato.messaggio }}
                         </div>
 
-                        <!-- Pulsante risposta rapida via email -->
                         <div class="mt-4 text-end">
                             <a :href="'mailto:' + messaggioSelezionato.email + '?subject=Re: ' + messaggioSelezionato.oggetto"
                                 class="btn btn-primary fw-bold rounded-pill px-4">
@@ -625,7 +622,6 @@
                                 <span class="text-white">Rispondi via Email</span>
                             </a>
                         </div>
-
                     </div>
                 </div>
             </div>

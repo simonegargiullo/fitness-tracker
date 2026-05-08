@@ -95,3 +95,59 @@ const FooterComponent = {
         </footer>
     `,
 };
+
+// Aggiungi questo alla FINE del file components.js
+
+window.mostraNotifica = function(messaggio, tipo = 'success') {
+    // 1. Controlla se esiste già il contenitore dei toast, altrimenti lo crea
+    let container = document.getElementById('toast-container-globale');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container-globale';
+        container.className = 'toast-container position-fixed bottom-0 end-0 p-4';
+        container.style.zIndex = '9999';
+        document.body.appendChild(container);
+    }
+
+    // 2. Sceglie il colore e l'icona in base al "tipo" (success, danger, warning)
+    let bgClass = 'bg-success';
+    let iconClass = 'bi-check-circle-fill';
+    
+    if (tipo === 'danger' || tipo === 'error') {
+        bgClass = 'bg-danger';
+        iconClass = 'bi-exclamation-triangle-fill';
+    } else if (tipo === 'warning') {
+        bgClass = 'bg-warning text-dark';
+        iconClass = 'bi-info-circle-fill';
+    }
+
+    // 3. Crea il Toast HTML
+    const toastEl = document.createElement('div');
+    toastEl.className = `toast align-items-center text-white border-0 rounded-4 shadow-lg mb-3 ${bgClass}`;
+    if (tipo === 'warning') toastEl.classList.remove('text-white'); // Se è giallo, il testo è scuro
+    
+    toastEl.setAttribute('role', 'alert');
+    toastEl.setAttribute('aria-live', 'assertive');
+    toastEl.setAttribute('aria-atomic', 'true');
+
+    toastEl.innerHTML = `
+        <div class="d-flex p-2">
+            <div class="toast-body fw-bold d-flex align-items-center gap-2 fs-6">
+                <i class="bi ${iconClass} fs-5"></i>
+                <span>${messaggio}</span>
+            </div>
+            <button type="button" class="btn-close ${tipo !== 'warning' ? 'btn-close-white' : ''} me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    `;
+
+    container.appendChild(toastEl);
+
+    // 4. Mostra il toast e lo fa sparire dopo 3.5 secondi
+    const toast = new bootstrap.Toast(toastEl, { delay: 3500 });
+    toast.show();
+
+    // 5. Pulisce il codice HTML quando il toast scompare
+    toastEl.addEventListener('hidden.bs.toast', () => {
+        toastEl.remove();
+    });
+};
