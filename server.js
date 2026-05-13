@@ -87,7 +87,7 @@ app.use(express.static(path.join(__dirname, "public"))); // Serve i file statici
 
 // Registrazione di un nuovo Sportivo
 app.post("/api/registrati", async (req, res) => {
-  const { nome, email, password, sesso, eta, peso, altezza, obiettivo, attitudini, esperienza_pregressa } = req.body;
+  const { nome, email, password, sesso, data_nascita, peso, altezza, obiettivo, attitudini, esperienza_pregressa } = req.body;
 
   if (!password || password.length < 8) {
     return res.status(400).json({ message: "La password deve contenere almeno 8 caratteri." });
@@ -109,10 +109,10 @@ app.post("/api/registrati", async (req, res) => {
       const nuovoUtenteId = resultUtente.rows[0].id;
 
       const insertProfiloQuery = `
-          INSERT INTO profili_sportivi (id_utente, sesso, eta, peso, altezza, obiettivo, attitudini, esperienza_pregressa)
+          INSERT INTO profili_sportivi (id_utente, sesso, data_nascita, peso, altezza, obiettivo, attitudini, esperienza_pregressa)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
       `;
-      await client.query(insertProfiloQuery, [nuovoUtenteId, sesso, eta, peso, altezza, obiettivo, attitudini, esperienza_pregressa]);
+      await client.query(insertProfiloQuery, [nuovoUtenteId, sesso, data_nascita, peso, altezza, obiettivo, attitudini, esperienza_pregressa]);
 
       await client.query("COMMIT");
       res.status(201).json({ message: "Registrazione completata con successo!" });
@@ -454,7 +454,9 @@ const verificaSportivo = (req, res, next) => {
 app.get("/api/sportivo/profilo", verificaSportivo, async (req, res) => {
   try {
     const query = `
-        SELECT u.nome, u.email, p.sesso, p.eta, p.peso, p.altezza, p.obiettivo, p.attitudini, p.esperienza_pregressa
+        SELECT u.nome, u.email, p.sesso,
+               TO_CHAR(p.data_nascita, 'YYYY-MM-DD') AS data_nascita,
+               p.peso, p.altezza, p.obiettivo, p.attitudini, p.esperienza_pregressa
         FROM utenti u
         JOIN profili_sportivi p ON u.id = p.id_utente
         WHERE u.id = $1
@@ -472,7 +474,7 @@ app.get("/api/sportivo/profilo", verificaSportivo, async (req, res) => {
 
 // SPORTIVO: Modifica Profilo
 app.put("/api/sportivo/profilo", verificaSportivo, async (req, res) => {
-  const { nome, email, eta, peso, altezza, obiettivo, attitudini, esperienza_pregressa } = req.body;
+  const { nome, email, peso, altezza, obiettivo, attitudini, esperienza_pregressa } = req.body;
   try {
     const client = await pool.connect();
     try {
@@ -484,9 +486,9 @@ app.put("/api/sportivo/profilo", verificaSportivo, async (req, res) => {
       
       await client.query(`
           UPDATE profili_sportivi 
-          SET eta = $1, peso = $2, altezza = $3, obiettivo = $4, attitudini = $5, esperienza_pregressa = $6 
-          WHERE id_utente = $7`,
-          [eta, peso, altezza, obiettivo, attitudini, esperienza_pregressa, req.session.utenteId]
+          SET peso = $1, altezza = $2, obiettivo = $3, attitudini = $4, esperienza_pregressa = $5 
+          WHERE id_utente = $6`,
+          [peso, altezza, obiettivo, attitudini, esperienza_pregressa, req.session.utenteId]
       );
       
       req.session.nome = nome; // Aggiorniamo il nome in sessione
@@ -715,7 +717,7 @@ app.post("/api/allenatore/accetta-richiesta", verificaAllenatore, async (req, re
 app.get("/api/allenatore/miei-sportivi", verificaAllenatore, async (req, res) => {
   try {
     const query = `
-        SELECT p.id_utente, u.nome, p.obiettivo, p.sesso, p.eta, p.peso, p.altezza
+        SELECT p.id_utente, u.nome, p.obiettivo, p.sesso, p.data_nascita, p.peso, p.altezza
         FROM profili_sportivi p
         JOIN utenti u ON p.id_utente = u.id
         WHERE p.id_allenatore_scelto = $1 AND p.stato_richiesta = 'accettata'

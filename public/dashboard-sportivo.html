@@ -132,15 +132,15 @@
                                     <div class="list-group list-group-flush flex-grow-1 pe-2" style="max-height: 280px; overflow-y: auto;">
                                         <div class="list-group-item px-3 py-3 mb-2 rounded d-flex justify-content-between align-items-center transition-all" 
                                              v-for="(d, index) in storicoDiete" :key="d.id"
-                                             :class="index === 0 ? 'border-success border-2 shadow-sm bg-success bg-opacity-10' : 'border bg-white'">
+                                             :class="index === 0 ? 'border-success border-2 shadow-sm bg-white bg-opacity-10' : 'border bg-white'">
                                             <div>
                                                 <h6 class="fw-bold mb-1">
                                                     {{ d.titolo }}
-                                                    <span v-if="index === 0" class="badge bg-success ms-2 text-uppercase" style="font-size: 0.65rem;">Attuale</span>
+                                                    <span v-if="index === 0" class="badge bg-primary ms-2 text-uppercase" style="font-size: 0.65rem;">Attuale</span>
                                                 </h6>
                                                 <small class="text-muted"><i class="bi bi-calendar3 me-1"></i> {{ formattaData(d.data_creazione) }}</small>
                                             </div>
-                                            <button class="btn btn-sm btn-success rounded-pill fw-bold shadow-sm" @click="mostraModaleDieta(d)">
+                                            <button class="btn btn-sm btn-primary rounded-pill fw-bold shadow-sm" @click="mostraModaleDieta(d)">
                                                 <i class="bi bi-eye text-white"></i> Apri
                                             </button>
                                         </div>
@@ -202,8 +202,8 @@
                                     <input type="email" class="form-control bg-white" v-model="profilo.email" required>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label fw-bold small">Età</label>
-                                    <input type="number" class="form-control bg-white" v-model="profilo.eta" min="16" max="99" required>
+                                    <label class="form-label fw-bold small">Data di Nascita</label>
+                                    <input type="date" class="form-control bg-light text-muted" v-model="profilo.data_nascita" readonly>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label fw-bold small">Peso (kg)</label>
@@ -380,7 +380,7 @@
                     
                     <div class="modal-footer bg-white rounded-bottom-4">
                         <button type="button" class="btn btn-light fw-bold px-4" data-bs-dismiss="modal">Chiudi</button>
-                        <button type="button" class="btn btn-success fw-bold rounded-pill px-4 shadow-sm" @click="scaricaPDFDieta" :disabled="loadingPdfDieta">
+                        <button type="button" class="btn btn-primary fw-bold rounded-pill px-4 shadow-sm" @click="scaricaPDFDieta" :disabled="loadingPdfDieta">
                             <span v-if="loadingPdfDieta" class="spinner-border spinner-border-sm me-2"></span>
                             <i v-else class="bi bi-download me-2 text-white"></i> <span class="text-white">Scarica in PDF</span>
                         </button>

@@ -86,7 +86,7 @@
                                             </div>
                                             
                                             <h5 class="fw-bold mb-1">{{ sportivo.nome }}</h5>
-                                            <p class="mb-3 text-muted small">{{ sportivo.eta }} anni &bull; {{ sportivo.peso }} kg &bull; {{ sportivo.sesso }}</p>
+                                            <p class="mb-3 text-muted small">{{ formattaData(sportivo.data_nascita) }} &bull; {{ sportivo.peso }} kg &bull; {{ sportivo.sesso }}</p>
                                             
                                             <span class="badge bg-light text-dark border w-100 mb-4 py-2">{{ sportivo.obiettivo }}</span>
                                             
@@ -94,7 +94,7 @@
                                                 <button @click="apriModaleScheda(sportivo)" class="btn btn-primary btn-sm fw-bold rounded-pill shadow-sm">
                                                     <i class="bi bi-clipboard2-pulse"></i> Nuova Scheda
                                                 </button>
-                                                <button @click="apriModaleDieta(sportivo)" class="btn btn-success btn-sm fw-bold rounded-pill shadow-sm">
+                                                <button @click="apriModaleDieta(sportivo)" class="btn btn-primary btn-sm fw-bold rounded-pill shadow-sm">
                                                     <i class="bi bi-apple"></i> Nuova Dieta
                                                 </button>
                                             </div>
@@ -222,7 +222,7 @@
         <div class="modal fade" id="modalDieta" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow">
-                    <div class="modal-header bg-success text-white rounded-top-4 py-3">
+                    <div class="modal-header bg-primary text-white rounded-top-4 py-3">
                         <h5 class="modal-title fw-bold"><i class="bi bi-apple me-2"></i> Compila Dieta</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
@@ -262,7 +262,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Chiudi</button>
-                        <button @click="salvaDietaDefinitiva" class="btn btn-success fw-bold rounded-pill" :disabled="loading">
+                        <button @click="salvaDietaDefinitiva" class="btn btn-primary fw-bold rounded-pill" :disabled="loading">
                              <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span> Salva e Invia
                         </button>
                     </div>

@@ -16,7 +16,7 @@ const app = createApp({
             
             // Dati Profilo Sportivo
             profilo: {
-                nome: '', email: '', sesso: '', eta: '', peso: '', altezza: '', obiettivo: '', attitudini: '', esperienza_pregressa: ''
+                nome: '', email: '', sesso: '', data_nascita: '', peso: '', altezza: '', obiettivo: '', attitudini: '', esperienza_pregressa: ''
             },
             loadingProfilo: false,
 

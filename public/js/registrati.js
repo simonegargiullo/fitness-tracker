@@ -10,7 +10,7 @@ const app = createApp({
                 email: '',
                 password: '',
                 sesso: '',
-                eta: '',
+                data_nascita: '',
                 peso: '',
                 altezza: '',
                 obiettivo: '',
