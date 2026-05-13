@@ -7,7 +7,8 @@ const app = createApp({
         return {
             coaches: [], // Inizia vuoto, si riempirà tramite il database
             selectedCoach: null, // Conterrà i dati dell'allenatore cliccato per mostrarli nel pop-up
-            modalInstance: null // Conterrà l'oggetto tecnico del pop-up di Bootstrap
+            modalInstance: null, // Conterrà l'oggetto tecnico del pop-up di Bootstrap
+            loading: true
         }
     },
     mounted() {
@@ -31,6 +32,8 @@ const app = createApp({
                 }
             } catch (error) {
                 console.error("Errore di connessione al server:", error);
+            } finally {
+                this.loading = false; // Abbiamo finito di caricare, anche se c'è stato un errore
             }
         },
         

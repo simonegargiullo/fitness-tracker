@@ -104,8 +104,17 @@ body {
 .btn-outline-primary {
     --bs-btn-color: #237915;
     --bs-btn-border-color: #237915;
+
+    /* Hover */
     --bs-btn-hover-bg: #237915;
     --bs-btn-hover-border-color: #237915;
+
+    /* Active (quando lo clicchi) */
+    --bs-btn-active-bg: #1a5a10;
+    --bs-btn-active-border-color: #17500e;
+
+    /* Focus ring (alone quando è selezionato) */
+    --bs-btn-focus-shadow-rgb: 35, 121, 21;
 }
 
 /* Forziamo i testi e gli sfondi primari */
@@ -147,4 +156,18 @@ body {
         margin-top: 60px; 
         padding: 80px 0 50px 0; 
     }
+}
+
+.spinner-overlay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5rem 0;
+    color: #6c757d;
+}
+
+.spinner-lg {
+    width: 3rem;
+    height: 3rem;
 }

@@ -30,8 +30,13 @@
         </header>
 
         <section class="container my-5 py-4 flex-grow-1">
-            
-            <div v-if="coaches.length === 0" class="text-center text-muted py-5">
+
+            <div v-if="loading" class="spinner-overlay">
+                <div class="spinner-border text-primary spinner-lg" role="status"></div>
+                <p class="mt-3">Caricamento coach...</p>
+            </div>
+
+            <div v-else-if="coaches.length === 0" class="text-center text-muted py-5">
                 <i class="bi bi-people-fill display-1 opacity-25"></i>
                 <h3 class="mt-3">Nessun coach ancora disponibile</h3>
                 <p>I nostri manager stanno inserendo i professionisti. Torna a trovarci presto!</p>
@@ -90,10 +95,12 @@
                                         <div class="border-top pt-3 mt-2 text-center">
                                             <ul class="list-inline mb-0 text-muted small d-flex flex-column flex-md-row justify-content-center gap-2 gap-md-4">
                                                 <li class="list-inline-item mx-0" v-if="selectedCoach.email">
-                                                    <i class="bi bi-envelope-fill me-1 text-primary"></i> {{ selectedCoach.email }}
+                                                    <i class="bi bi-envelope-fill me-1 text-primary"></i>
+                                                    <a :href="'mailto:'+selectedCoach.email" class="text-muted text-decoration-none">{{ selectedCoach.email }}</a>
                                                 </li>
                                                 <li class="list-inline-item mx-0" v-if="selectedCoach.telefono">
-                                                    <i class="bi bi-telephone-fill me-1 text-primary"></i> {{ selectedCoach.telefono }}
+                                                    <i class="bi bi-telephone-fill me-1 text-primary"></i>
+                                                    <a :href="'tel:'+selectedCoach.telefono" class="text-muted text-decoration-none">{{ selectedCoach.telefono }}</a>
                                                 </li>
                                             </ul>
                                         </div>
