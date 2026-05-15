@@ -32,7 +32,14 @@
             </div>
         </header>
 
-        <div class="container my-5 flex-grow-1">
+        <!-- STATO CARICAMENTO -->
+        <div v-if="loadingDati" class="spinner-overlay flex-grow-1">
+            <div class="spinner-border text-primary spinner-lg" role="status"></div>
+            <p class="mt-3">Caricamento dati...</p>
+        </div>
+
+        <!-- CONTENUTO PRINCIPALE (visibile solo dopo il caricamento) -->
+        <div v-else class="container my-5 flex-grow-1">
             <div class="row g-4">
                 
                 <div class="col-lg-4">

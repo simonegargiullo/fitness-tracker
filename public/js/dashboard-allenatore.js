@@ -54,7 +54,7 @@ const app = createApp({
         note_pasto: "Pranzo",
       },
 
-      loading: false,
+      loading: true,
     };
   },
   computed: {
@@ -171,6 +171,8 @@ const app = createApp({
         this.sportiviAttivi = await resAttivi.json();
       } catch (err) {
         console.error(err);
+      } finally {
+        this.loading = false;
       }
     },
 
