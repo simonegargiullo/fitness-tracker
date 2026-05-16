@@ -30,12 +30,10 @@
             <div class="container position-relative">
                 <h1 class="display-6 fw-bold mb-1"><i class="bi bi-person-workspace text-white"></i> Pannello Sportivo</h1>
                 <p class="mb-0 opacity-75 text-light" v-if="utente.nome">Ciao {{ utente.nome }}, bentornato!</p>
-                
-                <button @click="apriModaleProfilo" class="btn btn-outline-light btn-sm rounded-pill fw-bold position-absolute top-0 end-0 mt-2 d-none d-md-block">
+
+                <!-- Unico pulsante per tutti i dispositivi: mostra sempre testo + icona -->
+                <button @click="apriModaleProfilo" class="btn btn-outline-light btn-sm rounded-pill fw-bold position-absolute top-0 end-0 mt-2">
                     <i class="bi bi-pencil-square me-1"></i> Il Mio Profilo
-                </button>
-                <button @click="apriModaleProfilo" class="btn btn-outline-light btn-sm rounded-circle mt-3 d-md-none mx-auto">
-                    <i class="bi bi-pencil-square"></i>
                 </button>
             </div>
         </header>
@@ -106,8 +104,9 @@
                                                 </h6>
                                                 <small class="text-muted"><i class="bi bi-calendar3 me-1"></i> {{ formattaData(s.data_creazione) }}</small>
                                             </div>
-                                            <button class="btn btn-sm btn-primary rounded-pill fw-bold shadow-sm" @click="mostraModaleScheda(s)">
-                                                <i class="bi bi-eye text-white"></i> Apri
+                                            <!-- Bottone Apri standard: stessa forma e larghezza minima garantita -->
+                                            <button class="btn btn-sm btn-primary rounded-pill fw-bold shadow-sm" style="min-width: 70px;" @click="mostraModaleScheda(s)">
+                                                <i class="bi bi-eye text-white me-1"></i> Apri
                                             </button>
                                         </div>
                                     </div>
@@ -140,8 +139,9 @@
                                                 </h6>
                                                 <small class="text-muted"><i class="bi bi-calendar3 me-1"></i> {{ formattaData(d.data_creazione) }}</small>
                                             </div>
-                                            <button class="btn btn-sm btn-primary rounded-pill fw-bold shadow-sm" @click="mostraModaleDieta(d)">
-                                                <i class="bi bi-eye text-white"></i> Apri
+                                            <!-- Bottone Apri standard: stessa forma e larghezza minima garantita -->
+                                            <button class="btn btn-sm btn-primary rounded-pill fw-bold shadow-sm" style="min-width: 70px;" @click="mostraModaleDieta(d)">
+                                                <i class="bi bi-eye text-white me-1"></i> Apri
                                             </button>
                                         </div>
                                     </div>
