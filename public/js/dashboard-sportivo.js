@@ -1,21 +1,4 @@
-// =============================================================
-// dashboard-sportivo.js  —  Logica della Dashboard Sportivo
-// =============================================================
-// Questa pagina cambia aspetto in base allo "stato" dell'atleta:
-//   'nessuna'   → mostra la lista dei coach disponibili per scegliere
-//   'in_attesa' → mostra un messaggio di attesa (il coach deve accettare)
-//   'accettata' → mostra schede allenamento e piani alimentari assegnati
-//
-// API usate:
-//   GET  /api/sessione                     → verifica login e ruolo
-//   GET  /api/sportivo/stato               → stato richiesta e nome coach
-//   GET  /api/allenatori                   → lista coach (solo se stato = 'nessuna')
-//   POST /api/sportivo/scegli-allenatore   → invia richiesta al coach
-//   GET  /api/sportivo/profilo             → dati profilo (per il modal modifica)
-//   PUT  /api/sportivo/profilo             → salva le modifiche al profilo
-//   GET  /api/sportivo/mie-schede          → schede allenamento ricevute
-//   GET  /api/sportivo/mie-diete           → piani alimentari ricevuti
-// =============================================================
+// public/js/dashboard-sportivo.js
 
 const { createApp } = Vue;
 
@@ -23,86 +6,84 @@ const app = createApp({
     data() {
         return {
             utente: { nome: '' },
-
-            // Stato della relazione con l'allenatore: 'caricamento' → 'nessuna' / 'in_attesa' / 'accettata'
-            // Il template HTML usa v-if per mostrare la sezione corretta
-            statoRichiesta: 'caricamento',
+            statoRichiesta: 'caricamento', 
             nomeAllenatore: '',
             listaAllenatori: [],
-
-            // Scelta coach: id temporaneo usato dal modal di conferma
+            
+            // Variabili per la scelta del coach (collegate al modale di conferma)
             idCoachSelezionato: null,
             loadingScelta: false,
-
-            // Profilo sportivo: usato nel modal "Modifica Profilo"
+            
+            // Dati Profilo Sportivo
             profilo: {
-                nome: '', email: '', sesso: '',
-                data_nascita: '',  // Formato YYYY-MM-DD per <input type="date">
-                peso: '', altezza: '', obiettivo: '',
-                attitudini: '', esperienza_pregressa: ''
+                nome: '',
+                email: '',
+                sesso: '',
+                eta: '',
+                peso: '',
+                altezza: '',
+                obiettivo: '',
+                attitudini: '',
+                esperienza_pregressa: ''
             },
             loadingProfilo: false,
 
-            // Storico schede allenamento (ogni scheda ha un array di esercizi)
+            // Dati Storico Schede Allenamento
             storicoSchede: [],
-            schedaSelezionata: { titolo: '', esercizi: [] },
+            schedaSelezionata: { 
+                titolo: '', 
+                esercizi: [] 
+            },
             loadingPdf: false,
 
-            // Storico piani alimentari (ogni dieta ha un array di alimenti)
+            // Dati Storico Piani Alimentari
             storicoDiete: [],
-            dietaSelezionata: { titolo: '', alimenti: [] },
+            dietaSelezionata: { 
+                titolo: '', 
+                alimenti: [] 
+            },
             loadingPdfDieta: false
         }
     },
     mounted() {
-        // Al caricamento della pagina verifica subito che l'utente sia loggato come sportivo
         this.inizializzaDashboard();
     },
     methods: {
-
-        // ==========================================================
-        // INIZIALIZZAZIONE — Verifica sessione e carica i dati
-        // ==========================================================
         async inizializzaDashboard() {
             try {
                 const resSessione = await fetch('/api/sessione');
                 const datiSessione = await resSessione.json();
 
-                // Se non loggato o ruolo sbagliato → redirect al login
                 if (!datiSessione.loggato || datiSessione.utente.ruolo !== 'sportivo') {
                     window.location.href = 'login.html';
                     return;
                 }
-
+                
                 this.utente = datiSessione.utente;
                 await this.caricaStatoSportivo();
 
             } catch (error) {
-                // Errore di rete → andiamo al login per sicurezza
                 window.location.href = 'login.html';
             }
         },
 
-        // ==========================================================
-        // PROFILO — Lettura e modifica
-        // ==========================================================
-
-        // Apre il modal caricando prima i dati aggiornati dal server
+        // --- GESTIONE PROFILO SPORTIVO ---
         async apriModaleProfilo() {
             try {
                 const res = await fetch('/api/sportivo/profilo');
                 if (res.ok) {
                     this.profilo = await res.json();
-                    new bootstrap.Modal(document.getElementById('modaleProfilo')).show();
+                    const modale = new bootstrap.Modal(document.getElementById('modaleProfilo'));
+                    modale.show();
                 } else {
                     mostraNotifica("Errore nel recupero dei dati del profilo.", "danger");
                 }
             } catch (error) {
-                mostraNotifica("Errore di connessione.", "danger");
+                console.error("Errore profilo:", error);
+                mostraNotifica("Errore di connessione al server.", "danger");
             }
         },
 
-        // Invia le modifiche al server tramite PUT
         async salvaProfilo() {
             this.loadingProfilo = true;
             try {
@@ -112,46 +93,39 @@ const app = createApp({
                     body: JSON.stringify(this.profilo)
                 });
                 const data = await res.json();
-
+                
                 if (res.ok) {
                     mostraNotifica(data.message, "success");
-                    // Aggiorna anche il nome nella navbar senza ricaricare la pagina
-                    this.utente.nome = this.profilo.nome;
+                    this.utente.nome = this.profilo.nome; // Aggiorna il nome in tempo reale nell'header blu
                     bootstrap.Modal.getInstance(document.getElementById('modaleProfilo')).hide();
                 } else {
                     mostraNotifica(data.error || "Errore durante il salvataggio.", "danger");
                 }
             } catch (error) {
+                console.error("Errore salvataggio profilo:", error);
                 mostraNotifica("Errore di connessione. Riprova più tardi.", "danger");
             } finally {
                 this.loadingProfilo = false;
             }
         },
 
-        // ==========================================================
-        // GESTIONE COACH — Stato, scelta, conferma
-        // ==========================================================
-
-        // Carica lo stato attuale e decide cosa mostrare nella dashboard
+        // --- GESTIONE STATO E RICHIESTE ALLENATORE ---
         async caricaStatoSportivo() {
             try {
                 const res = await fetch('/api/sportivo/stato');
                 const dati = await res.json();
-
+                
                 this.statoRichiesta = dati.stato_richiesta;
                 this.nomeAllenatore = dati.nome_allenatore;
 
                 if (this.statoRichiesta === 'nessuna') {
-                    // Nessun coach scelto → mostra la lista per scegliere
                     this.caricaListaAllenatori();
                 } else if (this.statoRichiesta === 'accettata') {
-                    // Coach assegnato → carica le schede e le diete
                     this.caricaStoricoSchede();
-                    this.caricaStoricoDiete();
+                    this.caricaStoricoDiete(); 
                 }
-                // Se 'in_attesa': non serve caricare altro, il template mostra il messaggio di attesa
-            } catch (error) {
-                console.error(error);
+            } catch (error) { 
+                console.error("Errore caricamento stato:", error); 
             }
         },
 
@@ -159,54 +133,51 @@ const app = createApp({
             try {
                 const res = await fetch('/api/allenatori');
                 if (res.ok) this.listaAllenatori = await res.json();
-            } catch (error) {
-                console.error(error);
+            } catch (error) { 
+                console.error("Errore caricamento lista coach:", error); 
             }
         },
 
-        // Apre il modal di conferma prima di inviare la richiesta al coach
+        // Apre il modale di conferma Bootstrap anziché usare l'alert confirm() nativo
         chiediConfermaCoach(idCoach) {
             this.idCoachSelezionato = idCoach;
             new bootstrap.Modal(document.getElementById('modalConfermaCoach')).show();
         },
 
-        // Invia effettivamente la richiesta dopo che l'utente ha confermato nel modal
         async confermaSceltaAllenatore() {
             if (!this.idCoachSelezionato) return;
             this.loadingScelta = true;
-
+            
             try {
                 const res = await fetch('/api/sportivo/scegli-allenatore', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id_allenatore: this.idCoachSelezionato })
                 });
-
+                
                 if (res.ok) {
                     mostraNotifica("Richiesta inviata con successo!", "success");
                     bootstrap.Modal.getInstance(document.getElementById('modalConfermaCoach')).hide();
-                    // Ricarica lo stato → la dashboard mostrerà ora "in attesa"
                     this.caricaStatoSportivo();
                 } else {
-                    mostraNotifica("Errore nell'invio della richiesta.", "danger");
+                    mostraNotifica("Errore nell'invio della richiesta all'allenatore.", "danger");
                 }
-            } catch (error) {
+            } catch (error) { 
+                console.error("Errore scelta allenatore:", error);
                 mostraNotifica("Errore di connessione al server.", "danger");
             } finally {
+                this.idCoachSelezionato = null;
                 this.loadingScelta = false;
             }
         },
 
-        // ==========================================================
-        // SCHEDE ALLENAMENTO E PIANI ALIMENTARI
-        // ==========================================================
-
+        // --- STORICO PROGRAMMI ---
         async caricaStoricoSchede() {
             try {
                 const res = await fetch('/api/sportivo/mie-schede');
                 if (res.ok) this.storicoSchede = await res.json();
-            } catch (error) {
-                console.error("Errore recupero schede:", error);
+            } catch (error) { 
+                console.error("Errore recupero storico schede:", error); 
             }
         },
 
@@ -214,86 +185,84 @@ const app = createApp({
             try {
                 const res = await fetch('/api/sportivo/mie-diete');
                 if (res.ok) this.storicoDiete = await res.json();
-            } catch (error) {
-                console.error("Errore recupero diete:", error);
+            } catch (error) { 
+                console.error("Errore recupero storico diete:", error); 
             }
         },
 
-        // Apre il modal con il dettaglio della scheda selezionata
+        formattaData(dataStr) {
+            if (!dataStr) return '';
+            const data = new Date(dataStr);
+            return data.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' });
+        },
+
         mostraModaleScheda(scheda) {
-            this.schedaSelezionata = scheda;
+            this.schedaSelezionata = { ...scheda };
             new bootstrap.Modal(document.getElementById('modaleMiaScheda')).show();
         },
 
-        // Apre il modal con il dettaglio della dieta selezionata
         mostraModaleDieta(dieta) {
-            this.dietaSelezionata = dieta;
+            this.dietaSelezionata = { ...dieta };
             new bootstrap.Modal(document.getElementById('modaleMiaDieta')).show();
         },
 
-        // ==========================================================
-        // EXPORT PDF — usa la libreria html2pdf.js (CDN)
-        // ==========================================================
-
-        // Genera il PDF della scheda allenamento.
-        // this.$refs.areaPdf è il riferimento al div HTML da convertire in PDF.
-        scaricaPDF() {
+        // ==========================================
+        // DOWNLOAD PDF REALI DAL SERVER (PDFKit)
+        // ==========================================
+        async scaricaPDF() {
             this.loadingPdf = true;
-            const elemento = this.$refs.areaPdf;
-            const nomeFile = this.schedaSelezionata.titolo.replace(/ /g, "_") + ".pdf";
-            const opt = {
-                margin: 10,
-                filename: nomeFile,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-            html2pdf().set(opt).from(elemento).save()
-                .then(() => {
-                    this.loadingPdf = false;
-                    mostraNotifica("Download della scheda avviato!", "success");
-                })
-                .catch(err => {
-                    console.error(err);
-                    this.loadingPdf = false;
-                    mostraNotifica("Errore nella generazione del PDF.", "danger");
-                });
+            // Legge l'ID raggruppato o l'id record dipendente dal mapping SQL
+            const idScheda = this.schedaSelezionata.id || this.schedaSelezionata.scheda_id; 
+
+            try {
+                const res = await fetch(`/api/scarica-scheda/${idScheda}`);
+                if (!res.ok) throw new Error('Errore download');
+                
+                // Converte lo stream binario in blob pronto al download locale indipendente dal display
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${this.schedaSelezionata.titolo.replace(/ /g, "_")}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+                
+                mostraNotifica("Download della scheda avviato con successo!", "success");
+            } catch (err) {
+                console.error(err);
+                mostraNotifica("Errore durante il download del PDF dal server.", "danger");
+            } finally {
+                this.loadingPdf = false;
+            }
         },
 
-        // Stessa logica di scaricaPDF(), ma per il piano alimentare
-        scaricaPDFDieta() {
+        async scaricaPDFDieta() {
             this.loadingPdfDieta = true;
-            const elemento = this.$refs.areaPdfDieta;
-            const nomeFile = this.dietaSelezionata.titolo.replace(/ /g, "_") + ".pdf";
-            const opt = {
-                margin: 10,
-                filename: nomeFile,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-            html2pdf().set(opt).from(elemento).save()
-                .then(() => {
-                    this.loadingPdfDieta = false;
-                    mostraNotifica("Download della dieta avviato!", "success");
-                })
-                .catch(err => {
-                    console.error(err);
-                    this.loadingPdfDieta = false;
-                    mostraNotifica("Errore nella generazione del PDF.", "danger");
-                });
-        },
+            const idDieta = this.dietaSelezionata.id || this.dietaSelezionata.dieta_id;
 
-        // ==========================================================
-        // UTILITY
-        // ==========================================================
-
-        // Formatta una data ISO (es. "2025-05-15") in formato italiano (es. "15 mag 2025")
-        formattaData(dataStr) {
-            if (!dataStr) return '';
-            return new Date(dataStr).toLocaleDateString('it-IT', {
-                day: '2-digit', month: 'short', year: 'numeric'
-            });
+            try {
+                const res = await fetch(`/api/scarica-dieta/${idDieta}`);
+                if (!res.ok) throw new Error('Errore download');
+                
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${this.dietaSelezionata.titolo.replace(/ /g, "_")}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+                
+                mostraNotifica("Download del piano alimentare avviato!", "success");
+            } catch (err) {
+                console.error(err);
+                mostraNotifica("Errore durante il download del PDF dal server.", "danger");
+            } finally {
+                this.loadingPdfDieta = false;
+            }
         }
     }
 });

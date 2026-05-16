@@ -6,6 +6,8 @@
 //   - multer (upload di file (foto profilo, immagini esercizi))
 //   - pg (Pool) (connessione al database Supabase (PostgreSQL))
 //   - dotenv (variabili d'ambiente da file .env (sicurezza))
+//   - fs (file system, usato da PDFKit per generare i PDF)
+//   - PDFKit (generazione PDF per esportazione schede e diete)
 
 require('dotenv').config(); // Carica le variabili d'ambiente da .env (mai committare il file reale!)
 const express = require("express");
@@ -16,6 +18,8 @@ const pgSession = require("connect-pg-simple")(session);
 const { Pool } = require("pg");
 const bcrypt = require("bcrypt");
 const saltRounds = 10; // Numero di cicli bcrypt: 10 è lo standard raccomandato (sicuro ma non troppo lento)
+const fs = require('fs');
+const PDFDocument = require("pdfkit");
 
 // UPLOAD FILE — Multer
 // Gestisce l'upload delle immagini (foto profilo allenatore, immagini esercizi).
@@ -1002,6 +1006,198 @@ app.put('/api/manager/messaggi/:id/letto', verificaManager, async (req, res) => 
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// ==========================================
+// --- GENERAZIONE PDF LATO SERVER ---
+// ==========================================
+
+// Scarica Scheda Allenamento in PDF
+app.get("/api/scarica-scheda/:id", async (req, res) => {
+    const idScheda = req.params.id;
+
+    try {
+        const query = `
+            SELECT s.titolo, s.data_creazione, u.nome as nome_sportivo, ua.nome as nome_allenatore,
+                   e.nome as nome_esercizio, e.gruppo_muscolare, e.url_immagine,
+                   se.serie, se.ripetizioni, se.recupero, se.note
+            FROM schede_allenamento s
+            JOIN utenti u ON s.id_sportivo = u.id
+            JOIN utenti ua ON s.id_allenatore = ua.id
+            JOIN schede_esercizi se ON s.id = se.id_scheda
+            JOIN esercizi e ON se.id_esercizio = e.id
+            WHERE s.id = $1
+            ORDER BY se.id ASC
+        `;
+        const result = await pool.query(query, [idScheda]);
+
+        if (result.rows.length === 0) return res.status(404).send("Scheda non trovata.");
+
+        const dati = result.rows;
+        const scheda = dati[0];
+
+        const doc = new PDFDocument({ margin: 0, size: 'A4' });
+
+        res.setHeader('Content-disposition', `attachment; filename="${scheda.titolo.replace(/ /g, "_")}.pdf"`);
+        res.setHeader('Content-type', 'application/pdf');
+        doc.pipe(res);
+
+        // --- HEADER COLORATO (VERDE) ---
+        doc.rect(0, 0, 600, 130).fill('#237915'); 
+        doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(26).text('FITNESS TRACKER', 0, 40, { align: 'center' });
+        doc.fontSize(16).font('Helvetica').text(`SCHEDA DI ALLENAMENTO`, { align: 'center' });
+        doc.fontSize(12).moveDown(0.5).text(`Atleta: ${scheda.nome_sportivo}   |   Coach: ${scheda.nome_allenatore}   |   Data: ${new Date(scheda.data_creazione).toLocaleDateString('it-IT')}`, { align: 'center' });
+
+        // --- CORPO DEL DOCUMENTO ---
+        doc.y = 160;
+        doc.fillColor('#212529').font('Helvetica-Bold').fontSize(18).text(scheda.titolo.toUpperCase(), 50, doc.y);
+        doc.moveDown(1);
+
+        dati.forEach((ex, index) => {
+            // Se stiamo per finire la pagina, ne creiamo una nuova
+            if (doc.y > 700) {
+                doc.addPage();
+                doc.y = 50;
+            }
+
+            let startY = doc.y;
+
+            // 1. Linea separatrice
+            doc.moveTo(50, startY).lineTo(545, startY).lineWidth(0.5).strokeColor('#dee2e6').stroke();
+            startY += 15;
+
+            // 2. Immagine dell'esercizio (se esiste nel DB e fisicamente sul server)
+            let imageOffset = 50;
+            if (ex.url_immagine) {
+                const imagePath = path.join(__dirname, 'public', ex.url_immagine);
+                if (fs.existsSync(imagePath)) {
+                    // Disegna l'immagine 60x60
+                    doc.image(imagePath, 50, startY, { fit: [60, 60] });
+                    imageOffset = 125; // Sposta il testo più a destra se c'è l'immagine
+                }
+            } else {
+                // Se non c'è l'immagine, disegniamo un quadrato grigio segnaposto
+                doc.rect(50, startY, 60, 60).fillAndStroke('#f8f9fa', '#dee2e6');
+                doc.fillColor('#adb5bd').font('Helvetica').fontSize(10).text('No Img', 62, startY + 25);
+                imageOffset = 125;
+            }
+
+            // 3. Testo dell'esercizio
+            doc.fillColor('#237915').font('Helvetica-Bold').fontSize(14).text(`${index + 1}. ${ex.nome_esercizio}`, imageOffset, startY);
+            
+            doc.fillColor('#6c757d').font('Helvetica').fontSize(10).text(`Gruppo: ${ex.gruppo_muscolare}`, imageOffset, startY + 16);
+            
+            doc.fillColor('#212529').font('Helvetica-Bold').fontSize(12).text(`Serie: ${ex.serie}   |   Ripetizioni: ${ex.ripetizioni}   |   Recupero: ${ex.recupero}`, imageOffset, startY + 32);
+            
+            if (ex.note) {
+                doc.fillColor('#dc3545').font('Helvetica-Oblique').fontSize(10).text(`Note: ${ex.note}`, imageOffset, startY + 48);
+            }
+
+            // Muove il cursore giù per il prossimo elemento (Considerando l'altezza dell'immagine)
+            doc.y = startY + 75;
+        });
+
+        // --- FOOTER ---
+        const pages = doc.bufferedPageRange ? doc.bufferedPageRange().count : 1;
+        doc.fillColor('#adb5bd').font('Helvetica').fontSize(9).text('Generato automaticamente da Fitness Tracker', 0, 780, { align: 'center' });
+
+        doc.end();
+
+    } catch (err) {
+        console.error("Errore generazione PDF Scheda:", err);
+        res.status(500).send("Errore nella generazione del PDF.");
+    }
+});
+
+
+// Scarica Piano Alimentare in PDF
+app.get("/api/scarica-dieta/:id", async (req, res) => {
+    const idDieta = req.params.id;
+
+    try {
+        const query = `
+            SELECT sa.titolo, sa.data_creazione, u.nome as nome_sportivo, ua.nome as nome_allenatore,
+                   a.nome as nome_alimento, a.calorie, a.proteine, a.carboidrati, a.grassi,
+                   sal.quantita_grammi, sal.note_pasto
+            FROM schede_alimentari sa
+            JOIN utenti u ON sa.id_sportivo = u.id
+            JOIN utenti ua ON sa.id_allenatore = ua.id
+            JOIN schede_alimenti sal ON sa.id = sal.id_scheda
+            JOIN alimenti a ON sal.id_alimento = a.id
+            WHERE sa.id = $1
+            ORDER BY sal.id ASC
+        `;
+        const result = await pool.query(query, [idDieta]);
+
+        if (result.rows.length === 0) return res.status(404).send("Dieta non trovata.");
+
+        const dati = result.rows;
+        const dieta = dati[0];
+
+        const doc = new PDFDocument({ margin: 0, size: 'A4' });
+
+        res.setHeader('Content-disposition', `attachment; filename="${dieta.titolo.replace(/ /g, "_")}.pdf"`);
+        res.setHeader('Content-type', 'application/pdf');
+        doc.pipe(res);
+
+        // --- HEADER COLORATO (VERDE) ---
+        doc.rect(0, 0, 600, 130).fill('#237915'); 
+        doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(26).text('FITNESS TRACKER', 0, 40, { align: 'center' });
+        doc.fontSize(16).font('Helvetica').text(`PIANO NUTRIZIONALE`, { align: 'center' });
+        doc.fontSize(12).moveDown(0.5).text(`Atleta: ${dieta.nome_sportivo}   |   Coach: ${dieta.nome_allenatore}   |   Data: ${new Date(dieta.data_creazione).toLocaleDateString('it-IT')}`, { align: 'center' });
+
+        // --- CORPO DEL DOCUMENTO ---
+        doc.y = 160;
+        doc.fillColor('#212529').font('Helvetica-Bold').fontSize(18).text(dieta.titolo.toUpperCase(), 50, doc.y);
+        doc.moveDown(1);
+
+        dati.forEach((alim) => {
+            if (doc.y > 730) {
+                doc.addPage();
+                doc.y = 50;
+            }
+
+            let startY = doc.y;
+
+            // Linea separatrice
+            doc.moveTo(50, startY).lineTo(545, startY).lineWidth(0.5).strokeColor('#dee2e6').stroke();
+            startY += 10;
+
+            // Alimento e Quantità
+            doc.fillColor('#212529').font('Helvetica-Bold').fontSize(14).text(`${alim.nome_alimento}`, 50, startY);
+            doc.fillColor('#237915').fontSize(14).text(`${alim.quantita_grammi}g`, 450, startY, { width: 95, align: 'right' });
+            
+            // Pasto / Note
+            doc.fillColor('#237915').font('Helvetica-Bold').fontSize(11).text(`Pasto: ${alim.note_pasto}`, 50, startY + 18);
+            
+            // Calcolo Macros
+            const kcal = Math.round((alim.calorie * alim.quantita_grammi) / 100);
+            const pro = (alim.proteine * alim.quantita_grammi / 100).toFixed(1);
+            const car = (alim.carboidrati * alim.quantita_grammi / 100).toFixed(1);
+            const fat = (alim.grassi * alim.quantita_grammi / 100).toFixed(1);
+
+            // Stampa Macros colorati SENZA sovrapposizioni
+            doc.fillColor('#6c757d').font('Helvetica').fontSize(10).text(`Kcal: `, 50, startY + 34, { continued: true })
+               .fillColor('#212529').font('Helvetica-Bold').text(`${kcal}`, { continued: true })
+               .fillColor('#6c757d').font('Helvetica').text(`   |   Pro: `, { continued: true })
+               .fillColor('#dc3545').font('Helvetica-Bold').text(`${pro}g`, { continued: true })
+               .fillColor('#6c757d').font('Helvetica').text(`   |   Carbo: `, { continued: true })
+               .fillColor('#0d6efd').font('Helvetica-Bold').text(`${car}g`, { continued: true })
+               .fillColor('#6c757d').font('Helvetica').text(`   |   Fat: `, { continued: true })
+               .fillColor('#ffc107').font('Helvetica-Bold').text(`${fat}g`); 
+            
+            doc.y = startY + 55;
+        });
+
+        // --- FOOTER ---
+        doc.fillColor('#adb5bd').font('Helvetica').fontSize(9).text('Generato automaticamente da Fitness Tracker', 0, 780, { align: 'center' });
+
+        doc.end();
+
+    } catch (err) {
+        console.error("Errore generazione PDF Dieta:", err);
+        res.status(500).send("Errore nella generazione del PDF.");
+    }
 });
 
 // GESTIONE ERRORI 404 E AVVIO
