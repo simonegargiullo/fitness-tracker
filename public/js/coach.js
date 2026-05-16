@@ -1,53 +1,57 @@
-// public/js/coach.js
+// =============================================================
+// coach.js  —  Logica della pagina Coach (coach.html)
+// =============================================================
+// Mostra la lista degli allenatori disponibili in cards.
+// Al click su una card si apre un modal Bootstrap con i dettagli.
+// API chiamata: GET /api/allenatori (pubblica, senza autenticazione)
+// =============================================================
 
 const { createApp } = Vue;
 
 const app = createApp({
     data() {
         return {
-            coaches: [], // Inizia vuoto, si riempirà tramite il database
-            selectedCoach: null, // Conterrà i dati dell'allenatore cliccato per mostrarli nel pop-up
-            modalInstance: null, // Conterrà l'oggetto tecnico del pop-up di Bootstrap
-            loading: true
+            coaches: [],           // Array di allenatori caricati dal database
+            selectedCoach: null,   // Allenatore attualmente selezionato (mostrato nel modal)
+            modalInstance: null,   // Riferimento all'istanza Bootstrap del modal
+            loading: true          // true durante il caricamento, poi diventa false
         }
     },
     mounted() {
-        // Appena la pagina è caricata, prepariamo il pop-up (nascosto) per poterlo aprire dopo
+        // Inizializza il modal Bootstrap una sola volta al caricamento della pagina
+        // (è più efficiente che crearlo ogni volta al click)
         this.modalInstance = new bootstrap.Modal(document.getElementById('coachModal'));
-        
-        // E lanciamo subito la richiesta al server per scaricare i coach
+
+        // Carica subito la lista degli allenatori dal server
         this.caricaAllenatori();
     },
     methods: {
-        // Funzione che contatta il tuo server (sostituisci l'URL con la tua vera rotta API se diversa)
+        // Chiama il backend e popola l'array coaches con i dati del DB
         async caricaAllenatori() {
             try {
-                // Esempio: supponiamo che il backend abbia una rotta che restituisce gli utenti con ruolo "allenatore"
-                const res = await fetch('/api/allenatori'); 
+                const res = await fetch('/api/allenatori');
                 if (res.ok) {
-                    const dati = await res.json();
-                    this.coaches = dati; // Salviamo i coach reali provenienti dal DB!
+                    this.coaches = await res.json();
                 } else {
                     console.error("Errore nel recupero degli allenatori.");
                 }
             } catch (error) {
                 console.error("Errore di connessione al server:", error);
             } finally {
-                this.loading = false; // Abbiamo finito di caricare, anche se c'è stato un errore
+                // Nasconde lo spinner sia in caso di successo che di errore
+                this.loading = false;
             }
         },
-        
-        // Funzione chiamata quando si clicca il bottone sulla card
+
+        // Viene chiamata quando l'utente clicca su una card coach
+        // Salva il coach selezionato e apre il modal con i suoi dettagli
         apriDettagli(coach) {
-            this.selectedCoach = coach; // Copiamo i dati del coach specifico in selectedCoach
-            this.modalInstance.show(); // Apriamo il pop-up
+            this.selectedCoach = coach;
+            this.modalInstance.show();
         }
     }
 });
 
-// Registriamo i componenti globali (Navbar e Footer)
 app.component('app-navbar', NavbarComponent);
 app.component('app-footer', FooterComponent);
-
-// Montiamo l'app
 app.mount('#app');

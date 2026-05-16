@@ -171,3 +171,40 @@ body {
     width: 3rem;
     height: 3rem;
 }
+
+/* =========================================
+   FIX RESPONSIVE AGGIUNTIVI
+   ========================================= */
+
+/* Fix: hover bloccato su dispositivi touch (es. telefoni) */
+@media (hover: none) {
+    .hover-card:hover {
+        transform: none;
+        box-shadow: none !important;
+    }
+}
+
+/* Fix: page-header su mobile - padding corretto sotto navbar fissa */
+@media (max-width: 768px) {
+    .page-header {
+        margin-top: 0;
+        padding: 110px 0 50px 0;
+    }
+}
+
+/* Fix: tab-pill del manager su schermi molto piccoli */
+@media (max-width: 576px) {
+    .nav-pills.nav-fill .nav-link {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.3rem;
+    }
+    /* Nasconde le icone nelle tab quando lo spazio è scarso */
+    .nav-pills.nav-fill .nav-link .bi {
+        display: none;
+    }
+}
+
+/* Fix: classe bg-coach usata in coach.html — sfondo identico al page-header standard */
+.bg-coach {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)), url('../img/team-bg.jpg');
+}

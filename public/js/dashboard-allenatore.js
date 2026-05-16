@@ -1,4 +1,24 @@
-// public/js/dashboard-allenatore.js
+// =============================================================
+// dashboard-allenatore.js  —  Logica della Dashboard Allenatore
+// =============================================================
+// Funzionalità principali:
+//   1. Modifica del proprio profilo (foto, specialità, bio)
+//   2. Visualizzazione e accettazione delle richieste degli sportivi
+//   3. Creazione schede allenamento per gli atleti accettati
+//   4. Creazione piani alimentari per gli atleti accettati
+//
+// API usate:
+//   GET  /api/sessione                  → verifica login
+//   GET  /api/allenatore/profilo        → dati profilo allenatore
+//   PUT  /api/allenatore/profilo        → salva modifiche profilo
+//   GET  /api/allenatore/richieste      → sportivi che chiedono di essere seguiti
+//   POST /api/allenatore/accetta-richiesta → accetta uno sportivo
+//   GET  /api/allenatore/miei-sportivi  → atleti già in carico
+//   GET  /api/esercizi                  → catalogo esercizi
+//   GET  /api/alimenti                  → catalogo alimenti
+//   POST /api/allenatore/crea-scheda    → crea scheda allenamento
+//   POST /api/allenatore/crea-dieta     → crea piano alimentare
+// =============================================================
 
 const { createApp } = Vue;
 
@@ -54,10 +74,18 @@ const app = createApp({
         note_pasto: "Pranzo",
       },
 
-      loading: true,
+      loadingDati: true,    // spinner pagina principale
+loadingScheda: false, // spinner bottone salva scheda
+loadingDieta: false,  // spinner bottone salva dieta
     };
   },
+  // ==========================================================
+  // COMPUTED — Dati derivati (ricalcolati automaticamente da Vue)
+  // ==========================================================
   computed: {
+    // Raggruppa il catalogo esercizi per gruppo muscolare.
+    // Risultato: { "Petto": [{...}, {...}], "Gambe": [{...}], ... }
+    // Usato nel <select> del modal scheda per mostrare i <optgroup>
     eserciziRaggruppati() {
       const raggruppati = {};
       this.catalogoEsercizi.forEach((ex) => {
@@ -72,6 +100,9 @@ const app = createApp({
     this.inizializzaDashboard();
   },
   methods: {
+    // ==========================================================
+    // INIZIALIZZAZIONE — Verifica sessione e carica i dati
+    // ==========================================================
     async inizializzaDashboard() {
       try {
         const res = await fetch("/api/sessione");
@@ -162,6 +193,7 @@ const app = createApp({
 
     // ==========================================
 
+    // Carica richieste in attesa e atleti già accettati (chiamate in parallelo)
     async caricaDati() {
       try {
         const resRichieste = await fetch("/api/allenatore/richieste");
@@ -172,10 +204,11 @@ const app = createApp({
       } catch (err) {
         console.error(err);
       } finally {
-        this.loading = false;
+        this.loadingDati = false;
       }
     },
 
+    // Carica esercizi e alimenti dal catalogo (servono nei modal scheda/dieta)
     async caricaCataloghi() {
       try {
         const resEs = await fetch("/api/esercizi");
@@ -188,6 +221,7 @@ const app = createApp({
       }
     },
 
+    // Formatta una data ISO in formato italiano leggibile (es. "15 mag 2025")
     formattaData(dataStr) {
       if (!dataStr) return "";
       const d = new Date(dataStr);
@@ -198,6 +232,8 @@ const app = createApp({
       });
     },
 
+    // Accetta la richiesta di uno sportivo: cambia stato_richiesta → 'accettata'
+    // e sposta la card da "Richieste" a "I Miei Atleti"
     async accettaRichiesta(idSportivo) {
       try {
         const res = await fetch("/api/allenatore/accetta-richiesta", {
@@ -229,6 +265,8 @@ const app = createApp({
       new bootstrap.Modal(document.getElementById("modalScheda")).show();
     },
 
+    // Aggiunge un esercizio alla lista TEMPORANEA della scheda corrente.
+    // La scheda viene inviata al server solo quando si clicca "Salva e Invia".
     aggiungiEsercizio() {
       if (!this.esercizioTemp.id_esercizio) {
         return mostraNotifica("Scegli un esercizio dal catalogo!", "warning");
@@ -255,11 +293,16 @@ const app = createApp({
       this.schedaCorrente.listaEsercizi.splice(index, 1);
     },
 
+    // Invia la scheda al server. Usa un unico POST con:
+    //   - titolo della scheda
+    //   - id dello sportivo destinatario
+    //   - array di tutti gli esercizi aggiunti
+    // Il server crea prima la scheda, poi inserisce gli esercizi in loop.
     async salvaSchedaDefinitiva() {
       if (this.schedaCorrente.listaEsercizi.length === 0) {
         return mostraNotifica("La scheda è vuota!", "warning");
       }
-      this.loading = true;
+      this.loadingScheda = true;
       try {
         const res = await fetch("/api/allenatore/crea-scheda", {
           method: "POST",
@@ -278,7 +321,7 @@ const app = createApp({
       } catch (err) {
         mostraNotifica("Errore di connessione.", "danger");
       }
-      this.loading = false;
+      this.loadingDati = false;
     },
 
     // ==========================================
@@ -294,6 +337,8 @@ const app = createApp({
       new bootstrap.Modal(document.getElementById("modalDieta")).show();
     },
 
+    // Aggiunge un alimento alla lista temporanea con le kcal calcolate al momento:
+    // kcal = (calorie_per_100g * grammi_inseriti) / 100
     aggiungiAlimento() {
       if (!this.alimentoTemp.id_alimento) {
         return mostraNotifica("Scegli un alimento dal catalogo!", "warning");
@@ -323,7 +368,7 @@ const app = createApp({
       if (this.dietaCorrente.listaAlimenti.length === 0) {
         return mostraNotifica("La dieta è vuota!", "warning");
       }
-      this.loading = true;
+      this.loadingDieta = true;
       try {
         const res = await fetch("/api/allenatore/crea-dieta", {
           method: "POST",
@@ -342,7 +387,7 @@ const app = createApp({
       } catch (err) {
         mostraNotifica("Errore di connessione.", "danger");
       }
-      this.loading = false;
+      this.loadingDati = false;
     },
   },
 });

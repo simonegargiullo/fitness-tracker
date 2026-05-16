@@ -1,4 +1,10 @@
-// public/js/login.js
+// =============================================================
+// login.js  —  Logica della pagina di accesso
+// =============================================================
+// API chiamata: POST /api/login
+// Dopo il login il server risponde con il ruolo dell'utente,
+// e questa pagina reindirizza alla dashboard corretta.
+// =============================================================
 
 const { createApp } = Vue;
 
@@ -9,7 +15,7 @@ const app = createApp({
                 email: '',
                 password: ''
             },
-            loading: false // Gestisce lo spinner sul bottone
+            loading: false  // Gestisce lo spinner sul bottone durante la chiamata al server
         }
     },
     methods: {
@@ -19,9 +25,7 @@ const app = createApp({
             try {
                 const res = await fetch('/api/login', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(this.form)
                 });
 
@@ -29,9 +33,12 @@ const app = createApp({
 
                 if (res.ok) {
                     mostraNotifica("Accesso consentito! Reindirizzamento in corso...", "success");
-                    
-                    // Piccolo ritardo per permettere all'utente di vedere il popup verde prima di cambiare pagina
+
+                    // Breve pausa (800ms) per permettere all'utente di vedere la notifica verde
+                    // prima di cambiare pagina
                     setTimeout(() => {
+                        // Il server restituisce il ruolo: lo usiamo per mandare l'utente
+                        // alla dashboard giusta (manager / allenatore / sportivo)
                         if (data.ruolo === 'manager') {
                             window.location.href = 'dashboard-manager.html';
                         } else if (data.ruolo === 'allenatore') {
@@ -42,14 +49,15 @@ const app = createApp({
                             window.location.href = 'index.html';
                         }
                     }, 800);
-                    
+
                 } else {
-                    // Errore restituito dal server (es. password errata)
+                    // Credenziali errate: notifica rossa
                     mostraNotifica(data.message || 'Credenziali non valide.', 'danger');
                     this.loading = false;
                 }
+
             } catch (error) {
-                // Errore di rete / Server offline
+                // Errore di rete o server offline
                 console.error("Errore di login:", error);
                 mostraNotifica('Errore di connessione al server. Riprova più tardi.', 'danger');
                 this.loading = false;
@@ -58,9 +66,6 @@ const app = createApp({
     }
 });
 
-// Registriamo i componenti globali (Navbar e Footer) prima di montare l'app
 app.component('app-navbar', NavbarComponent);
 app.component('app-footer', FooterComponent);
-
-// Montiamo l'applicazione
 app.mount('#app');

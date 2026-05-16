@@ -16,9 +16,9 @@
         
         <app-navbar></app-navbar>
 
-        <div style="margin-top: 76px;"></div>
+        <!-- Spaziatura sotto la navbar fissa — gestita con padding Bootstrap -->
 
-        <div class="container my-5 flex-grow-1 d-flex align-items-center justify-content-center">
+        <div class="container my-4 pt-4 flex-grow-1 d-flex align-items-center justify-content-center">
             <div class="col-lg-8 col-xl-7">
                 <div class="card shadow border-0 rounded-4">
                     
@@ -61,7 +61,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label fw-bold small">Data di Nascita *</label>
-                                    <input type="date" class="form-control bg-light" v-model="form.data_nascita" required>
+                                    <input type="date" class="form-control bg-light" v-model="form.data_nascita" :max="new Date().toISOString().split(\'T\')[0]" min="1920-01-01" required>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label fw-bold small">Peso (kg) *</label>

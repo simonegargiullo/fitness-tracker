@@ -1,4 +1,22 @@
-// public/js/dashboard-manager.js
+// =============================================================
+// dashboard-manager.js  —  Logica della Dashboard Manager
+// =============================================================
+// Il Manager è l'amministratore del sistema. Può:
+//   - Creare, modificare e rimuovere account allenatori
+//   - Gestire il catalogo esercizi (con foto) e alimenti
+//   - Leggere i messaggi di contatto inviati dagli utenti
+//
+// La dashboard ha tre viste principali, selezionabili tramite tab:
+//   'inserimento' → form per aggiungere coach/esercizi/alimenti
+//   'catalogo'    → tabelle con i dati esistenti e bottoni modifica/elimina
+//   'messaggi'    → lista messaggi ricevuti dal form contatti
+//
+// API usate (tutte richiedono ruolo 'manager'):
+//   POST/PUT/DELETE /api/manager/allenatori/:id
+//   POST/PUT/DELETE /api/manager/esercizi/:id
+//   POST/PUT/DELETE /api/manager/alimenti/:id
+//   GET/PUT         /api/manager/messaggi/:id
+// =============================================================
 
 const { createApp } = Vue;
 
@@ -31,26 +49,33 @@ const app = createApp({
       // --- MESSAGGI ---
       listaMessaggi: [], messaggioSelezionato: null,
 
-      // --- ELIMINAZIONE ---
+      // ==========================================================
+    // ELIMINAZIONE — Modal di conferma → chiamata DELETE
+    // ==========================================================
+
+    // Apre il modal generico di conferma eliminazione, impostando
+    // testo e tipo in base all'elemento da eliminare.
       deleteModal: { id: null, tipo: '', titolo: '', testo: '', loading: false }
     };
   },
   computed: {
     messaggiNonLetti() { return this.listaMessaggi.filter(m => !m.letto).length; }
   },
-  mounted() { this.verificaAccesso(); },
+  mounted() {
+    // Al caricamento verifica subito che l'utente sia loggato come manager
+    this.verificaAccesso(); },
   methods: {
     async verificaAccesso() {
       try {
         const res = await fetch("/api/sessione");
         const dati = await res.json();
         if (!dati.loggato || dati.utente.ruolo !== "manager") {
-          window.location.href = "index.html";
+          window.location.href = "login.html";
         } else {
           this.loadingDati = false;
         }
       } catch (error) {
-        window.location.href = "index.html";
+        window.location.href = "login.html";
       }
     },
 
@@ -60,6 +85,8 @@ const app = createApp({
       else if (vista === "messaggi") this.caricaMessaggi();
     },
 
+    // Carica in parallelo: lista allenatori, esercizi e alimenti.
+    // Chiamata sia all'avvio che dopo ogni modifica/eliminazione.
     async caricaTuttiIcataloghi() {
       try {
         let resAll = await fetch("/api/allenatori");
@@ -121,6 +148,7 @@ const app = createApp({
       finally { this.loadingCoach = false; }
     },
 
+    // Aggiunge un esercizio al catalogo con immagine opzionale.
     async aggiungiEsercizio() {
       this.loadingEsercizio = true;
       let formData = new FormData();
@@ -138,6 +166,7 @@ const app = createApp({
       finally { this.loadingEsercizio = false; }
     },
 
+    // Aggiunge un alimento con i macronutrienti (calorie, proteine, carboidrati, grassi).
     async aggiungiAlimento() {
       this.loadingAlimento = true;
       try {
@@ -151,12 +180,18 @@ const app = createApp({
       finally { this.loadingAlimento = false; }
     },
 
-    // --- APERTURA MODALI ---
+    // ==========================================================
+    // MODIFICA — Apre i modal con i dati precompilati
+    // Lo spread operator {...c} crea una copia dell'oggetto
+    // così le modifiche non cambiano la lista fino al salvataggio
+    // ==========================================================
     apriModificaCoach(c) { this.editCoach = { ...c }; this.fotoEditCoach = null; new bootstrap.Modal(document.getElementById("modalEditCoach")).show(); },
     apriModificaEsercizio(e) { this.editEsercizio = { ...e }; this.fotoEditEsercizio = null; new bootstrap.Modal(document.getElementById("modalEditEsercizio")).show(); },
     apriModificaAlimento(a) { this.editAlimento = { ...a }; new bootstrap.Modal(document.getElementById("modalEditAlimento")).show(); },
 
-    // --- API MODIFICA ---
+    // ==========================================================
+    // SALVATAGGIO MODIFICHE — Invia PUT al server
+    // ==========================================================
     async salvaModificaAlimento() {
       this.loadingEdit = true;
       try {
@@ -195,7 +230,12 @@ const app = createApp({
       finally { this.loadingEdit = false; }
     },
 
-    // --- ELIMINAZIONE ---
+    // ==========================================================
+    // ELIMINAZIONE — Modal di conferma → chiamata DELETE
+    // ==========================================================
+
+    // Apre il modal generico di conferma eliminazione, impostando
+    // testo e tipo in base all'elemento da eliminare.
     chiediConferma(id, tipo) {
       this.deleteModal.id = id;
       this.deleteModal.tipo = tipo;

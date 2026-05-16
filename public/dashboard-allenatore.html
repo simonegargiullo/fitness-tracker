@@ -194,7 +194,7 @@
                         </div>
                         <div class="card border-0 shadow-sm rounded-4 mb-4 p-4">
                             <div class="row g-2 align-items-end">
-                                <div class="col-md-4">
+                                <div class="col-12 col-md-4">
                                     <label class="form-label small fw-bold">Esercizio</label>
                                     <select v-model="esercizioTemp.id_esercizio" class="form-select">
                                         <option value="" disabled>Scegli...</option>
@@ -203,10 +203,10 @@
                                         </optgroup>
                                     </select>
                                 </div>
-                                <div class="col-md-2"><input v-model.number="esercizioTemp.serie" type="number" class="form-control" placeholder="Ser."></div>
-                                <div class="col-md-2"><input v-model.number="esercizioTemp.ripetizioni" type="number" class="form-control" placeholder="Rip."></div>
-                                <div class="col-md-2"><input v-model="esercizioTemp.recupero" type="text" class="form-control" placeholder="Rec."></div>
-                                <div class="col-md-2"><button @click="aggiungiEsercizio" class="btn btn-dark w-100 fw-bold">Aggiungi</button></div>
+                                <div class="col-4 col-md-2"><label class="form-label small fw-bold d-md-none">Ser.</label><input v-model.number="esercizioTemp.serie" type="number" class="form-control" placeholder="Ser."></div>
+                                <div class="col-4 col-md-2"><label class="form-label small fw-bold d-md-none">Rip.</label><input v-model.number="esercizioTemp.ripetizioni" type="number" class="form-control" placeholder="Rip."></div>
+                                <div class="col-4 col-md-2"><label class="form-label small fw-bold d-md-none">Rec.</label><input v-model="esercizioTemp.recupero" type="text" class="form-control" placeholder="Rec."></div>
+                                <div class="col-12 col-md-2 mt-2 mt-md-0"><button @click="aggiungiEsercizio" class="btn btn-dark w-100 fw-bold">Aggiungi</button></div>
                             </div>
                         </div>
                         <ul class="list-group rounded-4 shadow-sm">
@@ -218,8 +218,8 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Chiudi</button>
-                        <button @click="salvaSchedaDefinitiva" class="btn btn-primary fw-bold rounded-pill" :disabled="loading">
-                             <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span> Salva e Invia
+                        <button @click="salvaSchedaDefinitiva" class="btn btn-primary fw-bold rounded-pill" :disabled="loadingScheda">
+                             <span v-if="loadingScheda" class="spinner-border spinner-border-sm me-2"></span> Salva e Invia
                         </button>
                     </div>
                 </div>
@@ -242,13 +242,13 @@
                         </div>
                         <div class="card border-0 shadow-sm rounded-4 mb-4 p-4">
                             <div class="row g-2 align-items-end">
-                                <div class="col-md-4">
+                                <div class="col-12 col-md-4">
                                     <label class="form-label small fw-bold">Alimento</label>
                                     <select v-model="alimentoTemp.id_alimento" class="form-select">
                                         <option v-for="a in catalogoAlimenti" :key="a.id" :value="a.id">{{ a.nome }}</option>
                                     </select>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-6 col-md-3">
                                     <select v-model="alimentoTemp.note_pasto" class="form-select">
                                         <option value="Colazione">Colazione</option>
                                         <option value="Pranzo">Pranzo</option>
@@ -256,8 +256,8 @@
                                         <option value="Spuntino">Spuntino</option>
                                     </select>
                                 </div>
-                                <div class="col-md-3"><input v-model.number="alimentoTemp.quantita_grammi" type="number" class="form-control" placeholder="Grammi"></div>
-                                <div class="col-md-2"><button @click="aggiungiAlimento" class="btn btn-dark w-100 fw-bold">Aggiungi</button></div>
+                                <div class="col-6 col-md-3"><input v-model.number="alimentoTemp.quantita_grammi" type="number" class="form-control" placeholder="Grammi"></div>
+                                <div class="col-12 col-md-2 mt-2 mt-md-0"><button @click="aggiungiAlimento" class="btn btn-dark w-100 fw-bold">Aggiungi</button></div>
                             </div>
                         </div>
                         <ul class="list-group rounded-4 shadow-sm">
@@ -269,8 +269,8 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Chiudi</button>
-                        <button @click="salvaDietaDefinitiva" class="btn btn-primary fw-bold rounded-pill" :disabled="loading">
-                             <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span> Salva e Invia
+                        <button @click="salvaDietaDefinitiva" class="btn btn-primary fw-bold rounded-pill" :disabled="loadingDieta">
+                             <span v-if="loadingDieta" class="spinner-border spinner-border-sm me-2"></span> Salva e Invia
                         </button>
                     </div>
                 </div>
