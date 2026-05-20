@@ -1008,13 +1008,11 @@ app.put('/api/manager/messaggi/:id/letto', verificaManager, async (req, res) => 
   }
 });
 
-// ==========================================
-// --- GENERAZIONE PDF LATO SERVER ---
-// ==========================================
+// GENERAZIONE PDF LATO SERVER
 
 // Scarica Scheda Allenamento in PDF
 app.get("/api/scarica-scheda/:id", async (req, res) => {
-    const idScheda = req.params.id;
+    const idScheda = req.params.id; // id della scheda da scaricare, passato come parametro nell'URL
 
     try {
         const query = `
@@ -1029,30 +1027,36 @@ app.get("/api/scarica-scheda/:id", async (req, res) => {
             WHERE s.id = $1
             ORDER BY se.id ASC
         `;
-        const result = await pool.query(query, [idScheda]);
+        // Query che recupera tutti i dati necessari per generare il PDF della scheda di allenamento, con JOIN tra schede_allenamento,
+        // utenti (per nome sportivo e allenatore), schede_esercizi e esercizi
+
+        const result = await pool.query(query, [idScheda]); // Esegue la query passando l'id della scheda da scaricare
 
         if (result.rows.length === 0) return res.status(404).send("Scheda non trovata.");
 
-        const dati = result.rows;
+        const dati = result.rows; // Il risultato della query è un array di righe, ognuna con i dati della scheda e di un esercizio associato
         const scheda = dati[0];
+        // Prende la prima riga per ottenere i dati generali della scheda (titolo, nome sportivo, nome allenatore, data creazione), che sono uguali per tutte le righe
 
-        const doc = new PDFDocument({ margin: 0, size: 'A4' });
+        const doc = new PDFDocument({ margin: 0, size: 'A4' }); // Crea un nuovo documento PDF con margine 0 e formato A4
 
         res.setHeader('Content-disposition', `attachment; filename="${scheda.titolo.replace(/ /g, "_")}.pdf"`);
-        res.setHeader('Content-type', 'application/pdf');
-        doc.pipe(res);
+        // Imposta l'header per indicare che la risposta è un file da scaricare, con un nome basato sul titolo della scheda (spazi sostituiti da underscore)
+        res.setHeader('Content-type', 'application/pdf'); // Imposta l'header per indicare che il contenuto è un PDF
+        doc.pipe(res); // Collega il flusso di output del PDF alla risposta HTTP, così che il PDF venga inviato direttamente al client mentre viene generato
 
-        // --- HEADER COLORATO (VERDE) ---
+        // HEADER COLORATO (VERDE)
         doc.rect(0, 0, 600, 130).fill('#237915'); 
         doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(26).text('FITNESS TRACKER', 0, 40, { align: 'center' });
         doc.fontSize(16).font('Helvetica').text(`SCHEDA DI ALLENAMENTO`, { align: 'center' });
         doc.fontSize(12).moveDown(0.5).text(`Atleta: ${scheda.nome_sportivo}   |   Coach: ${scheda.nome_allenatore}   |   Data: ${new Date(scheda.data_creazione).toLocaleDateString('it-IT')}`, { align: 'center' });
 
-        // --- CORPO DEL DOCUMENTO ---
-        doc.y = 160;
+        // CORPO DEL DOCUMENTO
+        doc.y = 160; // Imposta la posizione verticale del cursore dopo l'header
         doc.fillColor('#212529').font('Helvetica-Bold').fontSize(18).text(scheda.titolo.toUpperCase(), 50, doc.y);
-        doc.moveDown(1);
+        doc.moveDown(1); // Aggiunge uno spazio dopo il titolo della scheda
 
+        // Per ogni esercizio associato alla scheda, aggiunge al PDF una sezione con i suoi dati (nome, gruppo muscolare, serie, ripetizioni, recupero, note)
         dati.forEach((ex, index) => {
             // Se stiamo per finire la pagina, ne creiamo una nuova
             if (doc.y > 700) {
@@ -1060,15 +1064,17 @@ app.get("/api/scarica-scheda/:id", async (req, res) => {
                 doc.y = 50;
             }
 
+            // Salva la posizione verticale di partenza per questa sezione dell'esercizio, così possiamo allineare tutti gli elementi (linea, immagine, testo) rispetto a questo punto
             let startY = doc.y;
 
-            // 1. Linea separatrice
+            // Linea separatrice sottile e chiara prima di ogni esercizio
             doc.moveTo(50, startY).lineTo(545, startY).lineWidth(0.5).strokeColor('#dee2e6').stroke();
             startY += 15;
 
-            // 2. Immagine dell'esercizio (se esiste nel DB e fisicamente sul server)
+            // Immagine dell'esercizio (se esiste)
             let imageOffset = 50;
             if (ex.url_immagine) {
+                // Costruisce il percorso completo dell'immagine basandosi sulla URL memorizzata nel database (che è relativa alla cartella "public")
                 const imagePath = path.join(__dirname, 'public', ex.url_immagine);
                 if (fs.existsSync(imagePath)) {
                     // Disegna l'immagine 60x60
@@ -1082,7 +1088,7 @@ app.get("/api/scarica-scheda/:id", async (req, res) => {
                 imageOffset = 125;
             }
 
-            // 3. Testo dell'esercizio
+            // Testo dell'esercizio
             doc.fillColor('#237915').font('Helvetica-Bold').fontSize(14).text(`${index + 1}. ${ex.nome_esercizio}`, imageOffset, startY);
             
             doc.fillColor('#6c757d').font('Helvetica').fontSize(10).text(`Gruppo: ${ex.gruppo_muscolare}`, imageOffset, startY + 16);
@@ -1097,7 +1103,8 @@ app.get("/api/scarica-scheda/:id", async (req, res) => {
             doc.y = startY + 75;
         });
 
-        // --- FOOTER ---
+        // FOOTER
+        // Ottiene il numero totale di pagine (se il documento supporta bufferedPageRange, altrimenti assume 1)
         const pages = doc.bufferedPageRange ? doc.bufferedPageRange().count : 1;
         doc.fillColor('#adb5bd').font('Helvetica').fontSize(9).text('Generato automaticamente da Fitness Tracker', 0, 780, { align: 'center' });
 
@@ -1112,7 +1119,7 @@ app.get("/api/scarica-scheda/:id", async (req, res) => {
 
 // Scarica Piano Alimentare in PDF
 app.get("/api/scarica-dieta/:id", async (req, res) => {
-    const idDieta = req.params.id;
+    const idDieta = req.params.id; // id della dieta da scaricare, passato come parametro nell'URL
 
     try {
         const query = `
@@ -1127,30 +1134,38 @@ app.get("/api/scarica-dieta/:id", async (req, res) => {
             WHERE sa.id = $1
             ORDER BY sal.id ASC
         `;
-        const result = await pool.query(query, [idDieta]);
+        // Query che recupera tutti i dati necessari per generare il PDF del piano alimentare, con JOIN tra schede_alimentari,
+        // utenti (per nome sportivo e allenatore), schede_alimenti e alimenti
+
+        const result = await pool.query(query, [idDieta]); // Esegue la query passando l'id della dieta da scaricare
 
         if (result.rows.length === 0) return res.status(404).send("Dieta non trovata.");
 
-        const dati = result.rows;
+        const dati = result.rows; // Il risultato della query è un array di righe, ognuna con i dati della dieta e di un alimento associato (con quantità e note)
         const dieta = dati[0];
+        // Prende la prima riga per ottenere i dati generali della dieta (titolo, nome sportivo, nome allenatore, data creazione), che sono uguali per tutte le righe
 
-        const doc = new PDFDocument({ margin: 0, size: 'A4' });
+        const doc = new PDFDocument({ margin: 0, size: 'A4' }); // Crea un nuovo documento PDF con margine 0 e formato A4
 
+        // Imposta l'intestazione per il download del file PDF, con un nome basato sul titolo della dieta (spazi sostituiti da underscore)
         res.setHeader('Content-disposition', `attachment; filename="${dieta.titolo.replace(/ /g, "_")}.pdf"`);
-        res.setHeader('Content-type', 'application/pdf');
-        doc.pipe(res);
+        res.setHeader('Content-type', 'application/pdf'); // Imposta l'header per indicare che il contenuto è un PDF
+        doc.pipe(res); // Collega il flusso di output del PDF alla risposta HTTP, così che il PDF venga inviato direttamente al client mentre viene generato
 
-        // --- HEADER COLORATO (VERDE) ---
+        // HEADER COLORATO (VERDE)
         doc.rect(0, 0, 600, 130).fill('#237915'); 
         doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(26).text('FITNESS TRACKER', 0, 40, { align: 'center' });
         doc.fontSize(16).font('Helvetica').text(`PIANO NUTRIZIONALE`, { align: 'center' });
         doc.fontSize(12).moveDown(0.5).text(`Atleta: ${dieta.nome_sportivo}   |   Coach: ${dieta.nome_allenatore}   |   Data: ${new Date(dieta.data_creazione).toLocaleDateString('it-IT')}`, { align: 'center' });
 
-        // --- CORPO DEL DOCUMENTO ---
-        doc.y = 160;
+        // CORPO DEL DOCUMENTO
+        doc.y = 160; // Imposta la posizione verticale del cursore dopo l'header
         doc.fillColor('#212529').font('Helvetica-Bold').fontSize(18).text(dieta.titolo.toUpperCase(), 50, doc.y);
-        doc.moveDown(1);
+        doc.moveDown(1); // Aggiunge uno spazio dopo il titolo della dieta
 
+        // Per ogni alimento associato alla dieta, aggiunge al PDF una sezione con i suoi dati (nome, quantità, note, calorie e macronutrienti calcolati)
+
+        // Se stiamo per finire la pagina, ne creiamo una nuova
         dati.forEach((alim) => {
             if (doc.y > 730) {
                 doc.addPage();
@@ -1158,8 +1173,9 @@ app.get("/api/scarica-dieta/:id", async (req, res) => {
             }
 
             let startY = doc.y;
+            // Salva la posizione verticale di partenza per questa sezione dell'alimento, così possiamo allineare tutti gli elementi (linea, testo) rispetto a questo punto
 
-            // Linea separatrice
+            // Linea separatrice sottile e chiara prima di ogni alimento
             doc.moveTo(50, startY).lineTo(545, startY).lineWidth(0.5).strokeColor('#dee2e6').stroke();
             startY += 10;
 
@@ -1175,6 +1191,7 @@ app.get("/api/scarica-dieta/:id", async (req, res) => {
             const pro = (alim.proteine * alim.quantita_grammi / 100).toFixed(1);
             const car = (alim.carboidrati * alim.quantita_grammi / 100).toFixed(1);
             const fat = (alim.grassi * alim.quantita_grammi / 100).toFixed(1);
+            //toFixed(1) per mostrare un solo decimale nei grammi di macronutrienti
 
             // Stampa Macros colorati SENZA sovrapposizioni
             doc.fillColor('#6c757d').font('Helvetica').fontSize(10).text(`Kcal: `, 50, startY + 34, { continued: true })
@@ -1186,10 +1203,10 @@ app.get("/api/scarica-dieta/:id", async (req, res) => {
                .fillColor('#6c757d').font('Helvetica').text(`   |   Fat: `, { continued: true })
                .fillColor('#ffc107').font('Helvetica-Bold').text(`${fat}g`); 
             
-            doc.y = startY + 55;
+            doc.y = startY + 55; // Muove il cursore giù per il prossimo elemento, considerando lo spazio occupato dal testo e dai macros
         });
 
-        // --- FOOTER ---
+        // FOOTER
         doc.fillColor('#adb5bd').font('Helvetica').fontSize(9).text('Generato automaticamente da Fitness Tracker', 0, 780, { align: 'center' });
 
         doc.end();

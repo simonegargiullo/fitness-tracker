@@ -1,35 +1,34 @@
-/* =========================================
-   STILI GLOBALI E HOME PAGE
-   ========================================= */
+/* STILI GLOBALI E HOMEPAGE */
 
 body {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Montserrat', sans-serif; /* Font principale */
 }
 
-/* Hero Section a tutto schermo */
+/* Immagine di sfondo per la sezione hero */
 .hero-section {
     background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)), url('../img/sfondo.png');
-    background-size: cover;
-    background-position: center;
-    height: 100vh;
-    height: 100svh;
-    min-height: 400px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
+    background-size: cover; /* Copre tutta l'area, senza distorsioni */
+    background-position: center; /* Centra l'immagine */
+    height: 100vh; /* Altezza a schermo intero */
+    height: 100svh; /* Altezza a schermo intero su mobile (svh = viewport height) */
+    min-height: 400px; /* Altezza minima per schermi piccoli */
+    display: flex; /* Flexbox per centrare il contenuto */
+    align-items: center; /* Centra verticalmente */
+    justify-content: center; /* Centra orizzontalmente */
+    position: relative; /* Per posizionare eventuali elementi assoluti */
 }
 
 /* Effetto sollevamento al passaggio del mouse per le Card */
 .hover-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Transizione fluida per trasformazione e ombra */
     border: none;
-    border-radius: 15px;
+    border-radius: 15px; /* Angoli arrotondati */
 }
 
+/* Al passaggio del mouse, la card si solleva leggermente e l'ombra diventa più evidente */
 .hover-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+    transform: translateY(-10px); /* Solleva la card di 10px */
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important; /* Ombra più grande e più scura */
 }
 
 /* Icone rotonde colorate nella sezione "Come Funziona" */
@@ -37,11 +36,11 @@ body {
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 20px auto;
-    font-size: 2rem;
+    display: flex; /* Flexbox per centrare l'icona all'interno del cerchio */
+    align-items: center; /* Centra verticalmente */
+    justify-content: center; /* Centra orizzontalmente */
+    margin: 0 auto 20px auto; /* Centra il box e aggiunge margine inferiore */
+    font-size: 2rem; /* Dimensione dell'icona */
 }
 
 /* Dimensioni del logo nella Navbar */
@@ -50,13 +49,18 @@ body {
     width: auto;
 }
 
-/* =========================================
-   SOVRASCRITTURA COLORI BOOTSTRAP (Tema Verde)
-   ========================================= */
+/* SOVRASCRITTURA COLORI BOOTSTRAP (Tema Verde) */
+
+/* root è il livello più alto del documento, le variabili dichiarate qui sono globali */
 :root {
     --bs-primary: #237915;
     --bs-primary-rgb: 35, 121, 21;
 }
+
+/* .btn-primary e .btn-outline-primary sono classi di Bootstrap per i pulsanti.
+    Qui stiamo sovrascrivendo le variabili CSS che Bootstrap utilizza per definire i colori dei pulsanti, in modo da adattarli al nostro tema verde fitness.
+    Questo garantisce che tutti i pulsanti con queste classi avranno il colore personalizzato senza dover aggiungere ulteriori classi o stili inline.
+*/
 
 .btn-primary {
     --bs-btn-bg: #237915;
@@ -85,100 +89,106 @@ body {
     color: #237915 !important;
 }
 
+/* bg-primary è una classe di Bootstrap per lo sfondo con il colore primario */
 .bg-primary {
     background-color: #237915 !important;
 }
 
-/* =========================================
-   PAGINE INTERNE (Coach, Contatti, ecc.)
-   ========================================= */
+/* PAGINE INTERNE */
 
+/* Immagine di sfondo per le pagine interne */
 .page-header {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)), url('../img/team-bg.jpg');
-    background-size: cover;
-    background-position: center top;
-    transition: padding 0.5s ease, margin-top 0.5s ease;
-    padding: 160px 0 80px 0;
-    text-align: center;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)), url('../img/team-bg.jpg'); /* Immagine di sfondo con sovrapposizione scura */
+    background-size: cover; /* Copre tutta l'area, senza distorsioni */
+    background-position: center top; /* Centra l'immagine e allinea in alto */
+    transition: padding 0.5s ease, margin-top 0.5s ease; /* Transizione fluida per padding e margin-top (usati in responsive) */
+    padding: 160px 0 80px 0; /* Spazio sopra e sotto il testo */
+    text-align: center; /* Centra il testo */
     color: white;
 }
 
-/* =========================================
-   REGOLE RESPONSIVE (Smartphone Portrait)
-   ========================================= */
+/* REGOLE RESPONSIVE (Smartphone Portrait) */
+
+/*
+    MEDIA QUERIES — Responsive design
+    Adatta il layout a schermi più piccoli (tablet, mobile)
+    Bootstrap ha già le sue media query; qui aggiungiamo gli aggiustamenti per gli elementi custom.
+*/
+
+/*
+    @media è una regola CSS che applica gli stili solo se la condizione specificata è vera. 
+    In questo caso, max-width: 768px significa che gli stili all'interno di questa media query saranno applicati solo su schermi con larghezza massima di 768 pixel,
+    tipicamente smartphone in modalità portrait.
+*/
 
 @media (max-width: 768px) {
     .page-header {
-        margin-top: 60px;
-        padding: 80px 0 50px 0;
+        margin-top: 60px; /* Riduce il margine superiore per evitare spazi vuoti eccessivi su schermi piccoli */
+        padding: 80px 0 50px 0; /* Riduce il padding per adattarsi meglio a schermi piccoli */
     }
 }
 
+/* Stili per la pagina di caricamento (spinner) */
 .spinner-overlay {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 5rem 0;
+    display: flex; /* Usa Flexbox per centrare il contenuto */
+    flex-direction: column; /* Dispone gli elementi in colonna (spinner sopra, testo sotto) */
+    align-items: center; /* Centra verticalmente gli elementi */
+    justify-content: center; /* Centra orizzontalmente gli elementi */
+    padding: 5rem 0; /* Spazio sopra e sotto lo spinner */
     color: #6c757d;
 }
 
+/* Dimensioni dello spinner */
 .spinner-lg {
-    width: 3rem;
+    width: 3rem; /* rem è una unità relativa alla dimensione del font root (di solito 16px), quindi 3rem = 48px */
     height: 3rem;
 }
 
-/* =========================================
-   FIX RESPONSIVE AGGIUNTIVI
-   ========================================= */
-
-/* Fix: hover bloccato su dispositivi touch */
+/* Hover bloccato su dispositivi touch */
 @media (hover: none) {
     .hover-card:hover {
-        transform: none;
-        box-shadow: none !important;
+        transform: none; /* Disabilita l'effetto di sollevamento al passaggio del mouse su dispositivi touch */
+        box-shadow: none !important; /* Disabilita l'ombra al passaggio del mouse su dispositivi touch */
     }
 }
 
-/* Fix: page-header su mobile portrait */
+/* Page-header su mobile portrait */
 @media (max-width: 768px) {
     .page-header {
-        margin-top: 0;
-        padding: 110px 0 50px 0;
+        margin-top: 0; /* Rimuove il margine superiore per evitare spazi vuoti eccessivi su schermi piccoli */
+        padding: 110px 0 50px 0; /* Riduce il padding per adattarsi meglio a schermi piccoli */
     }
 }
 
-/* Fix: tab-pill del manager su schermi molto piccoli (portrait) */
+/* PILLOLE DASHBOARD MANAGER */
+
+/* Tab-pill del manager su schermi molto piccoli (portrait) */
 @media (max-width: 576px) {
+    /* Tab-pill più compatte su schermi molto piccoli */
     .nav-pills.nav-fill .nav-link {
         font-size: 0.75rem;
         padding: 0.4rem 0.3rem;
     }
+    /* Nasconde le icone nelle tab-pill su schermi molto piccoli per risparmiare spazio */
     .nav-pills.nav-fill .nav-link .bi {
         display: none;
     }
 }
 
-/* Fix: classe bg-coach usata in coach.html */
+/* Classe bg-coach usata in coach.html */
+/* Sfondo con immagine e sovrapposizione scura per la pagina dei coach */
 .bg-coach {
     background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)), url('../img/team-bg.jpg');
 }
 
-/* =========================================
-   RESPONSIVE LANDSCAPE (mobile orizzontale)
-   =========================================
-   Simile al portrait ma riorganizzato:
-   - Navbar con hamburger (come portrait)
-   - Hero compatta e scorrevole
-   - Testo e pulsanti ridotti
-   - Sezione "Come Funziona" a 2 colonne
-*/
+/* RESPONSIVE LANDSCAPE (mobile orizzontale) */
 
+/* Stili specifici per dispositivi in modalità landscape (orizzontale) con larghezza massima di 900px, tipicamente smartphone in orizzontale o tablet */
 @media (max-width: 900px) and (orientation: landscape) {
 
     /* Navbar compatta */
     .navbar {
-        padding-top: 0.2rem !important;
+        padding-top: 0.2rem !important; /* !important per sovrascrivere eventuali padding di Bootstrap */
         padding-bottom: 0.2rem !important;
     }
 
@@ -186,42 +196,68 @@ body {
         height: 28px;
     }
 
-    /* Hero scorrevole, non a schermo intero */
+    /* Sezione hero */
     .hero-section {
-        height: auto;
-        min-height: unset;
-        padding-top: 70px;
-        padding-bottom: 40px;
-        align-items: flex-start;
+        height: auto; /* Altezza automatica per adattarsi al contenuto, invece di 100vh */
+        min-height: unset; /* Rimuove l'altezza minima per evitare spazi vuoti eccessivi su schermi piccoli in landscape */
+        padding-top: 70px; /* Aggiunge padding superiore per evitare che il contenuto sia troppo vicino alla navbar */
+        padding-bottom: 40px; /* Aggiunge padding inferiore per bilanciare lo spazio */
+        align-items: flex-start; /* Allinea il contenuto all'inizio (in alto) invece che al centro */
     }
 
     /* Titolo hero */
+    /*
+        La classe .display-3 è una classe di Bootstrap per i titoli principali.
+        Qui stiamo sovrascrivendo la dimensione del font e il margine inferiore per adattarli meglio alla visualizzazione in landscape su schermi piccoli.
+    */
     .hero-section .display-3 {
         font-size: 1.5rem !important;
         margin-bottom: 0.75rem !important;
     }
 
     /* Paragrafo lead hero */
+    /*
+        La classe .lead è una classe di Bootstrap per i paragrafi introduttivi.
+        Qui stiamo sovrascrivendo la dimensione del font e il margine inferiore per adattarli meglio alla visualizzazione in landscape su schermi piccoli.
+    */
     .hero-section .lead {
         font-size: 0.8rem !important;
         margin-bottom: 1rem !important;
     }
 
     /* Pulsanti hero */
+    /*
+        La classe .btn-lg è una classe di Bootstrap per i pulsanti grandi.
+        Qui stiamo sovrascrivendo il padding e la dimensione del font per adattarli meglio alla visualizzazione in landscape su schermi piccoli, rendendo i pulsanti più compatti.
+    */
     .hero-section .btn-lg {
         padding: 0.45rem 1.2rem !important;
         font-size: 0.8rem !important;
     }
 
+    /* Spaziatura tra i pulsanti hero */
+    /*
+        La classe .gap-4 è una classe di Bootstrap che applica una spaziatura di 1.5rem tra gli elementi.
+        Qui stiamo sovrascrivendo questa spaziatura per renderla più compatta su schermi piccoli in landscape.
+    */
     .hero-section .gap-4 {
         gap: 0.6rem !important;
     }
 
+    /* Container hero: rimuove il padding verticale per sfruttare meglio lo spazio in landscape */
     .hero-section .container {
         padding-top: 0 !important;
     }
 
     /* Sezione "Come Funziona": 2 colonne invece di 4 */
+    /*
+        Le classi .col-md-6 e .col-lg-3 sono classi di Bootstrap per la griglia.
+        .col-md-6 significa che su schermi medi (≥768px) ogni colonna occupa 6/12 (50%) dello spazio,
+        mentre .col-lg-3 significa che su schermi grandi (≥992px) ogni colonna occupa 3/12 (25%) dello spazio.
+        Qui stiamo sovrascrivendo queste classi per forzare ogni colonna a occupare il 50% dello spazio anche su schermi grandi,
+        in modo da avere solo 2 colonne invece di 4 nella sezione "Come Funziona" quando siamo in landscape su schermi piccoli.
+    */
+    /* Con # si seleziona l'elemento con id "come-funziona" di HTML */
     #come-funziona .col-md-6.col-lg-3 {
         flex: 0 0 50%;
         max-width: 50%;
@@ -234,6 +270,7 @@ body {
         padding-bottom: 2rem !important;
     }
 
+    /* Spaziatura tra i passi della sezione "Come Funziona" */
     #come-funziona .mb-5 {
         margin-bottom: 1.5rem !important;
     }
@@ -261,7 +298,9 @@ body {
         margin-top: 0;
     }
 
-    /* Card */
+    /* CARD */
+    
+    /* Spaziatura interna delle card più compatta */
     .card-body {
         padding: 0.6rem !important;
     }
@@ -288,6 +327,7 @@ body {
         box-shadow: none !important;
     }
 
+    /* PILLOLE */
     /* Tab-pill dashboard manager */
     .nav-pills.nav-fill .nav-link {
         font-size: 0.78rem;
@@ -295,6 +335,7 @@ body {
     }
 
     /* Dashboard header inline */
+    /* Rende il header della dashboard più compatto e con meno padding superiore per adattarsi meglio a schermi piccoli in landscape */
     header[style*="padding-top: 110px"],
     header[style*="padding-top:110px"] {
         padding-top: 55px !important;
@@ -319,7 +360,7 @@ body {
 
     .modal-content {
         max-height: 98svh;
-        overflow-y: auto;
+        overflow-y: auto; /* Aggiunge una barra di scorrimento verticale se il contenuto supera l'altezza massima */
     }
 
     .modal-body {
@@ -328,16 +369,12 @@ body {
     }
 
     .modal-body .row.g-3 {
-        --bs-gutter-y: 0.4rem;
-    }
-
-    /* Pulsante Aggiungi in landscape: solo icona, testo nascosto */
-    .btn-aggiungi-modal .btn-label {
-        display: none;
+        --bs-gutter-y: 0.4rem; /* Riduce la spaziatura verticale tra le righe del form all'interno della modale */
     }
 }
 
 /* Extra compressione altezza molto ridotta */
+/* Stili specifici per dispositivi con altezza massima di 500px in modalità landscape, tipicamente smartphone in orizzontale con schermo molto piccolo */
 @media (max-height: 500px) and (orientation: landscape) {
     :root {
         font-size: 12px;
