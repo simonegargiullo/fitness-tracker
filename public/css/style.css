@@ -11,8 +11,6 @@ body {
     background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)), url('../img/sfondo.png');
     background-size: cover;
     background-position: center;
-    /* svh (small viewport height) esclude la barra URL del browser mobile,
-       evitando overflow in landscape. Fallback a 100vh per browser vecchi. */
     height: 100vh;
     height: 100svh;
     min-height: 400px;
@@ -161,7 +159,7 @@ body {
     }
 }
 
-/* Fix: page-header su mobile portrait - padding corretto sotto navbar fissa */
+/* Fix: page-header su mobile portrait */
 @media (max-width: 768px) {
     .page-header {
         margin-top: 0;
@@ -169,7 +167,7 @@ body {
     }
 }
 
-/* Fix: tab-pill del manager su schermi molto piccoli */
+/* Fix: tab-pill del manager su schermi molto piccoli (portrait) */
 @media (max-width: 576px) {
     .nav-pills.nav-fill .nav-link {
         font-size: 0.75rem;
@@ -187,79 +185,147 @@ body {
 
 /* =========================================
    RESPONSIVE LANDSCAPE (mobile orizzontale)
-   ========================================= */
+   =========================================
+   BLOCCO UNICO — nessun altro blocco landscape
+   deve esistere nel file.
+   La navbar usa navbar-expand-md in components.js:
+   da 768px in su il menu e gia espanso come PC.
+*/
 
-/*
- * Target: smartphone ruotato in orizzontale (es. iPhone, Android).
- * Obiettivo: stesso layout del desktop, tutto rimpicciolito.
- * max-width: 900px esclude tablet e desktop.
- * orientation: landscape si attiva solo quando il device è ruotato.
- */
-
-/* -- Hero in landscape: altezza ridotta, niente overflow -- */
 @media (max-width: 900px) and (orientation: landscape) {
+
+    /* Scala base: riduce tutte le misure rem */
+    :root {
+        font-size: 13px;
+    }
+
+    /* Hero: height auto evita che il contenuto vada fuori schermo */
     .hero-section {
-        /* In landscape l'altezza disponibile è poca: svh evita la scrollbar */
-        height: 100svh;
-        min-height: 280px;
+        height: auto;
+        min-height: 100svh;
+        padding-bottom: 50px;
     }
 
-    /* La freccia scroll occupa meno spazio verticale */
+    /* Freccia scroll nascosta in landscape: evita sovrapposizioni */
     .scroll-indicator {
-        font-size: 1.4rem;
-        bottom: 10px;
+        display: none !important;
     }
 
-    /* Page-header delle pagine interne: padding verticale ridotto */
+    /* Titolo hero */
+    .hero-section .display-3 {
+        font-size: 1.6rem !important;
+    }
+
+    /* Lead hero */
+    .hero-section .lead {
+        font-size: 0.85rem !important;
+        margin-bottom: 1rem !important;
+    }
+
+    /* Pulsanti hero */
+    .hero-section .btn-lg {
+        padding: 0.5rem 1.5rem !important;
+        font-size: 0.85rem !important;
+    }
+
+    /* Gap tra pulsanti */
+    .hero-section .gap-4 {
+        gap: 0.75rem !important;
+    }
+
+    /* Padding-top container hero */
+    .hero-section .container {
+        padding-top: 1.5rem !important;
+    }
+
+    /* Page header pagine interne */
     .page-header {
-        padding: 70px 0 35px 0;
+        padding: 65px 0 30px 0;
         margin-top: 0;
     }
 
-    /* Le card non si sollevano in landscape: lo spazio Y è prezioso */
+    /* Card */
+    .card-body {
+        padding: 0.6rem !important;
+    }
+
+    /* Tipografia generale */
+    .display-4,
+    .display-5,
+    .display-6 {
+        font-size: 1.4rem !important;
+    }
+
+    h2 { font-size: 1.2rem !important; }
+    h3 { font-size: 1.1rem !important; }
+    h4 { font-size: 1rem   !important; }
+    h5 { font-size: 0.95rem !important; }
+
+    .lead {
+        font-size: 0.9rem !important;
+    }
+
+    /* Hover card disabilitato in landscape */
     .hover-card:hover {
         transform: none;
         box-shadow: none !important;
     }
 
-    /* Icone "Come Funziona": un po' più piccole */
+    /* Step icon box */
     .step-icon-box {
-        width: 60px;
-        height: 60px;
-        font-size: 1.5rem;
-        margin-bottom: 12px;
-    }
-}
-
-/* -- Navbar compatta quando l'altezza dello schermo è molto ridotta -- */
-@media (max-height: 500px) and (orientation: landscape) {
-    .navbar {
-        padding-top: 0.25rem;
-        padding-bottom: 0.25rem;
+        width: 52px;
+        height: 52px;
+        font-size: 1.3rem;
+        margin-bottom: 8px;
     }
 
-    /* Logo leggermente più piccolo per non rubare altezza alla navbar */
-    .navbar-logo {
-        height: 28px;
-    }
-}
-
-/* -- Dashboard: card KPI e contenuto in landscape mobile -- */
-@media (max-width: 900px) and (orientation: landscape) {
-    /* Padding interno delle card ridotto per guadagnare spazio */
-    .card-body {
-        padding: 0.75rem;
-    }
-
-    /* Valori numerici grandi (display-4, display-5 di Bootstrap) ridimensionati */
-    .display-4,
-    .display-5 {
-        font-size: 1.8rem !important;
-    }
-
-    /* Tab-pill del manager: testo leggermente più piccolo in landscape */
+    /* Tab-pill dashboard manager */
     .nav-pills.nav-fill .nav-link {
-        font-size: 0.8rem;
-        padding: 0.35rem 0.4rem;
+        font-size: 0.78rem;
+        padding: 0.3rem 0.35rem;
+    }
+
+    /* Dashboard header con padding-top inline */
+    header[style*="padding-top: 110px"],
+    header[style*="padding-top:110px"] {
+        padding-top: 60px !important;
+    }
+
+    /* Immagini esercizi */
+    .esercizio-img {
+        width: 52px !important;
+        height: 40px !important;
+    }
+
+    /* Liste scorrevoli dashboard sportivo */
+    [style*="max-height: 280px"] {
+        max-height: 180px !important;
+    }
+
+    /* Modali in landscape */
+    .modal-dialog {
+        margin: 0.4rem auto;
+    }
+
+    .modal-content {
+        max-height: 95svh;
+        overflow-y: auto;
+    }
+
+    .modal-body {
+        max-height: 65svh;
+        overflow-y: auto;
+    }
+
+    /* Form modal profilo */
+    .modal-body .row.g-3 {
+        --bs-gutter-y: 0.4rem;
+    }
+}
+
+/* Extra compressione sotto 500px di altezza (iPhone Pro/Max landscape) */
+@media (max-height: 500px) and (orientation: landscape) {
+    :root {
+        font-size: 12px;
     }
 }
