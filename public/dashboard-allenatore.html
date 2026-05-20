@@ -15,13 +15,14 @@
 <body class="bg-light d-flex flex-column min-vh-100">
 
     <div id="app" class="d-flex flex-column min-vh-100">
-        
+
         <app-navbar></app-navbar>
 
         <header class="bg-primary text-white text-center pb-4" style="padding-top: 110px;">
             <div class="container">
                 <h1 class="display-6 fw-bold mb-1"><i class="bi bi-stopwatch text-white"></i> Pannello Coach</h1>
-                <p class="mb-2 opacity-75 text-light" v-if="utente.nome">Ciao {{ utente.nome }}, gestisci i tuoi atleti</p>
+                <p class="mb-2 opacity-75 text-light" v-if="utente.nome">Ciao {{ utente.nome }}, gestisci i tuoi atleti
+                </p>
                 <button @click="apriModaleProfilo" class="btn btn-outline-light btn-sm rounded-pill fw-bold mt-1">
                     <i class="bi bi-pencil-square me-1"></i> Il Mio Profilo
                 </button>
@@ -35,27 +36,32 @@
 
         <div v-else class="container my-5 flex-grow-1">
             <div class="row g-4">
-                
+
                 <div class="col-lg-4">
                     <div class="card shadow-sm border-0 rounded-4 h-100">
-                        <div class="card-header bg-white border-bottom-0 py-4 px-4 rounded-top-4 d-flex align-items-center justify-content-center">
-                            <h5 class="mb-0 fw-bold"><i class="bi bi-bell-fill text-primary me-2"></i> Richieste in Attesa ({{ richieste.length }})</h5>
+                        <div
+                            class="card-header bg-white border-bottom-0 py-4 px-4 rounded-top-4 d-flex align-items-center justify-content-center">
+                            <h5 class="mb-0 fw-bold"><i class="bi bi-bell-fill text-primary me-2"></i> Richieste in
+                                Attesa ({{ richieste.length }})</h5>
                         </div>
                         <div class="card-body bg-light rounded-bottom-4 d-flex flex-column gap-3 p-4">
-                            
+
                             <div v-if="richieste.length === 0" class="text-center text-muted my-auto py-4">
                                 <i class="bi bi-check2-circle fs-1"></i>
                                 <p class="mt-2 mb-0">Nessuna nuova richiesta.</p>
                             </div>
 
-                            <div v-for="req in richieste" :key="req.id_utente" class="card border-0 shadow-sm rounded-4">
+                            <div v-for="req in richieste" :key="req.id_utente"
+                                class="card border-0 shadow-sm rounded-4">
                                 <div class="card-body">
                                     <h5 class="card-title fw-bold text-primary">{{ req.nome }}</h5>
                                     <div class="mb-2">
                                         <span class="badge bg-secondary me-1">{{ req.obiettivo }}</span>
                                     </div>
-                                    <p class="small text-muted mb-3"><i class="bi bi-info-circle me-1"></i> {{ req.esperienza_pregressa || 'Nessuna nota fornita' }}</p>
-                                    <button @click="accettaRichiesta(req.id_utente)" class="btn btn-primary w-100 fw-bold rounded-pill shadow-sm text-white">
+                                    <p class="small text-muted mb-3"><i class="bi bi-info-circle me-1"></i> {{
+                                        req.esperienza_pregressa || 'Nessuna nota fornita' }}</p>
+                                    <button @click="accettaRichiesta(req.id_utente)"
+                                        class="btn btn-primary w-100 fw-bold rounded-pill shadow-sm text-white">
                                         <i class="bi bi-person-check-fill me-1"></i> Accetta Atleta
                                     </button>
                                 </div>
@@ -67,39 +73,47 @@
 
                 <div class="col-lg-8">
                     <div class="card shadow-sm border-0 rounded-4 h-100">
-                        <div class="card-header bg-white border-bottom-0 py-4 px-4 rounded-top-4 d-flex align-items-center justify-content-center">
-                            <h5 class="mb-0 fw-bold"><i class="bi bi-people-fill text-primary me-2"></i> I tuoi Attuali Atleti ({{ sportiviAttivi.length }})</h5>
+                        <div
+                            class="card-header bg-white border-bottom-0 py-4 px-4 rounded-top-4 d-flex align-items-center justify-content-center">
+                            <h5 class="mb-0 fw-bold"><i class="bi bi-people-fill text-primary me-2"></i> I tuoi Attuali
+                                Atleti ({{ sportiviAttivi.length }})</h5>
                         </div>
                         <div class="card-body p-4 bg-light rounded-bottom-4">
-                            
+
                             <div v-if="sportiviAttivi.length === 0" class="text-center text-muted py-5">
                                 <i class="bi bi-people fs-1"></i>
                                 <p class="mt-2">Non hai ancora nessun atleta. Accetta le richieste per iniziare.</p>
                             </div>
 
                             <div class="row g-4">
-                                <div v-for="sportivo in sportiviAttivi" :key="sportivo.id_utente" class="col-md-6 col-xl-4">
+                                <div v-for="sportivo in sportiviAttivi" :key="sportivo.id_utente"
+                                    class="col-md-6 col-xl-4">
                                     <div class="card border-0 bg-white h-100 shadow-sm rounded-4 text-center">
                                         <div class="card-body d-flex flex-column align-items-center p-4">
-                                            
-                                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 80px; height: 80px;">
+
+                                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mb-3 shadow-sm"
+                                                style="width: 80px; height: 80px;">
                                                 <i class="bi bi-person text-primary" style="font-size: 2.5rem;"></i>
                                             </div>
-                                            
+
                                             <h5 class="fw-bold mb-1">{{ sportivo.nome }}</h5>
-                                            <p class="mb-3 text-muted small">{{ formattaData(sportivo.data_nascita) }} &bull; {{ sportivo.peso }} kg &bull; {{ sportivo.sesso }}</p>
-                                            
-                                            <span class="badge bg-light text-dark border w-100 mb-4 py-2">{{ sportivo.obiettivo }}</span>
-                                            
+                                            <p class="mb-3 text-muted small">{{ formattaData(sportivo.data_nascita) }}
+                                                &bull; {{ sportivo.peso }} kg &bull; {{ sportivo.sesso }}</p>
+
+                                            <span class="badge bg-light text-dark border w-100 mb-4 py-2">{{
+                                                sportivo.obiettivo }}</span>
+
                                             <div class="d-flex flex-column w-100 gap-2 mt-auto">
-                                                <button @click="apriModaleScheda(sportivo)" class="btn btn-primary btn-sm fw-bold rounded-pill shadow-sm">
+                                                <button @click="apriModaleScheda(sportivo)"
+                                                    class="btn btn-primary btn-sm fw-bold rounded-pill shadow-sm">
                                                     <i class="bi bi-clipboard2-pulse"></i> Nuova Scheda
                                                 </button>
-                                                <button @click="apriModaleDieta(sportivo)" class="btn btn-primary btn-sm fw-bold rounded-pill shadow-sm">
+                                                <button @click="apriModaleDieta(sportivo)"
+                                                    class="btn btn-primary btn-sm fw-bold rounded-pill shadow-sm">
                                                     <i class="bi bi-apple"></i> Nuova Dieta
                                                 </button>
                                             </div>
-                                            
+
                                         </div>
                                     </div>
                                 </div>
@@ -123,23 +137,26 @@
                     <form @submit.prevent="salvaProfilo">
                         <div class="modal-body bg-light p-4">
                             <div class="row g-3">
-                                
+
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold small">Nome</label>
-                                    <input type="text" class="form-control bg-light text-muted" v-model="profilo.nome" readonly>
+                                    <input type="text" class="form-control bg-light text-muted" v-model="profilo.nome"
+                                        readonly>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold small">Cognome</label>
-                                    <input type="text" class="form-control bg-light text-muted" v-model="profilo.cognome" readonly>
+                                    <input type="text" class="form-control bg-light text-muted"
+                                        v-model="profilo.cognome" readonly>
                                 </div>
-                                
+
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold small">Email</label>
                                     <input type="email" class="form-control bg-white" v-model="profilo.email" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold small">Specialità</label>
-                                    <input type="text" class="form-control bg-white" v-model="profilo.specialita" placeholder="es. Ipertrofia, Dimagrimento...">
+                                    <input type="text" class="form-control bg-white" v-model="profilo.specialita"
+                                        placeholder="es. Ipertrofia, Dimagrimento...">
                                 </div>
 
                                 <div class="col-md-6">
@@ -150,29 +167,39 @@
                                 <div class="col-12 mt-3">
                                     <label class="form-label fw-bold small">Foto Profilo</label>
                                     <div class="d-flex align-items-center gap-3 p-2 border rounded bg-white shadow-sm">
-                                        <img v-if="profilo.foto" :src="profilo.foto" alt="Anteprima" class="rounded" style="width: 64px; height: 64px; object-fit: cover;">
-                                        <div v-else class="rounded bg-light d-flex align-items-center justify-content-center text-muted" style="width: 64px; height: 64px;">
+                                        <img v-if="profilo.foto" :src="profilo.foto" alt="Anteprima" class="rounded"
+                                            style="width: 64px; height: 64px; object-fit: cover;">
+                                        <div v-else
+                                            class="rounded bg-light d-flex align-items-center justify-content-center text-muted"
+                                            style="width: 64px; height: 64px;">
                                             <i class="bi bi-person-x fs-3"></i>
                                         </div>
                                         <div class="flex-grow-1">
-                                            <input type="file" class="form-control form-control-sm bg-light" @change="selezionaFotoProfilo" accept="image/*">
-                                            <div class="form-text mt-1" style="font-size: 0.75rem;">Seleziona un'immagine per aggiornare la tua foto.</div>
+                                            <input type="file" class="form-control form-control-sm bg-light"
+                                                @change="selezionaFotoProfilo" accept="image/*">
+                                            <div class="form-text mt-1" style="font-size: 0.75rem;">Seleziona
+                                                un'immagine per aggiornare la tua foto.</div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="col-12 mt-3">
                                     <label class="form-label fw-bold small">Biografia / Descrizione</label>
-                                    <textarea class="form-control bg-white" v-model="profilo.descrizione" rows="4" style="resize: none;" placeholder="Racconta qualcosa di te ai futuri atleti..."></textarea>
+                                    <textarea class="form-control bg-white" v-model="profilo.descrizione" rows="4"
+                                        style="resize: none;"
+                                        placeholder="Racconta qualcosa di te ai futuri atleti..."></textarea>
                                 </div>
 
                             </div>
                         </div>
                         <div class="modal-footer bg-white rounded-bottom-4">
-                            <button type="button" class="btn btn-light fw-bold px-4" data-bs-dismiss="modal">Annulla</button>
-                            <button type="submit" class="btn btn-primary fw-bold rounded-pill px-4 shadow-sm" :disabled="loadingProfilo">
+                            <button type="button" class="btn btn-light fw-bold px-4"
+                                data-bs-dismiss="modal">Annulla</button>
+                            <button type="submit" class="btn btn-primary fw-bold rounded-pill px-4 shadow-sm"
+                                :disabled="loadingProfilo">
                                 <span v-if="loadingProfilo" class="spinner-border spinner-border-sm me-2"></span>
-                                <i v-else class="bi bi-save me-2 text-white"></i> <span class="text-white">Salva Modifiche</span>
+                                <i v-else class="bi bi-save me-2 text-white"></i> <span class="text-white">Salva
+                                    Modifiche</span>
                             </button>
                         </div>
                     </form>
@@ -184,66 +211,79 @@
         <div class="modal fade" id="modalScheda" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow">
-                    
+
                     <div class="modal-header bg-primary text-white rounded-top-4 py-3">
                         <h5 class="modal-title fw-bold"><i class="bi bi-clipboard2-pulse me-2"></i> Compila Scheda</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
-                    
+
                     <div class="modal-body bg-light p-4">
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold small">Titolo Scheda *</label>
-                                <input v-model="schedaCorrente.titolo" type="text" class="form-control bg-white" placeholder="Es. Ipertrofia Mese 1">
+                                <input v-model="schedaCorrente.titolo" type="text" class="form-control bg-white"
+                                    placeholder="Es. Ipertrofia Mese 1">
                             </div>
                             <div class="col-md-6 d-flex align-items-end">
-                                <p class="mb-2 text-muted"><strong>Atleta:</strong> {{ schedaCorrente.nome_sportivo }}</p>
+                                <p class="mb-2 text-muted"><strong>Atleta:</strong> {{ schedaCorrente.nome_sportivo }}
+                                </p>
                             </div>
                         </div>
 
                         <div class="card border-0 shadow-sm rounded-4 mb-4 p-4">
                             <div class="row g-2 align-items-end">
-                                <div class="col-12 col-md-4">
+                                <div class="col-12 col-md-3">
                                     <label class="form-label small fw-bold">Esercizio</label>
                                     <select v-model="esercizioTemp.id_esercizio" class="form-select">
                                         <option value="" disabled>Scegli...</option>
-                                        <optgroup v-for="(esercizi, gruppo) in eserciziRaggruppati" :key="gruppo" :label="gruppo">
+                                        <optgroup v-for="(esercizi, gruppo) in eserciziRaggruppati" :key="gruppo"
+                                            :label="gruppo">
                                             <option v-for="ex in esercizi" :value="ex.id">{{ ex.nome }}</option>
                                         </optgroup>
                                     </select>
                                 </div>
-                                <div class="col-4 col-md-2">
-                                    <label class="form-label small fw-bold d-md-none">Ser.</label>
-                                    <input v-model.number="esercizioTemp.serie" type="number" class="form-control" placeholder="Ser.">
+                                <div class="col-4 col-md-3">
+                                    <label class="form-label small fw-bold">Serie</label>
+                                    <input v-model.number="esercizioTemp.serie" type="number" class="form-control"
+                                        placeholder="Es. 4">
                                 </div>
-                                <div class="col-4 col-md-2">
-                                    <label class="form-label small fw-bold d-md-none">Rip.</label>
-                                    <input v-model.number="esercizioTemp.ripetizioni" type="number" class="form-control" placeholder="Rip.">
+                                <div class="col-4 col-md-3">
+                                    <label class="form-label small fw-bold">Ripetizioni</label>
+                                    <input v-model.number="esercizioTemp.ripetizioni" type="number" class="form-control"
+                                        placeholder="Es. 12">
                                 </div>
-                                <div class="col-4 col-md-2">
-                                    <label class="form-label small fw-bold d-md-none">Rec.</label>
-                                    <input v-model="esercizioTemp.recupero" type="text" class="form-control" placeholder="Rec.">
+                                <div class="col-4 col-md-3">
+                                    <label class="form-label small fw-bold">Recupero</label>
+                                    <input v-model="esercizioTemp.recupero" type="text" class="form-control"
+                                        placeholder="Es. 90s">
                                 </div>
                             </div>
-                            <div class="mt-3">
-                                <button @click="aggiungiEsercizio" class="btn btn-dark w-100 fw-bold">
-                                    <i class="bi bi-plus-lg me-1"></i> Aggiungi Esercizio
-                                </button>
+                            <div class="row mt-3">
+                                <div class="col-12 col-md-12">
+                                    <button @click="aggiungiEsercizio" class="btn btn-dark w-100 fw-bold">
+                                        <i class="bi bi-plus-lg me-1"></i> Aggiungi Esercizio
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
                         <ul class="list-group rounded-4 shadow-sm">
-                            <li v-for="(ex, index) in schedaCorrente.listaEsercizi" class="list-group-item d-flex justify-content-between align-items-center">
-                                <div><strong>{{ ex.nome_esercizio }}</strong> - {{ ex.serie }}x{{ ex.ripetizioni }}</div>
-                                <button @click="rimuoviEsercizio(index)" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            <li v-for="(ex, index) in schedaCorrente.listaEsercizi"
+                                class="list-group-item d-flex justify-content-between align-items-center">
+                                <div><strong>{{ ex.nome_esercizio }}</strong> - {{ ex.serie }}x{{ ex.ripetizioni }}
+                                </div>
+                                <button @click="rimuoviEsercizio(index)" class="btn btn-sm btn-outline-danger"><i
+                                        class="bi bi-trash"></i></button>
                             </li>
                         </ul>
                     </div>
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Chiudi</button>
-                        <button @click="salvaSchedaDefinitiva" class="btn btn-primary fw-bold rounded-pill" :disabled="loadingScheda">
-                            <span v-if="loadingScheda" class="spinner-border spinner-border-sm me-2"></span> Salva e Invia
+                        <button @click="salvaSchedaDefinitiva" class="btn btn-primary fw-bold rounded-pill"
+                            :disabled="loadingScheda">
+                            <span v-if="loadingScheda" class="spinner-border spinner-border-sm me-2"></span> Salva e
+                            Invia
                         </button>
                     </div>
                 </div>
@@ -254,20 +294,22 @@
         <div class="modal fade" id="modalDieta" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow">
-                    
-                    <div class="modal-header bg-success text-white rounded-top-4 py-3">
+
+                    <div class="modal-header bg-primary text-white rounded-top-4 py-3">
                         <h5 class="modal-title fw-bold"><i class="bi bi-apple me-2"></i> Compila Dieta</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
-                    
+
                     <div class="modal-body bg-light p-4">
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold small">Titolo Dieta *</label>
-                                <input v-model="dietaCorrente.titolo" type="text" class="form-control bg-white" placeholder="Es. Dieta Definizione">
+                                <input v-model="dietaCorrente.titolo" type="text" class="form-control bg-white"
+                                    placeholder="Es. Dieta Definizione">
                             </div>
                             <div class="col-md-6 d-flex align-items-end">
-                                <p class="mb-2 text-muted"><strong>Atleta:</strong> {{ dietaCorrente.nome_sportivo }}</p>
+                                <p class="mb-2 text-muted"><strong>Atleta:</strong> {{ dietaCorrente.nome_sportivo }}
+                                </p>
                             </div>
                         </div>
 
@@ -276,11 +318,15 @@
                                 <div class="col-12 col-md-4">
                                     <label class="form-label small fw-bold">Alimento</label>
                                     <select v-model="alimentoTemp.id_alimento" class="form-select">
-                                        <option v-for="a in catalogoAlimenti" :key="a.id" :value="a.id">{{ a.nome }}</option>
+                                        <option value="" disabled>Scegli...</option>
+                                        <option v-for="a in catalogoAlimenti" :key="a.id" :value="a.id">{{ a.nome }}
+                                        </option>
                                     </select>
                                 </div>
                                 <div class="col-6 col-md-4">
+                                    <label class="form-label small fw-bold">Pasto</label>
                                     <select v-model="alimentoTemp.note_pasto" class="form-select">
+                                        <option value="" disabled>Scegli...</option>
                                         <option value="Colazione">Colazione</option>
                                         <option value="Pranzo">Pranzo</option>
                                         <option value="Cena">Cena</option>
@@ -288,7 +334,9 @@
                                     </select>
                                 </div>
                                 <div class="col-6 col-md-4">
-                                    <input v-model.number="alimentoTemp.quantita_grammi" type="number" class="form-control" placeholder="Grammi">
+                                    <label class="form-label small fw-bold">Quantità (g)</label>
+                                    <input v-model.number="alimentoTemp.quantita_grammi" type="number"
+                                        class="form-control" placeholder="Grammi">
                                 </div>
                             </div>
                             <div class="mt-3">
@@ -299,17 +347,22 @@
                         </div>
 
                         <ul class="list-group rounded-4 shadow-sm">
-                            <li v-for="(alim, index) in dietaCorrente.listaAlimenti" class="list-group-item d-flex justify-content-between align-items-center">
-                                <div><strong>{{ alim.nome_alimento }}</strong> - {{ alim.quantita_grammi }}g ({{ alim.note_pasto }})</div>
-                                <button @click="rimuoviAlimento(index)" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            <li v-for="(alim, index) in dietaCorrente.listaAlimenti"
+                                class="list-group-item d-flex justify-content-between align-items-center">
+                                <div><strong>{{ alim.nome_alimento }}</strong> - {{ alim.quantita_grammi }}g ({{
+                                    alim.note_pasto }})</div>
+                                <button @click="rimuoviAlimento(index)" class="btn btn-sm btn-outline-danger"><i
+                                        class="bi bi-trash"></i></button>
                             </li>
                         </ul>
                     </div>
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Chiudi</button>
-                        <button @click="salvaDietaDefinitiva" class="btn btn-success fw-bold rounded-pill" :disabled="loadingDieta">
-                            <span v-if="loadingDieta" class="spinner-border spinner-border-sm me-2"></span> Salva e Invia
+                        <button @click="salvaDietaDefinitiva" class="btn btn-primary fw-bold rounded-pill"
+                            :disabled="loadingDieta">
+                            <span v-if="loadingDieta" class="spinner-border spinner-border-sm me-2"></span> Salva e
+                            Invia
                         </button>
                     </div>
                 </div>

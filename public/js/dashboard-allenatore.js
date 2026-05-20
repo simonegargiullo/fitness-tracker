@@ -71,7 +71,7 @@ const app = createApp({
       alimentoTemp: {
         id_alimento: "",
         quantita_grammi: 100,
-        note_pasto: "Pranzo",
+        note_pasto: "",
       },
 
       loadingDati: true,    // spinner pagina principale
