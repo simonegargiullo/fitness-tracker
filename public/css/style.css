@@ -311,23 +311,29 @@ body {
         max-height: 160px !important;
     }
 
-    /* Modali */
+    /* Modali in landscape: più larghe e senza limite altezza rigido */
     .modal-dialog {
-        margin: 0.4rem auto;
+        margin: 0.3rem auto;
+        max-width: 95vw !important;
     }
 
     .modal-content {
-        max-height: 95svh;
+        max-height: 98svh;
         overflow-y: auto;
     }
 
     .modal-body {
-        max-height: 65svh;
-        overflow-y: auto;
+        max-height: unset;
+        overflow-y: visible;
     }
 
     .modal-body .row.g-3 {
         --bs-gutter-y: 0.4rem;
+    }
+
+    /* Pulsante Aggiungi in landscape: solo icona, testo nascosto */
+    .btn-aggiungi-modal .btn-label {
+        display: none;
     }
 }
 
