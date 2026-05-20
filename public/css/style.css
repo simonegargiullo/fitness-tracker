@@ -20,25 +20,6 @@ body {
     position: relative;
 }
 
-/* Animazione per la freccia che invita a scorrere */
-@keyframes bounce {
-    0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
-    40% { transform: translateX(-50%) translateY(-10px); }
-    60% { transform: translateX(-50%) translateY(-5px); }
-}
-
-.scroll-indicator {
-    position: absolute;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 2rem;
-    color: white;
-    animation: bounce 2s infinite;
-    cursor: pointer;
-    z-index: 10;
-}
-
 /* Effetto sollevamento al passaggio del mouse per le Card */
 .hover-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -186,61 +167,97 @@ body {
 /* =========================================
    RESPONSIVE LANDSCAPE (mobile orizzontale)
    =========================================
-   BLOCCO UNICO — nessun altro blocco landscape
-   deve esistere nel file.
-   La navbar usa navbar-expand-md in components.js:
-   da 768px in su il menu e gia espanso come PC.
+   Simile al portrait ma riorganizzato:
+   - Navbar con hamburger (come portrait)
+   - Hero compatta e scorrevole
+   - Testo e pulsanti ridotti
+   - Sezione "Come Funziona" a 2 colonne
 */
 
 @media (max-width: 900px) and (orientation: landscape) {
 
-    /* Scala base: riduce tutte le misure rem */
-    :root {
-        font-size: 13px;
+    /* Navbar compatta */
+    .navbar {
+        padding-top: 0.2rem !important;
+        padding-bottom: 0.2rem !important;
     }
 
-    /* Hero: height auto evita che il contenuto vada fuori schermo */
+    .navbar-logo {
+        height: 28px;
+    }
+
+    /* Hero scorrevole, non a schermo intero */
     .hero-section {
         height: auto;
-        min-height: 100svh;
-        padding-bottom: 50px;
-    }
-
-    /* Freccia scroll nascosta in landscape: evita sovrapposizioni */
-    .scroll-indicator {
-        display: none !important;
+        min-height: unset;
+        padding-top: 70px;
+        padding-bottom: 40px;
+        align-items: flex-start;
     }
 
     /* Titolo hero */
     .hero-section .display-3 {
-        font-size: 1.6rem !important;
+        font-size: 1.5rem !important;
+        margin-bottom: 0.75rem !important;
     }
 
-    /* Lead hero */
+    /* Paragrafo lead hero */
     .hero-section .lead {
-        font-size: 0.85rem !important;
+        font-size: 0.8rem !important;
         margin-bottom: 1rem !important;
     }
 
     /* Pulsanti hero */
     .hero-section .btn-lg {
-        padding: 0.5rem 1.5rem !important;
-        font-size: 0.85rem !important;
+        padding: 0.45rem 1.2rem !important;
+        font-size: 0.8rem !important;
     }
 
-    /* Gap tra pulsanti */
     .hero-section .gap-4 {
-        gap: 0.75rem !important;
+        gap: 0.6rem !important;
     }
 
-    /* Padding-top container hero */
     .hero-section .container {
-        padding-top: 1.5rem !important;
+        padding-top: 0 !important;
+    }
+
+    /* Sezione "Come Funziona": 2 colonne invece di 4 */
+    #come-funziona .col-md-6.col-lg-3 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    #come-funziona {
+        margin-top: 2rem !important;
+        margin-bottom: 2rem !important;
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
+    }
+
+    #come-funziona .mb-5 {
+        margin-bottom: 1.5rem !important;
+    }
+
+    /* Step icon box più piccole */
+    .step-icon-box {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+        margin-bottom: 8px;
+    }
+
+    /* Tipografia sezione */
+    #come-funziona h4 {
+        font-size: 0.95rem !important;
+    }
+
+    #come-funziona p {
+        font-size: 0.8rem !important;
     }
 
     /* Page header pagine interne */
     .page-header {
-        padding: 65px 0 30px 0;
+        padding: 70px 0 30px 0;
         margin-top: 0;
     }
 
@@ -253,30 +270,22 @@ body {
     .display-4,
     .display-5,
     .display-6 {
-        font-size: 1.4rem !important;
+        font-size: 1.3rem !important;
     }
 
-    h2 { font-size: 1.2rem !important; }
-    h3 { font-size: 1.1rem !important; }
-    h4 { font-size: 1rem   !important; }
-    h5 { font-size: 0.95rem !important; }
+    h2 { font-size: 1.1rem !important; }
+    h3 { font-size: 1rem  !important; }
+    h4 { font-size: 0.95rem !important; }
+    h5 { font-size: 0.9rem  !important; }
 
     .lead {
-        font-size: 0.9rem !important;
+        font-size: 0.85rem !important;
     }
 
-    /* Hover card disabilitato in landscape */
+    /* Hover card disabilitato */
     .hover-card:hover {
         transform: none;
         box-shadow: none !important;
-    }
-
-    /* Step icon box */
-    .step-icon-box {
-        width: 52px;
-        height: 52px;
-        font-size: 1.3rem;
-        margin-bottom: 8px;
     }
 
     /* Tab-pill dashboard manager */
@@ -285,10 +294,10 @@ body {
         padding: 0.3rem 0.35rem;
     }
 
-    /* Dashboard header con padding-top inline */
+    /* Dashboard header inline */
     header[style*="padding-top: 110px"],
     header[style*="padding-top:110px"] {
-        padding-top: 60px !important;
+        padding-top: 55px !important;
     }
 
     /* Immagini esercizi */
@@ -299,10 +308,10 @@ body {
 
     /* Liste scorrevoli dashboard sportivo */
     [style*="max-height: 280px"] {
-        max-height: 180px !important;
+        max-height: 160px !important;
     }
 
-    /* Modali in landscape */
+    /* Modali */
     .modal-dialog {
         margin: 0.4rem auto;
     }
@@ -317,13 +326,12 @@ body {
         overflow-y: auto;
     }
 
-    /* Form modal profilo */
     .modal-body .row.g-3 {
         --bs-gutter-y: 0.4rem;
     }
 }
 
-/* Extra compressione sotto 500px di altezza (iPhone Pro/Max landscape) */
+/* Extra compressione altezza molto ridotta */
 @media (max-height: 500px) and (orientation: landscape) {
     :root {
         font-size: 12px;

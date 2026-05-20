@@ -8,7 +8,7 @@
 
 const NavbarComponent = {
   template: `
-    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow-sm">
         <div class="container">
 
             <!-- Logo e nome del sito -->
@@ -17,13 +17,13 @@ const NavbarComponent = {
                 <span>Fitness<span class="text-primary">Tracker</span></span>
             </a>
 
-            <!-- Bottone hamburger per mobile (Bootstrap lo gestisce automaticamente) -->
+            <!-- Bottone hamburger per mobile e landscape -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Apri menu">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <!-- Voci di menu — si collassano su mobile -->
+            <!-- Voci di menu — si collassano su mobile e landscape -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto ms-4">
                     <li class="nav-item">
@@ -42,11 +42,11 @@ const NavbarComponent = {
                 </ul>
 
                 <!-- Sezione destra: bottoni accesso o utente loggato -->
-                <div class="d-flex flex-column flex-md-row gap-3 align-items-start align-items-md-center mt-3 mt-md-0 pb-3 pb-md-0">
+                <div class="d-flex flex-column flex-lg-row gap-3 align-items-start align-items-lg-center mt-3 mt-lg-0 pb-3 pb-lg-0">
 
                     <!-- Utente NON loggato: mostra Accedi e Inizia Ora -->
                     <template v-if="!utenteLoggato">
-                        <a href="login.html" class="btn btn-link text-light text-decoration-none fw-semibold px-0 ms-4 ms-md-0"
+                        <a href="login.html" class="btn btn-link text-light text-decoration-none fw-semibold px-0 ms-4 ms-lg-0"
                            @click="chiudiMenu">Accedi</a>
                         <a href="registrati.html" class="btn btn-primary fw-bold px-4 rounded-pill text-white"
                            @click="chiudiMenu">Inizia Ora</a>
@@ -54,10 +54,10 @@ const NavbarComponent = {
 
                     <!-- Utente loggato: mostra nome, Dashboard ed Esci -->
                     <template v-else>
-                        <span class="text-white mb-2 mb-md-0 small ms-3 ms-md-0">
+                        <span class="text-white mb-2 mb-lg-0 small ms-3 ms-lg-0">
                             Bentornato, <strong>{{ nomeUtente }}</strong>
                         </span>
-                        <div class="d-flex gap-2 ms-3 ms-md-0">
+                        <div class="d-flex gap-2 ms-3 ms-lg-0">
                             <a :href="urlDashboard" class="btn btn-primary fw-bold rounded-pill px-3 text-white"
                                @click="chiudiMenu">
                                 <i class="bi bi-rocket-takeoff"></i> Dashboard
@@ -113,7 +113,7 @@ const NavbarComponent = {
       }
     },
 
-    // FIX RESPONSIVE: chiude il menu a tendina su mobile dopo il click su un link
+    // FIX RESPONSIVE: chiude il menu a tendina su mobile/landscape dopo il click su un link
     chiudiMenu() {
       const navbarCollapse = document.getElementById("navbarNav");
       if (navbarCollapse && navbarCollapse.classList.contains("show")) {

@@ -1,10 +1,6 @@
 <!DOCTYPE html>
 <html lang="it">
 
-<!-- il meta viewport ci permette di controllare la visualizzazione su dispositivi mobile -->
-<!-- poi ci sono una serie di link: carichiamo il logo, i font, poi la grafica di bootstrap e sue icone e infine lo style.css, così le ultime personalizzazioni
- vincono su quelle prima grazie al principio a cascata -->
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,17 +12,12 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 
-<!-- le due successive classi servono ad usare Flexbox per creare una colonna alta almeno il 100% dello schermo -->
-
 <body class="bg-light d-flex flex-column min-vh-100">
 
-    <!-- al di fuori di questo div, Vue non toccherà nulla -->
     <div id="app" class="d-flex flex-column min-vh-100">
 
-        <!-- Navbar è un componente di Vue per sostituire il classico codice HTML, in questo modo posso modificare tutto dentro components.js -->
         <app-navbar></app-navbar>
 
-        <!-- avendo una navbar fissa, dobbiamo aggiungere un padding-top al header per evitare che il contenuto venga nascosto -->
         <header class="hero-section text-center text-white">
             <div class="container pt-5">
                 <h1 class="display-3 fw-bold mb-4">Trasforma la tua <span class="text-primary">Ambizione</span> in
@@ -39,8 +30,6 @@
                     <span class="fw-semibold text-white">Il tuo obiettivo è il nostro impegno.</span>
                 </p>
 
-                <!-- i pulsanti sono inseriti in un contenitore flessibile e gap-4 mette dello spazio tra i due bottoni, infine flex-wrap fa responsive e manda
-                 a capo i bottoni se non c'è abbastanza spazio -->
                 <div class="d-flex justify-content-center gap-4 flex-wrap">
                     <a href="coach.html" class="btn btn-primary btn-lg fw-bold px-5 py-3 rounded-pill shadow">Scopri il
                         nostro team</a>
@@ -48,11 +37,6 @@
                         class="btn btn-outline-light btn-lg fw-bold px-5 py-3 rounded-pill shadow">Contattaci</a>
                 </div>
 
-            </div>
-
-            <div class="scroll-indicator"
-                onclick="document.getElementById('come-funziona').scrollIntoView({behavior: 'smooth'})">
-                <i class="bi bi-chevron-double-down"></i>
             </div>
         </header>
 
@@ -62,7 +46,6 @@
                 <h2 class="fw-bold display-6">Come Funziona</h2>
             </div>
 
-            <!-- creiamo la griglia, in cui specifichiamo quanti elementi mettere in base al dispositivo che si sta utilizzando -->
             <div class="row g-4 text-center">
                 <div class="col-md-6 col-lg-3">
                     <div class="step-icon-box bg-success bg-opacity-10 text-success">
@@ -98,16 +81,12 @@
             </div>
         </section>
 
-        <!-- footer è un componente di Vue per sostituire il classico codice HTML, in questo modo posso modificare tutto dentro components.js -->
         <app-footer></app-footer>
 
     </div>
 
-    <!-- script per Bootstrap e Vue.js -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-
-    <!-- script personalizzati per usare e modificare quello che ci serve, sono inseriti in questo ordine per far si di vedere le modifiche che vogliamo -->
     <script src="js/components.js"></script>
     <script src="js/home.js"></script>
 </body>
