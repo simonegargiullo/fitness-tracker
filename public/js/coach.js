@@ -1,25 +1,19 @@
-// =============================================================
-// coach.js  —  Logica della pagina Coach (coach.html)
-// =============================================================
-// Mostra la lista degli allenatori disponibili in cards.
-// Al click su una card si apre un modal Bootstrap con i dettagli.
-// API chiamata: GET /api/allenatori (pubblica, senza autenticazione)
-// =============================================================
-
+// coach.js - Gestisce la pagina degli allenatori, inclusa la visualizzazione dei dettagli in un modal
 const { createApp } = Vue;
 
+// Oggetto data con le variabili reattive usate nella pagina
 const app = createApp({
     data() {
         return {
-            coaches: [],           // Array di allenatori caricati dal database
-            selectedCoach: null,   // Allenatore attualmente selezionato (mostrato nel modal)
-            modalInstance: null,   // Riferimento all'istanza Bootstrap del modal
-            loading: true          // true durante il caricamento, poi diventa false
+            coaches: [], // Array di allenatori caricati dal database
+            selectedCoach: null, // Allenatore attualmente selezionato (mostrato nel modal)
+            modalInstance: null, // Riferimento all'istanza Bootstrap del modal
+            loading: true // true durante il caricamento, poi diventa false
         }
     },
     mounted() {
         // Inizializza il modal Bootstrap una sola volta al caricamento della pagina
-        // (è più efficiente che crearlo ogni volta al click)
+        // (anziché crearlo ogni volta al click)
         this.modalInstance = new bootstrap.Modal(document.getElementById('coachModal'));
 
         // Carica subito la lista degli allenatori dal server
@@ -29,9 +23,9 @@ const app = createApp({
         // Chiama il backend e popola l'array coaches con i dati del DB
         async caricaAllenatori() {
             try {
-                const res = await fetch('/api/allenatori');
+                const res = await fetch('/api/allenatori'); // API che restituisce la lista degli allenatori in formato JSON
                 if (res.ok) {
-                    this.coaches = await res.json();
+                    this.coaches = await res.json(); // Popola l'array coaches con i dati ricevuti
                 } else {
                     console.error("Errore nel recupero degli allenatori.");
                 }

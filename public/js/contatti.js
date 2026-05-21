@@ -1,12 +1,4 @@
-// =============================================================
-// contatti.js  —  Logica della pagina Contatti (contatti.html)
-// =============================================================
-// Gestisce l'invio del form di contatto.
-// Il messaggio viene salvato nel database e poi letto dal manager
-// nella sua dashboard (sezione "Messaggi").
-// API chiamata: POST /api/contatti
-// =============================================================
-
+// Crea l'app Vue e definisce i dati e i metodi per il form di contatto.
 const { createApp } = Vue;
 
 const app = createApp({
@@ -25,16 +17,16 @@ const app = createApp({
         // Invia il messaggio al server tramite fetch.
         // In caso di successo svuota il form e mostra la notifica verde.
         async inviaRichiesta() {
-            this.loading = true;
+            this.loading = true; // Mostra lo spinner sul bottone
 
             try {
                 const res = await fetch('/api/contatti', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(this.form)
+                    method: 'POST', // Assicurati che l'endpoint sia corretto
+                    headers: { 'Content-Type': 'application/json' }, // Imposta l'header per il JSON
+                    body: JSON.stringify(this.form) // Invia i dati del form come JSON al server
                 });
 
-                const data = await res.json();
+                const data = await res.json(); // Legge la risposta del server come JSON
 
                 if (res.ok) {
                     mostraNotifica("Messaggio inviato con successo! Ti risponderemo presto.", "success");
@@ -47,7 +39,7 @@ const app = createApp({
             } catch (error) {
                 mostraNotifica("Errore di connessione al server.", "danger");
             } finally {
-                this.loading = false;
+                this.loading = false; // Nasconde lo spinner sul bottone
             }
         }
     }

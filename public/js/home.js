@@ -1,13 +1,4 @@
-// =============================================================
-// home.js  —  Logica della Home page (index.html)
-// =============================================================
-// La home non ha logica propria: tutta l'interattività è gestita
-// dai componenti globali (Navbar con verifica sessione, Footer).
-// Se in futuro servono animazioni o dati da caricare nella home,
-// aggiungere il metodo mounted() e le variabili in data().
-// =============================================================
-
-const { createApp } = Vue;
+const { createApp } = Vue; // Importa la funzione createApp da Vue.js
 
 const app = createApp({
     // Nessun dato specifico per la home page
@@ -17,4 +8,5 @@ const app = createApp({
 app.component('app-navbar', NavbarComponent);
 app.component('app-footer', FooterComponent);
 
+// Monta l'app Vue sull'elemento con id "app" (presente in index.html)
 app.mount('#app');
