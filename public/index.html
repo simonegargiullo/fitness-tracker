@@ -3,92 +3,208 @@
 
 <head>
     <meta charset="UTF-8">
+
+    <!-- Disabilita lo zoom automatico su mobile e imposta la larghezza della viewport
+         uguale alla larghezza reale del dispositivo: fondamentale per il responsive design -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Fitness Tracker - Home</title>
+
+    <!-- Favicon: piccola icona SVG mostrata nella scheda del browser -->
     <link rel="icon" type="image/svg+xml" href="img/logo.svg">
+
+    <!-- Carica il font Montserrat da Google Fonts in tre pesi:
+         400 (normale), 600 (semibold), 800 (extrabold).
+         Usato come font principale del sito (dichiarato in style.css, body) -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <!-- Foglio di stile personalizzato del progetto: sovrascrive e integra Bootstrap -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 
+
+<!-- bg-light: sfondo grigio chiaro su tutta la pagina
+     d-flex flex-column min-vh-100: colonna flexbox alta almeno tutta la viewport,
+     così il footer rimane sempre in fondo anche con poco contenuto -->
 <body class="bg-light d-flex flex-column min-vh-100">
 
+
+    <!-- Radice di Vue: tutto ciò che è dentro #app è gestito dall'istanza Vue creata in home.js.
+         I componenti <app-navbar> e <app-footer> vengono risolti da Vue e sostituiti con il loro template HTML a runtime.
+         d-flex flex-column min-vh-100: ripete il layout colonna sull'app per mantenere il footer in fondo -->
     <div id="app" class="d-flex flex-column min-vh-100">
 
+
+        <!-- Componente Vue della navbar: definito in js/components.js, registrato in home.js. Viene renderizzato al suo posto da Vue. -->
         <app-navbar></app-navbar>
 
+        <!-- <header> identifica la sezione introduttiva della pagina.
+             hero-section: classe custom in style.css: imposta l'immagine di sfondo con overlay scuro, altezza 100vh e layout centrato.
+             text-center text-white: testo centrato e bianco su sfondo scuro -->
         <header class="hero-section text-center text-white">
-            <div class="container pt-5">
-                <h1 class="display-3 fw-bold mb-4">Trasforma la tua <span class="text-primary">Ambizione</span> in
-                    Risultati</h1>
 
-                <p class="lead mb-5 fw-normal text-light mx-auto" style="max-width: 700px;">
+            <!-- .container limita la larghezza e centra il contenuto orizzontalmente.
+                 pt-5: padding-top per abbassare il contenuto sotto la navbar fissa -->
+            <div class="container pt-5">
+
+                <!-- Titolo principale della pagina.
+                     display-3: dimensione molto grande.
+                     fw-bold: grassetto.
+                     mb-4: margine sotto.
+                     text-primary sullo <span>: colore verde del tema solo sulla parola "Ambizione" -->
+                <h1 class="display-3 fw-bold mb-4">
+                    Trasforma la tua <span class="text-primary">Ambizione</span> in Risultati
+                </h1>
+
+                <!-- Paragrafo introduttivo.
+                     lead: Bootstrap, testo leggermente più grande del normale, per i sottotitoli.
+                     mb-5: ampio margine sotto, prima dei bottoni.
+                     fw-normal text-light: peso normale, colore grigio chiaro (meno contrastato del bianco puro).
+                     mx-auto: centra il blocco orizzontalmente.
+                     style="max-width: 700px": limita la larghezza per migliorare la leggibilità.
+                     <br><br>: interruzione di riga per separare visivamente le due frasi.
+                     fw-semibold text-white sullo <span>: evidenzia la frase finale in bianco -->
+                <p class="lead mb-5 fw-normal text-light mx-auto hero-lead">
                     Unisciti alla nostra piattaforma. Scegli un personal trainer certificato, ricevi schede di
                     allenamento e piani alimentari personalizzati.
                     <br><br>
                     <span class="fw-semibold text-white">Il tuo obiettivo è il nostro impegno.</span>
                 </p>
 
+                <!-- Contenitore dei due CTA (Call To Action).
+                     d-flex justify-content-center: affianca i bottoni e li centra.
+                     gap-4: spazio uniforme tra i due bottoni.
+                     flex-wrap: se lo schermo è troppo stretto, i bottoni vanno a capo invece di uscire dalla pagina -->
                 <div class="d-flex justify-content-center gap-4 flex-wrap">
-                    <a href="coach.html" class="btn btn-primary btn-lg fw-bold px-5 py-3 rounded-pill shadow">Scopri il
-                        nostro team</a>
+
+                    <!-- CTA primario: porta alla pagina Coach.
+                         btn-primary: colore verde del tema (ridefinito in style.css).
+                         btn-lg: bottone grande.
+                         px-5 py-3: padding orizzontale e verticale generosi.
+                         rounded-pill: bordi completamente arrotondati (forma pillola).
+                         shadow: leggera ombra per dare profondità -->
+                    <a href="coach.html"
+                       class="btn btn-primary btn-lg fw-bold px-5 py-3 rounded-pill shadow">
+                        Scopri il nostro team
+                    </a>
+
+                    <!-- CTA secondario: porta alla pagina Contatti.
+                         btn-outline-light: bordo e testo bianchi, sfondo trasparente -->
                     <a href="contatti.html"
-                        class="btn btn-outline-light btn-lg fw-bold px-5 py-3 rounded-pill shadow">Contattaci</a>
+                       class="btn btn-outline-light btn-lg fw-bold px-5 py-3 rounded-pill shadow">
+                        Contattaci
+                    </a>
                 </div>
 
             </div>
         </header>
 
+
+        <!-- SEZIONE "COME FUNZIONA" -->
+        <!-- <section> blocco tematico autonomo della pagina.
+             id="come-funziona": permette link anchor (#come-funziona) e targeting CSS/JS.
+             container: larghezza massima e centrato.
+             my-5 py-5: ampi margini e padding verticali per distanziare la sezione.
+             flex-grow-1: questa sezione occupa tutto lo spazio verticale disponibile tra header e footer, evitando che il footer "galleggi" a metà pagina su contenuti corti -->
         <section id="come-funziona" class="container my-5 py-5 flex-grow-1">
+
+            <!-- Intestazione della sezione, centrata -->
             <div class="text-center mb-5">
+                <!-- Sottotitolo descrittivo sopra il titolo principale.
+                     text-primary: verde del tema.
+                     fw-bold text-uppercase: maiuscolo e grassetto per stile "label".
+                     tracking-wide: è una classe custom in style.css che aumenta l'interlinea -->
                 <h6 class="text-primary fw-bold text-uppercase tracking-wide">Semplice ed Efficace</h6>
+
+                <!-- Titolo della sezione.
+                     display-6: dimensione grande ma meno del display-3 dell'hero -->
                 <h2 class="fw-bold display-6">Come Funziona</h2>
             </div>
 
+            <!-- Griglia Bootstrap a 4 colonne su desktop, 2 su tablet, 1 su mobile.
+                 row: abilita il sistema a colonne Bootstrap.
+                 g-4: gap (spazio) di 1.5rem tra le colonne e le righe.
+                 text-center: tutto il contenuto delle card è centrato -->
             <div class="row g-4 text-center">
+
+                <!-- col-md-6: 2 colonne su tablet (≥768px)
+                     col-lg-3: 4 colonne su desktop (≥992px)
+                     Su mobile (default) occupa tutta la larghezza (12/12 colonne) -->
                 <div class="col-md-6 col-lg-3">
+
+                    <!-- step-icon-box: classe custom in style.css: cerchio con dimensioni fisse, display flex per centrare l'icona dentro.
+                         bg-success bg-opacity-10: sfondo verde molto trasparente (10% opacità).
+                         text-success: icona verde -->
                     <div class="step-icon-box bg-success bg-opacity-10 text-success">
+                        <!-- Icona tessera persona da Bootstrap Icons -->
                         <i class="bi bi-person-vcard"></i>
                     </div>
+
+                    <!-- fw-bold: titolo del passo in grassetto -->
                     <h4 class="fw-bold">1. Crea il Profilo</h4>
+
+                    <!-- text-muted: testo grigio attenuato, meno importante visivamente -->
                     <p class="text-muted">Iscriviti e compila i tuoi dati iniziali come peso, altezza e i tuoi obiettivi
                         di fitness.</p>
                 </div>
+
                 <div class="col-md-6 col-lg-3">
                     <div class="step-icon-box bg-success bg-opacity-10 text-success">
+                        <!-- Icona lente di ingrandimento -->
                         <i class="bi bi-search"></i>
                     </div>
                     <h4 class="fw-bold">2. Scegli il Coach</h4>
                     <p class="text-muted">Esplora la lista dei nostri allenatori certificati e invia la richiesta al
                         professionista che fa per te.</p>
                 </div>
+
                 <div class="col-md-6 col-lg-3">
                     <div class="step-icon-box bg-success bg-opacity-10 text-success">
+                        <!-- Icona fiamma -->
                         <i class="bi bi-fire"></i>
                     </div>
                     <h4 class="fw-bold">3. Allenati</h4>
                     <p class="text-muted">Ricevi la tua scheda personalizzata. Scarica il PDF e portalo con te in
                         palestra.</p>
                 </div>
+
                 <div class="col-md-6 col-lg-3">
                     <div class="step-icon-box bg-success bg-opacity-10 text-success">
+                        <!-- Icona uovo fritto (richiamo alla dieta) -->
                         <i class="bi bi-egg-fried"></i>
                     </div>
                     <h4 class="fw-bold">4. Segui la Dieta</h4>
                     <p class="text-muted">Ricevi il piano alimentare pensato per gli obiettivi che vuoi raggiungere.</p>
                 </div>
+
             </div>
         </section>
 
+
+        <!-- Componente Vue del footer: definito in js/components.js, registrato in home.js.
+             Rimane sempre in fondo grazie al layout flex-column + flex-grow-1 sulla sezione sopra -->
         <app-footer></app-footer>
 
     </div>
 
+    <!-- Bootstrap JS: necessario per i componenti interattivi di Bootstrap (navbar collapse hamburger, modali, dropdown…).
+         Caricato in fondo al <body> così non blocca il rendering dell'HTML -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="js/components.js"></script>
-    <script src="js/home.js"></script>
-</body>
 
+    <!-- Vue 3: espone Vue come variabile globale window.Vue.
+         Deve essere caricato PRIMA di components.js e home.js, che dipendono da esso -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <!-- Definisce i componenti riutilizzabili: NavbarComponent, FooterComponent, ecc.
+         Deve essere caricato PRIMA di home.js, che li registra nell'app Vue -->
+    <script src="js/components.js"></script>
+
+    <!-- Script specifico della Home: crea l'istanza Vue, registra i componenti e monta l'app su #app. Caricato per ultimo perché dipende da tutto il resto -->
+    <script src="js/home.js"></script>
+
+</body>
 </html>

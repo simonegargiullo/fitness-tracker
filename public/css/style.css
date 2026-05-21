@@ -397,3 +397,10 @@ body {
 .heading-404 {
     font-size: 8rem;
 }
+
+/* PAGINA HOME */
+
+/* Larghezza massima del paragrafo introduttivo nella Hero Section */
+.hero-lead {
+    max-width: 700px;
+}
