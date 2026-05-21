@@ -404,3 +404,20 @@ body {
 .hero-lead {
     max-width: 700px;
 }
+
+/* PAGINA CONTATTI */
+
+/* Sfondo specifico della pagina Contatti (sovrascrive .page-header) */
+.page-header-contatti {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)), url('https://images.unsplash.com/photo-1574680096145-d05b474e2155?q=80&w=1920&auto=format&fit=crop');
+}
+
+/* Larghezza massima del paragrafo introduttivo nell'header delle pagine interne */
+.header-lead {
+    max-width: 600px;
+}
+
+/* Disabilita il ridimensionamento manuale della textarea */
+.textarea-no-resize {
+    resize: none;
+}

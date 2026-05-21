@@ -9,21 +9,44 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Foglio di stile personalizzato: sovrascrive Bootstrap con il tema verde del progetto -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 
+
+<!-- bg-light: sfondo grigio chiaro
+     d-flex flex-column min-vh-100: layout a colonna alta almeno tutta la viewport,
+     così il footer rimane sempre in fondo -->
 <body class="bg-light d-flex flex-column min-vh-100">
 
+
+    <!-- Radice Vue: tutto ciò che è dentro #app è gestito dall'istanza Vue creata in contatti.js.
+         I componenti <app-navbar> e <app-footer> vengono sostituiti da Vue con il loro template a runtime -->
     <div id="app" class="d-flex flex-column min-vh-100">
 
+
+        <!-- Componente Vue della navbar: definito in js/components.js, registrato in contatti.js -->
         <app-navbar></app-navbar>
 
-        <header class="page-header"
-            style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)), url('https://images.unsplash.com/photo-1574680096145-d05b474e2155?q=80&w=1920&auto=format&fit=crop');">
+        <!-- page-header: classe custom in style.css: imposta padding, testo centrato, colore bianco e di default background-image con team-bg.jpg. -->
+        <header class="page-header page-header-contatti">
             <div class="container">
+                <!-- Sottotitolo: text-primary: verde tema, fw-bold text-uppercase: maiuscolo grassetto per stile "label" -->
                 <h6 class="text-primary fw-bold text-uppercase tracking-wide">Siamo qui per te</h6>
-                <h1 class="display-4 fw-bold mb-3">Mettiamoci in <span class="text-primary">Contatto</span></h1>
-                <p class="lead text-light opacity-75 mx-auto" style="max-width: 600px;">
+
+                <!-- H1: titolo principale della pagina.
+                     display-4: dimensione grande per le pagine interne (meno dell'hero della Home).
+                     <span class="text-primary">: colora solo "Contatto" in verde -->
+                <h1 class="display-4 fw-bold mb-3">
+                    Mettiamoci in <span class="text-primary">Contatto</span>
+                </h1>
+
+                <!--
+                  Paragrafo introduttivo sotto il titolo.
+                  opacity-75: testo leggermente trasparente.
+                  mx-auto: centra il blocco orizzontalmente.
+                -->
+                <p class="lead text-light opacity-75 mx-auto header-lead">
                     Hai problemi con la piattaforma?
                     <br>Vuoi informazioni sui nostri piani?
                     <br>Scrivici, ti risponderemo entro 24 ore!
@@ -31,28 +54,87 @@
             </div>
         </header>
 
+        <!--
+          container: larghezza massima e centrato orizzontalmente.
+          my-5 py-4: margini e padding verticali per distanziare dal header e dal footer.
+          flex-grow-1: occupa tutto lo spazio verticale disponibile tra header e footer, impedendo al footer di "galleggiare" a metà pagina su contenuto corto.
+        -->
         <section class="container my-5 py-4 flex-grow-1">
+
+            <!-- row: griglia Bootstrap.
+                 g-4 g-lg-5: gap tra le colonne, 1.5rem su mobile, 3rem su desktop (≥992px) -->
             <div class="row g-4 g-lg-5">
 
+
+                <!-- COLONNA SINISTRA: FORM -->
+                <!-- col-lg-7: occupa 7/12 dello spazio da 992px in su;
+                     su mobile occupa tutta la larghezza (12/12, default) -->
                 <div class="col-lg-7">
+
+                    <!-- Card contenitore del form.
+                         shadow-sm border-0: ombra leggera, nessun bordo visibile.
+                         p-4 p-md-5: padding interno, medio su mobile, grande da 768px.
+                         rounded-4: angoli arrotondati (Bootstrap 5.2+, raggio ~12px).
+                         h-100 d-flex flex-column: la card occupa tutta l'altezza della colonna e dispone il contenuto in colonna,
+                         così il bottone rimane sempre in fondo con mt-auto -->
                     <div class="card shadow-sm border-0 p-4 p-md-5 rounded-4 h-100 d-flex flex-column">
                         <h3 class="fw-bold mb-4">Inviaci un messaggio</h3>
 
+                        <!--
+                          <form> con Vue:
+                          @submit.prevent="inviaRichiesta": intercetta il submit del form, previene il comportamento default del browser (ricaricamento pagina),
+                          e chiama il metodo Vue inviaRichiesta() definito in contatti.js.
+                          d-flex flex-column flex-grow-1: il form occupa tutto lo spazio verticale disponibile nella card, per spingere il bottone in fondo.
+                        -->
                         <form @submit.prevent="inviaRichiesta" class="d-flex flex-column flex-grow-1">
+
+                            <!-- Griglia interna del form.
+                                 row g-3: due campi affiancati (Nome + Email) con gap di 1rem -->
                             <div class="row g-3">
+
+                                <!-- Campo Nome: occupa metà riga da 768px (col-md-6) -->
                                 <div class="col-md-6">
+                                    <!-- form-label: stile Bootstrap per le etichette dei campi -->
                                     <label class="form-label fw-semibold">Nome e Cognome</label>
-                                    <input type="text" class="form-control form-control-lg bg-light" v-model="form.nome"
-                                        required placeholder="Es. Mario Rossi">
+                                    <!--
+                                      form-control form-control-lg: stile Bootstrap per gli input, dimensione grande.
+                                      bg-light: sfondo grigio chiaro per distinguere i campi dalla card bianca.
+                                      v-model="form.nome": binding bidirezionale Vue, aggiorna form.nome in tempo reale mentre l'utente digita,
+                                      e popola il campo se form.nome ha già un valore.
+                                      required: validazione nativa HTML, il form non si invia se il campo è vuoto.
+                                    -->
+                                    <input type="text"
+                                           class="form-control form-control-lg bg-light"
+                                           v-model="form.nome"
+                                           required
+                                           placeholder="Es. Mario Rossi">
                                 </div>
+
+                                <!-- Campo Email: occupa l'altra metà riga da 768px -->
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold">Indirizzo Email</label>
-                                    <input type="email" class="form-control form-control-lg bg-light"
-                                        v-model="form.email" required placeholder="Es. mario@email.com">
+                                    <!-- type="email": validazione nativa: il browser controlla
+                                         che il valore sia nel formato corretto (es. nome@dominio.it) -->
+                                    <input type="email"
+                                           class="form-control form-control-lg bg-light"
+                                           v-model="form.email"
+                                           required
+                                           placeholder="Es. mario@email.com">
                                 </div>
+
+                                <!-- Campo Oggetto: menu a tendina, occupa tutta la riga (col-12) -->
                                 <div class="col-12">
                                     <label class="form-label fw-semibold">Oggetto</label>
-                                    <select class="form-select form-select-lg bg-light" v-model="form.oggetto" required>
+                                    <!--
+                                      form-select: stile Bootstrap per i <select>.
+                                      v-model="form.oggetto": binding bidirezionale Vue sul campo oggetto (in pratica fa update del valore).
+                                    -->
+                                    <select class="form-select form-select-lg bg-light"
+                                            v-model="form.oggetto"
+                                            required>
+                                        <!-- disabled selected: opzione placeholder non selezionabile;
+                                             value="": valore vuoto, la validazione "required"
+                                             blocca il submit se rimane selezionata questa opzione -->
                                         <option value="" disabled selected>Seleziona un argomento...</option>
                                         <option value="Info Generali">Informazioni Generali</option>
                                         <option value="Supporto Tecnico">Supporto Tecnico</option>
@@ -63,65 +145,117 @@
                                 </div>
                             </div>
 
+                            <!-- Contenitore textarea: flex-grow-1: occupa tutto lo spazio verticale rimanente nella card, facendo "crescere" l'area di testo -->
                             <div class="d-flex flex-column flex-grow-1 mt-3 mb-4">
                                 <label class="form-label fw-semibold">Messaggio</label>
-                                <textarea class="form-control form-control-lg bg-light flex-grow-1"
-                                    v-model="form.messaggio" required placeholder="Scrivi qui la tua richiesta..."
-                                    style="resize: none;"></textarea>
+                                <!--
+                                  <textarea> per messaggi multi-riga.
+                                  flex-grow-1: si espande per occupare tutto lo spazio disponibile.
+                                -->
+                                <textarea class="form-control form-control-lg bg-light flex-grow-1 textarea-no-resize"
+                                          v-model="form.messaggio"
+                                          required
+                                          placeholder="Scrivi qui la tua richiesta..."></textarea>
                             </div>
 
+                            <!-- mt-auto: spinge il bottone sempre in fondo alla card, indipendentemente dall'altezza del contenuto sopra -->
                             <div class="mt-auto">
-                                <button type="submit" class="btn btn-primary btn-lg fw-bold px-5 py-3 w-100 rounded-pill shadow-sm" :disabled="loading">
+                                <!--
+                                  Bottone di invio del form.
+                                  type="submit": al click attiva il submit del <form> e quindi @submit.prevent.
+                                  w-100: larghezza piena della colonna.
+                                  :disabled="loading": binding Vue: disabilita il bottone mentre la richiesta è in corso (loading = true in contatti.js),
+                                  prevenendo invii multipli accidentali.
+                                -->
+                                <button type="submit"
+                                        class="btn btn-primary btn-lg fw-bold px-5 py-3 w-100 rounded-pill shadow-sm"
+                                        :disabled="loading">
+
+                                    <!-- v-if="loading": mostra lo spinner Bootstrap (animazione cerchio) solo mentre loading è true, cioè durante l'invio -->
                                     <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                                    <i v-else class="bi bi-send-fill me-2 text-white"></i> <span class="text-white">Invia Richiesta</span>
+
+                                    <!-- v-else: mostra l'icona "invia" solo quando NON si sta caricando -->
+                                    <i v-else class="bi bi-send-fill me-2 text-white"></i>
+
+                                    <span class="text-white">Invia Richiesta</span>
                                 </button>
                             </div>
                         </form>
                     </div>
                 </div>
 
+
+                <!-- COLONNA DESTRA: INFO -->
+                <!-- col-lg-5: occupa i restanti 5/12 dello spazio da 992px (7+5=12). Su mobile va sotto il form -->
                 <div class="col-lg-5">
+
+                    <!-- Colonna flessibile con gap tra le card info.
+                         h-100 justify-content-center: occupa tutta l'altezza e centra verticalmente le tre card rispetto alla card del form -->
                     <div class="d-flex flex-column gap-4 h-100 justify-content-center">
 
+                        <!-- Card Sede -->
+                        <!-- hover-card: classe custom in style.css: aggiunge effetto sollevamento al passaggio del mouse (translateY + shadow).
+                             rounded-4: angoli molto arrotondati, coerente con la card del form -->
                         <div class="card hover-card border-0 shadow-sm p-4 text-center rounded-4">
+                            <!-- display-5 su Bootstrap Icons: icona grande (circa 3rem) -->
                             <div class="text-primary mb-3">
                                 <i class="bi bi-geo-alt-fill display-5"></i>
                             </div>
                             <h5 class="fw-bold">La nostra Sede</h5>
-                            <p class="text-muted mb-0">Viale dello Scalo San Lorenzo, 82<br>00159 Roma (RM), Italia</p>
+                            <!-- mb-0: rimuove il margine inferiore default del <p>, così la card non ha spazio vuoto in fondo -->
+                            <p class="text-muted mb-0">
+                                Viale dello Scalo San Lorenzo, 82<br>00159 Roma (RM), Italia
+                            </p>
                         </div>
 
+                        <!-- Card Email -->
                         <div class="card hover-card border-0 shadow-sm p-4 text-center rounded-4">
                             <div class="text-primary mb-3">
                                 <i class="bi bi-envelope-paper-fill display-5"></i>
                             </div>
                             <h5 class="fw-bold">Scrivici</h5>
-                            <p class="text-muted mb-0">manager@fitnesstracker.it<br>coach@fitnesstracker.it</p>
+                            <p class="text-muted mb-0">
+                                manager@fitnesstracker.it<br>coach@fitnesstracker.it
+                            </p>
                         </div>
 
+                        <!-- Card Telefono -->
                         <div class="card hover-card border-0 shadow-sm p-4 text-center rounded-4">
                             <div class="text-primary mb-3">
                                 <i class="bi bi-telephone-fill display-5"></i>
                             </div>
                             <h5 class="fw-bold">Chiamaci</h5>
-                            <p class="text-muted mb-0">Lun - Ven, 09:00 - 18:00<br>+39 06 3241 7856</p>
+                            <p class="text-muted mb-0">
+                                Lun - Ven, 09:00 - 18:00<br>+39 06 3241 7856
+                            </p>
                         </div>
 
                     </div>
                 </div>
 
+
             </div>
         </section>
 
+
+        <!-- Componente Vue del footer -->
         <app-footer></app-footer>
+
 
     </div>
 
+
+    <!-- Bootstrap JS: necessario per i componenti interattivi (collapse navbar, ecc.) Caricato in fondo al body per non bloccare il rendering dell'HTML -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Vue 3: deve essere caricato PRIMA di components.js e contatti.js -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
+    <!-- Definisce i componenti riutilizzabili (NavbarComponent, FooterComponent) -->
     <script src="js/components.js"></script>
-    <script src="js/contatti.js"></script>
-</body>
 
+    <!-- Script specifico della pagina Contatti: crea l'istanza Vue, gestisce il form (v-model, inviaRichiesta, stato loading) e monta l'app su #app -->
+    <script src="js/contatti.js"></script>
+
+</body>
 </html>
