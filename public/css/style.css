@@ -380,3 +380,20 @@ body {
         font-size: 12px;
     }
 }
+
+/* PAGINA 404 */
+
+/* Spaziatore sotto la navbar fissa */
+.navbar-spacer {
+    margin-top: 76px;
+}
+
+/* Icona bussola della pagina 404 */
+.icon-404 {
+    font-size: 6rem;
+}
+
+/* Numero "404" in grande */
+.heading-404 {
+    font-size: 8rem;
+}

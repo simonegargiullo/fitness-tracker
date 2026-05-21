@@ -2,38 +2,51 @@
 <html lang="it">
   <head>
     <meta charset="UTF-8" />
+    <!-- Ottimizzazione per dispositivi mobili -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pagina non trovata - Fitness Tracker</title>
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="img/logo.svg">
+    <!-- Font e stili -->
+    <!-- Vengono scritti in questo ordine perché così l'ultima modifica avrà la priorità -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="css/style.css" />
   </head>
+  <!-- Corpo della pagina -->
   <body class="bg-light d-flex flex-column min-vh-100">
 
+    <!-- App Vue per Navbar e Footer -->
     <div id="app" class="d-flex flex-column min-vh-100">
         
         <app-navbar></app-navbar>
 
         <!-- Spaziatore -->
-        <div style="margin-top: 76px;"></div>
+        <div class="navbar-spacer"></div>
 
         <!-- Contenuto della pagina 404 -->
+        <!-- Flexbox per centrare verticalmente e orizzontalmente -->
         <div class="container my-5 flex-grow-1 d-flex align-items-center justify-content-center text-center">
+            <!-- Colonna centrale con icona, titolo, descrizione e pulsante -->
             <div class="col-md-8 col-lg-6">
                 
-                <i class="bi bi-compass text-primary opacity-75" style="font-size: 6rem;"></i>
+                <!-- Icona 404 -->
+                <i class="bi bi-compass text-primary opacity-75 icon-404"></i>
                 
-                <h1 class="display-1 fw-bold text-dark mt-3" style="font-size: 8rem;">404</h1>
+                <!-- Titolo e descrizione -->
+                <h1 class="display-1 fw-bold text-dark mt-3 heading-404">404</h1>
                 <h2 class="fw-bold mb-3">Ops! Pagina non trovata.</h2>
                 
                 <p class="text-muted lead mb-5">
                     Sembra che tu ti sia perso fuori dalla palestra. La pagina che stai cercando non esiste, è stata rinominata o temporaneamente rimossa.
                 </p>
 
+                <!-- Pulsante per tornare alla home -->
+                <!-- btn-lg è il pulsante più grande, fw-bold è il peso del font, rounded-pill è il bordo arrotondato, shadow-sm è l'ombra -->
                 <a href="index.html" class="btn btn-primary btn-lg fw-bold rounded-pill px-5 shadow-sm">
                     <i class="bi bi-house-door-fill me-2"></i> Torna alla Home
+                    <!-- bi-house-door-fill è l'icona della casa, me-2 è il margine a destra -->
                 </a>
                 
             </div>
@@ -44,6 +57,8 @@
     </div>
 
     <!-- Script essenziali -->
+    <!-- Servono per il funzionamento di Bootstrap e Vue -->
+    <!-- components.js è il file che contiene i componenti Vue -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="js/components.js"></script>
@@ -54,7 +69,7 @@
         const app = createApp({});
         app.component('app-navbar', NavbarComponent);
         app.component('app-footer', FooterComponent);
-        app.mount('#app');
+        app.mount('#app'); <!-- Monta Vue sull elemento con id app che contiene Navbar e Footer -->
     </script>
   </body>
 </html>
