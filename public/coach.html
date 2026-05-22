@@ -6,54 +6,147 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fitness Tracker - Il Nostro Team</title>
     <link rel="icon" type="image/svg+xml" href="img/logo.svg">
+    <!-- Font Montserrat da Google Fonts (400 normale, 600 semibold, 800 extrabold) -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5.3: griglia, utilità e componenti responsive -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons: permette di usare <i class="bi bi-..."> -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Foglio di stile personalizzato: sovrascrive e integra Bootstrap con il tema verde -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 
+
+<!-- bg-light: sfondo grigio chiaro
+     d-flex flex-column min-vh-100: layout a colonna alta almeno tutta la viewport, così il footer rimane sempre in fondo -->
 <body class="bg-light d-flex flex-column min-vh-100">
 
+
+    <!-- Radice Vue: tutto ciò che è dentro #app è gestito dall'istanza Vue creata in coach.js.
+         I componenti <app-navbar> e <app-footer> vengono sostituiti da Vue con il loro template a runtime -->
     <div id="app" class="d-flex flex-column min-vh-100">
 
+
+        <!-- Componente Vue della navbar: definito in js/components.js, registrato in coach.js -->
         <app-navbar></app-navbar>
 
+        <!--
+          page-header: classe custom in style.css: padding, testo centrato, colore bianco.
+          bg-coach: classe custom in style.css: imposta l'immagine di sfondo specifica per la pagina Coach (gradiente scuro + team-bg.jpg).
+        -->
         <header class="page-header bg-coach">
             <div class="container">
+                <!-- Sottotitolo sopra il titolo: fw-bold text-uppercase: maiuscolo grassetto, text-white: bianco -->
                 <h6 class="text-white fw-bold text-uppercase tracking-wide">I professionisti</h6>
-                <h1 class="display-4 fw-bold mb-3">Il Nostro <span class="text-primary">Team</span></h1>
-                <p class="lead text-light opacity-75 mx-auto" style="max-width: 600px;">
+
+                <!-- H1: titolo principale della pagina.
+                     display-4: grande ma meno dell'hero della Home.
+                     <span class="text-primary">: colora "Team" in verde -->
+                <h1 class="display-4 fw-bold mb-3">
+                    Il Nostro <span class="text-primary">Team</span>
+                </h1>
+
+                <!--
+                  Paragrafo introduttivo.
+                  opacity-75: testo leggermente trasparente.
+                  mx-auto: centra il blocco orizzontalmente.
+                -->
+                <p class="lead text-light opacity-75 mx-auto header-lead">
                     Scegli l'allenatore certificato più adatto alle tue esigenze. Ogni coach è pronto a seguirti passo
                     dopo passo nel tuo percorso.
                 </p>
             </div>
         </header>
 
+
+        <!-- SEZIONE LISTA COACH -->
+        <!--
+          flex-grow-1: occupa tutto lo spazio tra header e footer, evitando che il footer galleggi a metà pagina quando i dati sono in caricamento.
+        -->
         <section class="container my-5 py-4 flex-grow-1">
 
+
+            <!-- STATO: CARICAMENTO -->
+            <!--
+              v-if="loading": Vue mostra questo blocco solo mentre loading è true, cioè finché coach.js non ha ricevuto i dati dal server.
+              spinner-overlay: classe custom in style.css: centra il contenuto con flexbox.
+            -->
             <div v-if="loading" class="spinner-overlay">
+                <!-- spinner-border: animazione Bootstrap a cerchio rotante.
+                     text-primary: colore verde del tema.
+                     spinner-lg: classe custom in style.css: aumenta le dimensioni dello spinner.
+                     role="status": attributo di accessibilità per screen reader -->
                 <div class="spinner-border text-primary spinner-lg" role="status"></div>
                 <p class="mt-3">Caricamento coach...</p>
             </div>
 
+
+            <!-- STATO: NESSUN COACH -->
+            <!--
+              v-else-if="coaches.length === 0": Vue mostra questo blocco se il caricamento è terminato ma l'array coaches è vuoto (nessun coach nel database).
+              È lo "stato vuoto" (empty state): non si lascia mai la pagina completamente bianca.
+            -->
             <div v-else-if="coaches.length === 0" class="text-center text-muted py-5">
+                <!-- display-1 opacity-25: icona molto grande e quasi trasparente, per comunicare visivamente lo stato vuoto senza essere invadente -->
                 <i class="bi bi-people-fill display-1 opacity-25"></i>
                 <h3 class="mt-3">Nessun coach ancora disponibile</h3>
                 <p>I nostri manager stanno inserendo i professionisti. Torna a trovarci presto!</p>
             </div>
 
-            <div v-else class="row g-4 justify-content-center">
-                <div class="col-md-6 col-lg-4" v-for="coach in coaches" :key="coach.id">
-                    <div class="card hover-card bg-white h-100 shadow-sm border-0">
-                        <img :src="coach.foto || 'img/default-user.jpg'" class="card-img-top coach-img" :alt="coach.nome">
 
+            <!-- STATO: LISTA COACH -->
+            <!--
+              v-else: Vue mostra questo blocco solo se loading è false E coaches.length > 0.
+              justify-content-center: se i coach sono meno di 3, le card si centrano invece di allinearsi a sinistra.
+            -->
+            <div v-else class="row g-4 justify-content-center">
+
+                <!--
+                  v-for="coach in coaches": direttiva Vue che itera sull'array coaches e crea un <div> per ogni elemento, passando i dati nella variabile "coach".
+                  :key="coach.id": attributo obbligatorio con v-for: Vue usa l'id univoco per tracciare efficientemente le modifiche (aggiunta/rimozione card).
+                  col-md-6 col-lg-4: 1 colonna su mobile, 2 su tablet, 3 su desktop.
+                -->
+                <div class="col-md-6 col-lg-4" v-for="coach in coaches" :key="coach.id">
+
+                    <!-- hover-card: classe custom in style.css: effetto sollevamento al hover.
+                         h-100: tutte le card della stessa riga hanno la stessa altezza. -->
+                    <div class="card hover-card bg-white h-100 shadow-sm border-0">
+
+                        <!--
+                          Foto del coach.
+                          :src: binding Vue: usa coach.foto se disponibile, altrimenti l'immagine placeholder default-user.jpg.
+                          coach-img: classe custom in style.css: dimensioni e object-fit per uniformare le foto di profilo (altezza fissa, ritaglio).
+                          :alt: binding Vue: testo alternativo accessibile con il nome del coach.
+                        -->
+                        <img :src="coach.foto || 'img/default-user.jpg'"
+                             class="card-img-top coach-img"
+                             :alt="coach.nome">
+
+                        <!-- card-body con flex-column: permette di usare mt-auto sul bottone per spingerlo sempre in fondo alla card -->
                         <div class="card-body p-4 d-flex flex-column text-center">
+
+                            <!-- Nome e cognome del coach tramite interpolazione Vue {{ }} -->
                             <h4 class="fw-bold mb-1">{{ coach.nome }} {{ coach.cognome }}</h4>
+
+                            <!--
+                              Specialità del coach.
+                              flex-grow-1: occupa lo spazio verticale tra nome e bottone, così il bottone rimane sempre in fondo indipendentemente
+                              dalla lunghezza del testo della specialità.
+                              coach.specialita || 'Personal Trainer': operatore OR di JS: se specialita è null/undefined/vuoto, mostra il testo di fallback.
+                            -->
                             <p class="text-primary fw-semibold small text-uppercase mb-4 flex-grow-1">
-                                <i class="bi bi-star-fill me-1"></i> {{ coach.specialita || 'Personal Trainer' }}
+                                <i class="bi bi-star-fill me-1"></i>
+                                {{ coach.specialita || 'Personal Trainer' }}
                             </p>
-                            
-                            <button @click="apriDettagli(coach)" class="btn btn-outline-primary fw-bold w-100 rounded-pill mt-auto">
+
+                            <!--
+                              Bottone che apre il modale con i dettagli del coach.
+                              @click="apriDettagli(coach)": chiama il metodo Vue apriDettagli() passando l'oggetto coach corrente; il metodo salva il coach
+                              in selectedCoach e apre il modale Bootstrap.
+                              mt-auto: spinge il bottone sempre in fondo alla card.
+                            -->
+                            <button @click="apriDettagli(coach)"
+                                    class="btn btn-outline-primary fw-bold w-100 rounded-pill mt-auto">
                                 Scopri di più
                             </button>
                         </div>
@@ -62,51 +155,122 @@
             </div>
         </section>
 
-        <div class="modal fade" id="coachModal" tabindex="-1" aria-labelledby="coachModalLabel" aria-hidden="true">
+
+        <!-- MODALE DETTAGLI COACH -->
+        <!--
+          Componente modale di Bootstrap.
+          modal fade: classe base + animazione di apertura/chiusura con dissolvenza.
+          id="coachModal": identificatore usato da coach.js per aprire il modale con bootstrap.Modal.getInstance().
+          tabindex="-1": non raggiungibile con Tab quando è chiuso (accessibilità).
+          aria-labelledby: collega il modale al suo titolo per screen reader.
+          aria-hidden="true": nascosto agli screen reader quando è chiuso.
+        -->
+        <div class="modal fade" id="coachModal" tabindex="-1"
+             aria-labelledby="coachModalLabel" aria-hidden="true">
+
+            <!-- modal-dialog-centered: centra il modale verticalmente nella viewport.
+                 modal-lg: larghezza aumentata (fino a 800px) per mostrare più contenuto. -->
             <div class="modal-dialog modal-dialog-centered modal-lg">
+
+                <!-- modal-content: contenitore bianco del modale.
+                     position-relative: necessario per posizionare il bottone di chiusura in modo assoluto nell'angolo in alto a destra. -->
                 <div class="modal-content border-0 rounded-4 shadow position-relative">
-                    
-                    <button type="button" class="btn-close position-absolute top-0 end-0 m-4" style="z-index: 1055;" data-bs-dismiss="modal" aria-label="Chiudi"></button>
-                    
+
+                    <!--
+                      Bottone chiusura posizionato in alto a destra.
+                      position-absolute top-0 end-0 m-4: angolo in alto a destra con margine.
+                      data-bs-dismiss="modal": Bootstrap chiude il modale al click, senza bisogno di codice JavaScript manuale.
+                      aria-label="Chiudi": testo alternativo per screen reader (il bottone ha solo un'icona ×, non testo visibile).
+                    -->
+                    <button type="button"
+                            class="btn-close position-absolute top-0 end-0 m-4 modal-close-btn"
+                            data-bs-dismiss="modal"
+                            aria-label="Chiudi"></button>
+
+                    <!--
+                      v-if="selectedCoach": Vue renderizza il contenuto del modale solo quando un coach è stato selezionato (apriDettagli() è stato chiamato).
+                      Evita errori di accesso a proprietà null prima che il modale sia aperto.
+                    -->
                     <div class="modal-body p-4 p-md-5" v-if="selectedCoach">
                         <div class="row g-4">
                             <div class="col-12 mt-2">
-                                
+
+                                <!-- Nome del coach selezionato.
+                                     pe-4 pe-md-0: padding destra su mobile per non sovrapporsi al bottone di chiusura posizionato in alto a destra -->
                                 <div class="text-center mb-4">
-                                    <h2 class="fw-bold mb-1 display-6 pe-4 pe-md-0">{{ selectedCoach.nome }} {{ selectedCoach.cognome }}</h2>
+                                    <h2 class="fw-bold mb-1 display-6 pe-4 pe-md-0">
+                                        {{ selectedCoach.nome }} {{ selectedCoach.cognome }}
+                                    </h2>
                                 </div>
 
+                                <!-- Foto del coach nel modale.
+                                     img-fluid: larghezza massima 100% del contenitore.
+                                     rounded-4 shadow: angoli arrotondati e ombra per stile card.
+                                -->
                                 <div class="text-center mb-4">
-                                    <img :src="selectedCoach.foto || 'img/default-user.jpg'" class="img-fluid rounded-4 shadow" :alt="selectedCoach.nome" style="max-height: 400px; object-fit: cover;">
+                                    <img :src="selectedCoach.foto || 'img/default-user.jpg'"
+                                         class="img-fluid rounded-4 shadow modal-coach-img"
+                                         :alt="selectedCoach.nome">
                                 </div>
 
+                                <!-- Specialità del coach nel modale.
+                                     fs-5: font-size livello 5 Bootstrap (~1.25rem) -->
                                 <div class="text-center mb-4">
                                     <p class="text-primary fw-semibold text-uppercase mb-0 fs-5">
-                                        <i class="bi bi-star-fill me-1"></i> {{ selectedCoach.specialita || 'Personal Trainer' }}
+                                        <i class="bi bi-star-fill me-1"></i>
+                                        {{ selectedCoach.specialita || 'Personal Trainer' }}
                                     </p>
                                 </div>
 
+                                <!-- Colonna centrata e ristretta per la bio e i contatti:
+                                     col-md-10 col-lg-8: occupa meno della larghezza totale su schermi grandi, per righe di testo più leggibili -->
                                 <div class="row justify-content-center mt-3">
                                     <div class="col-md-10 col-lg-8">
+
+                                        <!-- Descrizione/bio del coach.
+                                             lead fs-6: testo leggermente enfatizzato ma dimensione base (fs-6 riduce il lead a 1rem).
+                                             || 'Nessuna descrizione...': testo di fallback se il campo è vuoto nel database -->
                                         <p class="text-muted mb-4 lead fs-6 text-center">
                                             {{ selectedCoach.descrizione || 'Nessuna descrizione fornita per questo professionista.' }}
                                         </p>
 
+                                        <!-- Sezione contatti del coach nel modale.
+                                             border-top pt-3: linea separatrice sopra i contatti.
+                                             list-inline: Bootstrap: rimuove bullet e padding dalla lista per un layout orizzontale.
+                                             d-flex flex-column flex-md-row: in colonna su mobile, in riga da 768px;
+                                             gap-2 gap-md-4: spazio tra gli elementi. -->
                                         <div class="border-top pt-3 mt-2 text-center">
                                             <ul class="list-inline mb-0 text-muted small d-flex flex-column flex-md-row justify-content-center gap-2 gap-md-4">
+
+                                                <!--
+                                                  v-if="selectedCoach.email": mostra la riga email solo se il campo email è valorizzato nel database.
+                                                  :href="'mailto:'+selectedCoach.email": concatenazione Vue per costruire un link mailto: cliccabile,
+                                                  che apre il client di posta con l'email pre-compilata.
+                                                -->
                                                 <li class="list-inline-item mx-0" v-if="selectedCoach.email">
                                                     <i class="bi bi-envelope-fill me-1 text-primary"></i>
-                                                    <a :href="'mailto:'+selectedCoach.email" class="text-muted text-decoration-none">{{ selectedCoach.email }}</a>
+                                                    <a :href="'mailto:'+selectedCoach.email"
+                                                       class="text-muted text-decoration-none">
+                                                        {{ selectedCoach.email }}
+                                                    </a>
                                                 </li>
+
+                                                <!--
+                                                  v-if="selectedCoach.telefono": mostra solo se presente.
+                                                  :href="'tel:'+selectedCoach.telefono": link tel: che su mobile avvia direttamente la chiamata.
+                                                -->
                                                 <li class="list-inline-item mx-0" v-if="selectedCoach.telefono">
                                                     <i class="bi bi-telephone-fill me-1 text-primary"></i>
-                                                    <a :href="'tel:'+selectedCoach.telefono" class="text-muted text-decoration-none">{{ selectedCoach.telefono }}</a>
+                                                    <a :href="'tel:'+selectedCoach.telefono"
+                                                       class="text-muted text-decoration-none">
+                                                        {{ selectedCoach.telefono }}
+                                                    </a>
                                                 </li>
                                             </ul>
                                         </div>
                                     </div>
                                 </div>
-                                
+
                             </div>
                         </div>
                     </div>
@@ -115,15 +279,24 @@
             </div>
         </div>
 
+
+        <!-- Componente Vue del footer -->
         <app-footer></app-footer>
+
 
     </div>
 
+
+    <!-- Bootstrap JS: necessario per il funzionamento del modale e del collapse navbar. Caricato in fondo per non bloccare il rendering dell'HTML -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Vue 3: deve essere caricato PRIMA di components.js e coach.js -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
+    <!-- Definisce i componenti riutilizzabili (NavbarComponent, FooterComponent) -->
     <script src="js/components.js"></script>
+
+    <!-- Script specifico della pagina Coach: crea l'istanza Vue, carica i coach dal server, gestisce selectedCoach e l'apertura del modale -->
     <script src="js/coach.js"></script>
 </body>
-
 </html>

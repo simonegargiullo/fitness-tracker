@@ -421,3 +421,16 @@ body {
 .textarea-no-resize {
     resize: none;
 }
+
+/* PAGINA COACH */
+
+/* Bottone chiusura del modale: deve stare sopra l'immagine del coach */
+.modal-close-btn {
+    z-index: 1055;
+}
+
+/* Immagine del coach nel modale: altezza massima e ritaglio proporzionale */
+.modal-coach-img {
+    max-height: 400px;
+    object-fit: cover;
+}
