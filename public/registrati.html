@@ -5,70 +5,194 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Registrati - Fitness Tracker</title>
     <link rel="icon" type="image/svg+xml" href="img/logo.svg">
+    <!-- Font Montserrat da Google Fonts (400 normale, 600 semibold, 800 extrabold) -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5.3: griglia, utilità e componenti responsive -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Bootstrap Icons: permette di usare <i class="bi bi-..."> -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+    <!-- Foglio di stile personalizzato: sovrascrive e integra Bootstrap con il tema verde -->
     <link rel="stylesheet" href="css/style.css" />
   </head>
+
+  <!-- bg-light: sfondo grigio chiaro
+       d-flex flex-column min-vh-100: layout a colonna alta almeno tutta la viewport, così il footer rimane sempre in fondo -->
   <body class="bg-light d-flex flex-column min-vh-100">
 
+    <!-- Radice Vue: tutto ciò che è dentro #app è gestito dall'istanza Vue creata in registrati.js.
+     I componenti <app-navbar> e <app-footer> vengono sostituiti da Vue con il loro template a runtime -->
     <div id="app" class="d-flex flex-column min-vh-100">
-        
+
+        <!-- Componente Vue della navbar: definito in js/components.js, registrato in registrati.js -->
         <app-navbar></app-navbar>
 
+        <!--
+          my-4: margine verticale attorno al contenitore.
+          pt-5 mt-5: padding e margine superiore per compensare la navbar fixed-top.
+          flex-grow-1: occupa tutto lo spazio verticale tra navbar e footer.
+          d-flex align-items-center justify-content-center: centra la card sia verticalmente che orizzontalmente nella pagina.
+        -->
         <div class="container my-4 pt-5 mt-5 flex-grow-1 d-flex align-items-center justify-content-center">
+
+            <!-- Colonna centrale: più larga rispetto al login (col-lg-8 col-xl-7) perché il form ha più campi disposti su più colonne -->
             <div class="col-lg-8 col-xl-7">
+
+                <!-- Card contenitore del form.
+                     shadow border-0 rounded-4: ombra, nessun bordo, angoli molto arrotondati -->
                 <div class="card shadow border-0 rounded-4">
-                    
+
+                    <!-- p-4 p-md-5: padding interno: medio su mobile, grande da 768px -->
                     <div class="card-body p-4 p-md-5">
-                        
+
+
+                        <!-- INTESTAZIONE -->
                         <div class="text-center mb-4">
-                            <i class="bi bi-person-plus text-primary" style="font-size: 3.5rem;"></i>
+
+                            <!--
+                              Icona decorativa sopra il titolo.
+                              text-primary: colore verde del tema.
+                            -->
+                            <i class="bi bi-person-plus text-primary icon-login"></i>
+
                             <h3 class="mt-2 fw-bold">Crea il tuo profilo</h3>
+
+                            <!-- Due sottotitoli descrittivi: il secondo è in corsivo (fst-italic) e più piccolo (small) per comunicare che è una nota secondaria -->
                             <p class="text-muted mb-1">Registrati come sportivo per iniziare ad allenarti</p>
                             <p class="text-muted small fst-italic">I campi contrassegnati da * sono obbligatori.</p>
                         </div>
 
+
+                        <!-- FORM DI REGISTRAZIONE -->
+                        <!--
+                          @submit.prevent="eseguiRegistrazione": intercetta il submit, previene il ricaricamento della pagina e chiama il metodo Vue
+                          eseguiRegistrazione() definito in registrati.js.
+                        -->
                         <form @submit.prevent="eseguiRegistrazione">
-                            
-                            <h5 class="mb-3 border-bottom pb-2 fw-bold"><span class="text-primary">1.</span> Credenziali di Accesso</h5>
+
+
+                            <!-- CREDENZIALI -->
+                            <!--
+                              Intestazione di sezione con numerazione colorata.
+                              border-bottom pb-2: linea separatrice sotto il titolo per delimitare visivamente le due sezioni del form.
+                              <span class="text-primary">: colora solo il numero in verde.
+                            -->
+                            <h5 class="mb-3 border-bottom pb-2 fw-bold">
+                                <span class="text-primary">1.</span> Credenziali di Accesso
+                            </h5>
+
+                            <!-- row g-3: griglia con gap di 1rem tra i campi.
+                                 mb-4: spazio sotto la sezione prima dell'intestazione successiva -->
                             <div class="row g-3 mb-4">
+
+                                <!-- Campo Nome: col-md-6: metà riga da 768px -->
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold small">Nome Completo *</label>
-                                    <input type="text" class="form-control bg-light" v-model="form.nome" required placeholder="Es. Mario Rossi">
+                                    <!-- v-model="form.nome": binding bidirezionale Vue sul campo nome.
+                                         required: validazione nativa HTML: blocca il submit se vuoto -->
+                                    <input type="text"
+                                           class="form-control bg-light"
+                                           v-model="form.nome"
+                                           required
+                                           placeholder="Es. Mario Rossi">
                                 </div>
+
+                                <!-- Campo Email -->
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold small">Email *</label>
-                                    <input type="email" class="form-control bg-light" v-model="form.email" required placeholder="Es. mario@email.com">
+                                    <!-- type="email": validazione nativa: controlla il formato nome@dominio.it prima del submit -->
+                                    <input type="email"
+                                           class="form-control bg-light"
+                                           v-model="form.email"
+                                           required
+                                           placeholder="Es. mario@email.com">
                                 </div>
+
+                                <!-- Campo Password -->
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold small">Password *</label>
-                                    <input type="password" class="form-control bg-light" v-model="form.password" minlength="8" required placeholder="Almeno 8 caratteri">
+                                    <!--
+                                      type="password": maschera i caratteri digitati.
+                                      minlength="8": validazione nativa HTML: il submit è bloccato se la password ha meno di 8 caratteri.
+                                    -->
+                                    <input type="password"
+                                           class="form-control bg-light"
+                                           v-model="form.password"
+                                           minlength="8"
+                                           required
+                                           placeholder="Almeno 8 caratteri">
                                 </div>
                             </div>
 
-                            <h5 class="mb-3 border-bottom pb-2 fw-bold mt-4"><span class="text-primary">2.</span> Parametri Fisici</h5>
+
+                            <!-- PARAMETRI FISICI -->
+                            <h5 class="mb-3 border-bottom pb-2 fw-bold mt-4">
+                                <span class="text-primary">2.</span> Parametri Fisici
+                            </h5>
+
                             <div class="row g-3 mb-4">
+
+                                <!-- Campo Sesso -->
                                 <div class="col-md-4">
                                     <label class="form-label fw-bold small">Sesso *</label>
+                                    <!--
+                                      form-select: stile Bootstrap per i <select>.
+                                      v-model="form.sesso": binding Vue sul campo sesso.
+                                      L'opzione con value="" e disabled non è selezionabile: funge da placeholder;
+                                      "required" blocca il submit se rimane selezionata.
+                                    -->
                                     <select class="form-select bg-light" v-model="form.sesso" required>
                                         <option value="" disabled>Seleziona...</option>
                                         <option value="M">Uomo</option>
                                         <option value="F">Donna</option>
                                     </select>
                                 </div>
+
+                                <!-- Campo Data di Nascita -->
                                 <div class="col-md-4">
                                     <label class="form-label fw-bold small">Data di Nascita *</label>
-                                    <input type="date" class="form-control bg-light" v-model="form.data_nascita" :max="new Date().toISOString().split('T')[0]" min="1920-01-01" required>
+                                    <!--
+                                      type="date": il browser mostra un selettore di data nativo.
+                                      :max="new Date().toISOString().split('T')[0]": binding Vue: calcola dinamicamente la data di oggi come limite massimo,
+                                        impedendo di selezionare una data futura.
+                                        .toISOString() restituisce "2026-05-22T10:10:00.000Z",
+                                        .split('T')[0] prende solo la parte "2026-05-22".
+                                      min="1920-01-01": limite minimo fisso per escludere date irrealistiche.
+                                    -->
+                                    <input type="date"
+                                           class="form-control bg-light"
+                                           v-model="form.data_nascita"
+                                           :max="new Date().toISOString().split('T')[0]"
+                                           min="1920-01-01"
+                                           required>
                                 </div>
+
+                                <!-- Campo Peso -->
                                 <div class="col-md-4">
                                     <label class="form-label fw-bold small">Peso (kg) *</label>
-                                    <input type="number" class="form-control bg-light" v-model="form.peso" step="0.1" required placeholder="Es. 70.5">
+                                    <!--
+                                      type="number": input numerico con validazione nativa.
+                                      step="0.1": permette decimali con un solo cifra dopo la virgola (es. 70.5), utile per il peso corporeo.
+                                    -->
+                                    <input type="number"
+                                           class="form-control bg-light"
+                                           v-model="form.peso"
+                                           step="0.1"
+                                           required
+                                           placeholder="Es. 70.5">
                                 </div>
+
+                                <!-- Campo Altezza -->
                                 <div class="col-md-4">
                                     <label class="form-label fw-bold small">Altezza (cm) *</label>
-                                    <input type="number" class="form-control bg-light" v-model="form.altezza" required placeholder="Es. 175">
+                                    <!-- step non specificato: valore intero (nessun decimale per i cm) -->
+                                    <input type="number"
+                                           class="form-control bg-light"
+                                           v-model="form.altezza"
+                                           required
+                                           placeholder="Es. 175">
                                 </div>
+
+                                <!-- Campo Obiettivo -->
                                 <div class="col-md-4">
                                     <label class="form-label fw-bold small">Obiettivo *</label>
                                     <select class="form-select bg-light" v-model="form.obiettivo" required>
@@ -78,8 +202,11 @@
                                         <option value="Mantenimento">Mantenimento</option>
                                     </select>
                                 </div>
+
+                                <!-- Campo Attitudini -->
                                 <div class="col-md-4">
                                     <label class="form-label fw-bold small">Attitudini *</label>
+                                    <!-- Le opzioni rappresentano il livello di attività fisica dell'utente, usato per calcolare il fabbisogno calorico -->
                                     <select class="form-select bg-light" v-model="form.attitudini" required>
                                         <option value="" disabled>Seleziona...</option>
                                         <option value="Sedentario">Sedentario</option>
@@ -88,24 +215,56 @@
                                         <option value="Molto">Molto Attivo</option>
                                     </select>
                                 </div>
+
+                                <!-- Campo Esperienza Pregressa (facoltativo, no *) -->
+                                <!-- col-12 mt-3: occupa tutta la larghezza, con spazio extra sopra -->
                                 <div class="col-12 mt-3">
                                     <label class="form-label fw-bold small">Esperienza Pregressa</label>
-                                    <textarea class="form-control bg-light" v-model="form.esperienza_pregressa" rows="3" style="resize: none;"
-                                        placeholder="Raccontaci brevemente il tuo rapporto con l'allenamento (es. infortuni passati, sport praticati...)"></textarea>
+                                    <!--
+                                      <textarea> per testo libero multi-riga.
+                                      rows="3": altezza iniziale di 3 righe.
+                                    -->
+                                    <textarea class="form-control bg-light textarea-no-resize"
+                                              v-model="form.esperienza_pregressa"
+                                              rows="3"
+                                              placeholder="Raccontaci brevemente il tuo rapporto con l'allenamento (es. infortuni passati, sport praticati...)">
+                                    </textarea>
                                 </div>
                             </div>
 
+
+                            <!-- BOTTONE SUBMIT -->
+                            <!-- mt-5: ampio margine superiore per separare visivamente il bottone dall'ultimo campo del form -->
                             <div class="mt-5">
-                                <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold rounded-pill shadow-sm" :disabled="loading">
+                                <!--
+                                  :disabled="loading": binding Vue: disabilita il bottone durante l'invio per prevenire registrazioni duplicate.
+                                -->
+                                <button type="submit"
+                                        class="btn btn-primary btn-lg w-100 fw-bold rounded-pill shadow-sm"
+                                        :disabled="loading">
+
+                                    <!-- v-if="loading": spinner durante il caricamento -->
                                     <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                                    <i v-else class="bi bi-check2-circle me-2 text-white"></i> <span class="text-white">Registrati e Inizia</span>
+
+                                    <!-- v-else: icona spunta solo quando non si sta caricando.
+                                         bi-check2-circle: icona cerchio con spunta (conferma) -->
+                                    <i v-else class="bi bi-check2-circle me-2 text-white"></i>
+
+                                    <span class="text-white">Registrati e Inizia</span>
                                 </button>
                             </div>
 
                         </form>
 
+
+                        <!-- LINK LOGIN -->
+                        <!-- border-top pt-3: linea separatrice sopra il link. Per chi ha già un account -->
                         <div class="text-center mt-4 pt-3 border-top">
-                            <p class="text-muted small mb-0">Hai già un account? <a href="login.html" class="text-primary text-decoration-none fw-bold">Accedi qui</a></p>
+                            <p class="text-muted small mb-0">
+                                Hai già un account?
+                                <a href="login.html"
+                                   class="text-primary text-decoration-none fw-bold">Accedi qui</a>
+                            </p>
                         </div>
 
                     </div>
@@ -113,13 +272,23 @@
             </div>
         </div>
 
+
+        <!-- Componente Vue del footer -->
         <app-footer></app-footer>
 
     </div>
 
+
+    <!-- Bootstrap JS: necessario per il collapse della navbar. Caricato in fondo per non bloccare il rendering dell'HTML -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Vue 3: deve essere caricato PRIMA di components.js e registrati.js -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <!-- Definisce i componenti riutilizzabili (NavbarComponent, FooterComponent) -->
     <script src="js/components.js"></script>
+
+    <!-- Script specifico della pagina Registrati: crea l'istanza Vue, gestisce il form (v-model su tutti i campi, eseguiRegistrazione, stato loading) e monta l'app su #app -->
     <script src="js/registrati.js"></script>
   </body>
 </html>

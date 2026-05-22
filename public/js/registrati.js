@@ -1,11 +1,3 @@
-// =============================================================
-// registrati.js  —  Logica della pagina di registrazione
-// =============================================================
-// Framework: Vue.js 3 (CDN, senza build tool)
-// Componenti usati: NavbarComponent, FooterComponent (da components.js)
-// API chiamata: POST /api/registrati
-// =============================================================
-
 const { createApp } = Vue;
 
 const app = createApp({
@@ -25,7 +17,7 @@ const app = createApp({
                 attitudini: '',
                 esperienza_pregressa: ''
             },
-            loading: false  // true durante la chiamata API → disabilita il bottone e mostra lo spinner
+            loading: false  // true durante la chiamata API: disabilita il bottone e mostra lo spinner
         }
     },
     methods: {
@@ -37,13 +29,16 @@ const app = createApp({
             try {
                 // Invia tutti i dati del form in formato JSON al backend
                 const res = await fetch('/api/registrati', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST', // Il backend si aspetta una POST per creare un nuovo utente
+                    headers: { 'Content-Type': 'application/json' }, // Il backend si aspetta JSON, quindi specifichiamo questo header
                     body: JSON.stringify(this.form)
+                    // Il backend si aspetta un oggetto con tutte le proprietà: nome, email, password, sesso, data_nascita, peso, altezza,
+                    // obiettivo, attitudini, esperienza_pregressa
                 });
 
-                const data = await res.json();
+                const data = await res.json(); // Il backend risponde sempre con un JSON che contiene almeno una proprietà "message" e, in caso di errore, una "error"
 
+                // Se la risposta è ok (status 200-299), mostriamo una notifica verde con il messaggio di successo e poi reindirizziamo al login dopo 2 secondi.
                 if (res.ok) {
                     // Registrazione riuscita: notifica verde + svuota form + redirect dopo 2 secondi
                     mostraNotifica(data.message + ' Reindirizzamento in corso...', 'success');
