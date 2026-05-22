@@ -5,48 +5,142 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Accedi - Fitness Tracker</title>
     <link rel="icon" type="image/svg+xml" href="img/logo.svg">
+    <!-- Font Montserrat da Google Fonts (400 normale, 600 semibold, 800 extrabold) -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5.3: griglia, utilità e componenti responsive -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons: permette di usare <i class="bi bi-..."> -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Foglio di stile personalizzato: sovrascrive e integra Bootstrap con il tema verde -->
     <link rel="stylesheet" href="css/style.css">
 </head>
+
+<!-- bg-light: sfondo grigio chiaro
+     d-flex flex-column min-vh-100: layout a colonna alta almeno tutta la viewport, così il footer rimane sempre in fondo -->
 <body class="bg-light d-flex flex-column min-vh-100">
 
+    <!-- Radice Vue: tutto ciò che è dentro #app è gestito dall'istanza Vue creata in login.js.
+     I componenti <app-navbar> e <app-footer> vengono sostituiti da Vue con il loro template a runtime -->
     <div id="app" class="d-flex flex-column min-vh-100">
-        
+
+        <!-- Componente Vue della navbar: definito in js/components.js, registrato in login.js -->
         <app-navbar></app-navbar>
 
-        <div style="margin-top: 76px;"></div>
+        <!--
+          Spaziatore per compensare la navbar fixed-top (altezza ~76px).
+          Senza questo div, il contenuto della pagina partirebbe nascosto sotto la navbar.
+        -->
+        <div class="navbar-spacer"></div>
 
+        <!--
+          Contenitore centrato verticalmente e orizzontalmente.
+          flex-grow-1: occupa tutto lo spazio tra lo spaziatore e il footer, così il form risulta sempre visivamente centrato nella pagina.
+          d-flex align-items-center justify-content-center: centra sia in verticale che in orizzontale.
+        -->
         <div class="container my-5 flex-grow-1 d-flex align-items-center justify-content-center">
+
+            <!-- Colonna centrale: col-md-6: metà larghezza su tablet,
+                 col-lg-5: larghezza ridotta su desktop per non rendere il form troppo largo -->
             <div class="col-md-6 col-lg-5">
+
+                <!-- Card contenitore del form di login.
+                     shadow border-0 rounded-4: ombra, nessun bordo visibile, angoli arrotondati -->
                 <div class="card shadow border-0 rounded-4">
+
+                    <!-- p-4 p-md-5: padding interno: medio su mobile, grande da 768px -->
                     <div class="card-body p-4 p-md-5">
-                        
+
+                        <!-- INTESTAZIONE -->
                         <div class="text-center mb-4">
-                            <i class="bi bi-person-circle text-primary" style="font-size: 3.5rem;"></i>
+
+                            <!--
+                              Icona utente decorativa sopra il titolo.
+                              text-primary: colore verde del tema.
+                            -->
+                            <i class="bi bi-person-circle text-primary icon-login"></i>
+
+                            <!-- Titolo della card: mt-2: piccolo spazio sopra, separato dall'icona -->
                             <h3 class="mt-2 fw-bold">Bentornato</h3>
+
+                            <!-- Sottotitolo descrittivo: text-muted: grigio attenuato -->
                             <p class="text-muted">Accedi al tuo account per continuare</p>
                         </div>
 
+
+                        <!-- FORM DI LOGIN -->
+                        <!--
+                          @submit.prevent="eseguiLogin": intercetta il submit del form, previene il comportamento default del browser (ricaricamento pagina),
+                          e chiama il metodo Vue eseguiLogin() definito in login.js.
+                        -->
                         <form @submit.prevent="eseguiLogin">
+
+                            <!-- Campo Email -->
                             <div class="mb-3">
+                                <!-- form-label: stile Bootstrap per le etichette.
+                                     small: testo piccolo -->
                                 <label class="form-label fw-bold small">Indirizzo Email</label>
-                                <input type="email" class="form-control form-control-lg bg-light" v-model="form.email" required placeholder="Es. mario.rossi@email.com">
+                                <!--
+                                  type="email": validazione nativa del browser: controlla il formato nome@dominio.it prima del submit.
+                                  form-control-lg: input di dimensione grande, più comodo da toccare su mobile.
+                                  bg-light: sfondo grigio chiaro per distinguere il campo dalla card bianca.
+                                  v-model="form.email": binding bidirezionale Vue: aggiorna form.email in tempo reale mentre l'utente digita.
+                                  required: validazione nativa HTML: blocca il submit se vuoto.
+                                -->
+                                <input type="email"
+                                       class="form-control form-control-lg bg-light"
+                                       v-model="form.email"
+                                       required
+                                       placeholder="Es. mario.rossi@email.com">
                             </div>
+
+                            <!-- Campo Password -->
                             <div class="mb-4">
                                 <label class="form-label fw-bold small">Password</label>
-                                <input type="password" class="form-control form-control-lg bg-light" v-model="form.password" required placeholder="Inserisci la tua password">
+                                <!--
+                                  type="password": il browser maschera i caratteri digitati.
+                                  v-model="form.password": binding Vue sul campo password.
+                                -->
+                                <input type="password"
+                                       class="form-control form-control-lg bg-light"
+                                       v-model="form.password"
+                                       required
+                                       placeholder="Inserisci la tua password">
                             </div>
-                            
-                            <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold rounded-pill shadow-sm" :disabled="loading">
+
+                            <!-- Bottone di invio -->
+                            <!--
+                              type="submit": al click attiva il submit del form e quindi @submit.prevent.
+                              w-100: larghezza piena della colonna.
+                              :disabled="loading": binding Vue: disabilita il bottone mentre la richiesta è in corso (loading = true in login.js),
+                              prevenendo invii multipli accidentali.
+                            -->
+                            <button type="submit"
+                                    class="btn btn-primary btn-lg w-100 fw-bold rounded-pill shadow-sm"
+                                    :disabled="loading">
+
+                                <!-- v-if="loading": mostra lo spinner solo durante il caricamento -->
                                 <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                                <i v-else class="bi bi-box-arrow-in-right me-2 text-white"></i> <span class="text-white">Accedi</span>
+
+                                <!-- v-else: mostra l'icona solo quando NON si sta caricando.
+                                     bi-box-arrow-in-right: icona "freccia che entra in un box" (login) -->
+                                <i v-else class="bi bi-box-arrow-in-right me-2 text-white"></i>
+
+                                <span class="text-white">Accedi</span>
                             </button>
                         </form>
-                        
+
+                        <!-- LINK REGISTRAZIONE -->
+                        <!--
+                          border-top pt-3: linea separatrice sopra il link.
+                          Proposta per chi non ha ancora un account: l'utente non deve tornare indietro per trovare la registrazione.
+                        -->
                         <div class="text-center mt-4 pt-3 border-top">
-                            <p class="text-muted small mb-0">Non hai un account? <a href="registrati.html" class="text-primary text-decoration-none fw-bold">Registrati qui</a></p>
+                            <p class="text-muted small mb-0">
+                                Non hai un account?
+                                <!-- text-primary fw-bold: link verde e grassetto, visivamente distinto dal testo normale circostante -->
+                                <a href="registrati.html"
+                                   class="text-primary text-decoration-none fw-bold">Registrati qui</a>
+                            </p>
                         </div>
 
                     </div>
@@ -54,14 +148,23 @@
             </div>
         </div>
 
+
+        <!-- Componente Vue del footer -->
         <app-footer></app-footer>
 
     </div>
 
+
+    <!-- Bootstrap JS: necessario per il collapse della navbar. Caricato in fondo per non bloccare il rendering dell'HTML -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Vue 3: deve essere caricato PRIMA di components.js e login.js -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    
+
+    <!-- Definisce i componenti riutilizzabili (NavbarComponent, FooterComponent) -->
     <script src="js/components.js"></script>
+
+    <!-- Script specifico della pagina Login: crea l'istanza Vue, gestisce il form (v-model, eseguiLogin, stato loading) e monta l'app su #app -->
     <script src="js/login.js"></script>
 </body>
 </html>
