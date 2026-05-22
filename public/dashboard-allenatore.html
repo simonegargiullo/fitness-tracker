@@ -6,62 +6,124 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Area Coach - Fitness Tracker</title>
     <link rel="icon" type="image/svg+xml" href="img/logo.svg">
+    <!-- Font Montserrat da Google Fonts (400 normale, 600 semibold, 800 extrabold) -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5.3: griglia, utilità e componenti responsive -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons: permette di usare <i class="bi bi-..."> -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Foglio di stile personalizzato: sovrascrive e integra Bootstrap con il tema verde -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 
+<!-- bg-light: sfondo grigio chiaro
+     d-flex flex-column min-vh-100: layout a colonna alta almeno tutta la viewport, così il footer rimane sempre in fondo -->
 <body class="bg-light d-flex flex-column min-vh-100">
 
+    <!-- Radice Vue: tutto ciò che è dentro #app è gestito dall'istanza Vue creata in dashboard-allenatore.js -->
     <div id="app" class="d-flex flex-column min-vh-100">
 
+        <!-- Componente Vue della navbar: definito in js/components.js -->
         <app-navbar></app-navbar>
 
-        <header class="bg-primary text-white text-center pb-4" style="padding-top: 110px;">
+        <!--
+          bg-primary text-white: sfondo verde del tema, testo bianco.
+          pb-4: padding inferiore per distanziare il testo dal bordo.
+        -->
+        <header class="bg-primary text-white text-center pb-4 header-dashboard">
             <div class="container">
-                <h1 class="display-6 fw-bold mb-1"><i class="bi bi-stopwatch text-white"></i> Pannello Coach</h1>
-                <p class="mb-2 opacity-75 text-light" v-if="utente.nome">Ciao {{ utente.nome }}, gestisci i tuoi atleti
+                <!-- display-6 fw-bold: titolo grande e grassetto.
+                     bi-stopwatch: icona cronometro accanto al titolo -->
+                <h1 class="display-6 fw-bold mb-1">
+                    <i class="bi bi-stopwatch text-white"></i> Pannello Coach
+                </h1>
+                <!--
+                  v-if="utente.nome": il saluto compare solo se Vue ha già caricato i dati dell'utente (evita di mostrare "Ciao ,").
+                  opacity-75 text-light: testo leggermente attenuato.
+                -->
+                <p class="mb-2 opacity-75 text-light" v-if="utente.nome">
+                    Ciao {{ utente.nome }}, gestisci i tuoi atleti
                 </p>
-                <button @click="apriModaleProfilo" class="btn btn-outline-light btn-sm rounded-pill fw-bold mt-1">
+                <!-- Bottone per aprire il modale di modifica profilo coach.
+                     btn-outline-light: bordo bianco su sfondo verde.
+                     rounded-pill: angoli completamente arrotondati. -->
+                <button @click="apriModaleProfilo"
+                        class="btn btn-outline-light btn-sm rounded-pill fw-bold mt-1">
                     <i class="bi bi-pencil-square me-1"></i> Il Mio Profilo
                 </button>
             </div>
         </header>
 
+
+        <!-- STATO DI CARICAMENTO -->
+        <!--
+          v-if="loadingDati": Vue mostra questo blocco SOLO durante il caricamento iniziale dei dati (richieste + atleti).
+          Nasconde il contenuto principale finché i dati non sono pronti, evitando un flash di interfaccia vuota.
+          spinner-overlay: classe custom in style.css: overlay centrato a schermo intero.
+          spinner-lg: classe custom: dimensione grande dello spinner.
+        -->
         <div v-if="loadingDati" class="spinner-overlay flex-grow-1">
             <div class="spinner-border text-primary spinner-lg" role="status"></div>
             <p class="mt-3">Caricamento dati...</p>
         </div>
 
+
+        <!-- CONTENUTO PRINCIPALE (visibile solo dopo il caricamento) -->
+        <!--
+          v-else: Vue mostra questo blocco solo quando loadingDati è false.
+          my-5: margine verticale ampio.
+          flex-grow-1: occupa tutto lo spazio tra header e footer.
+        -->
         <div v-else class="container my-5 flex-grow-1">
+            <!-- row g-4: griglia con gap di 1.5rem tra le colonne -->
             <div class="row g-4">
 
+
+                <!-- COLONNA SINISTRA: RICHIESTE IN ATTESA -->
+                <!-- col-lg-4: 1/3 della larghezza su desktop -->
                 <div class="col-lg-4">
                     <div class="card shadow-sm border-0 rounded-4 h-100">
-                        <div
-                            class="card-header bg-white border-bottom-0 py-4 px-4 rounded-top-4 d-flex align-items-center justify-content-center">
-                            <h5 class="mb-0 fw-bold"><i class="bi bi-bell-fill text-primary me-2"></i> Richieste in
-                                Attesa ({{ richieste.length }})</h5>
+
+                        <!-- Card header con contatore richieste.
+                             bg-white border-bottom-0: sfondo bianco, nessun bordo divisore tra header e body (visivamente unificati).
+                             rounded-top-4: arrotondamento solo in alto. -->
+                        <div class="card-header bg-white border-bottom-0 py-4 px-4 rounded-top-4 d-flex align-items-center justify-content-center">
+                            <h5 class="mb-0 fw-bold">
+                                <i class="bi bi-bell-fill text-primary me-2"></i>
+                                Richieste in Attesa ({{ richieste.length }})
+                            </h5>
                         </div>
+
+                        <!-- bg-light rounded-bottom-4: sfondo grigio chiaro, arrotondamento in basso.
+                             gap-3: spazio tra le card delle richieste. -->
                         <div class="card-body bg-light rounded-bottom-4 d-flex flex-column gap-3 p-4">
 
-                            <div v-if="richieste.length === 0" class="text-center text-muted my-auto py-4">
+                            <!-- Stato vuoto: nessuna richiesta pendente -->
+                            <div v-if="richieste.length === 0"
+                                 class="text-center text-muted my-auto py-4">
                                 <i class="bi bi-check2-circle fs-1"></i>
                                 <p class="mt-2 mb-0">Nessuna nuova richiesta.</p>
                             </div>
 
-                            <div v-for="req in richieste" :key="req.id_utente"
-                                class="card border-0 shadow-sm rounded-4">
+                            <!-- Lista richieste: v-for itera sulle richieste pendenti.
+                                 :key="req.id_utente": chiave univoca per il rendering efficiente di Vue. -->
+                            <div v-for="req in richieste"
+                                 :key="req.id_utente"
+                                 class="card border-0 shadow-sm rounded-4">
                                 <div class="card-body">
                                     <h5 class="card-title fw-bold text-primary">{{ req.nome }}</h5>
                                     <div class="mb-2">
+                                        <!-- Badge con l'obiettivo dell'atleta (es. Dimagrimento, Massa) -->
                                         <span class="badge bg-secondary me-1">{{ req.obiettivo }}</span>
                                     </div>
-                                    <p class="small text-muted mb-3"><i class="bi bi-info-circle me-1"></i> {{
-                                        req.esperienza_pregressa || 'Nessuna nota fornita' }}</p>
+                                    <!-- Nota sull'esperienza: se vuota mostra un testo di fallback -->
+                                    <p class="small text-muted mb-3">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        {{ req.esperienza_pregressa || 'Nessuna nota fornita' }}
+                                    </p>
+                                    <!-- @click="accettaRichiesta(req.id_utente)": chiama il metodo Vue passando l'id dell'atleta da accettare -->
                                     <button @click="accettaRichiesta(req.id_utente)"
-                                        class="btn btn-primary w-100 fw-bold rounded-pill shadow-sm text-white">
+                                            class="btn btn-primary w-100 fw-bold rounded-pill shadow-sm text-white">
                                         <i class="bi bi-person-check-fill me-1"></i> Accetta Atleta
                                     </button>
                                 </div>
@@ -71,45 +133,78 @@
                     </div>
                 </div>
 
+
+                <!-- COLONNA DESTRA: ATLETI ATTIVI -->
+                <!-- col-lg-8: 2/3 della larghezza su desktop (doppio rispetto alla colonna sinistra) -->
                 <div class="col-lg-8">
                     <div class="card shadow-sm border-0 rounded-4 h-100">
-                        <div
-                            class="card-header bg-white border-bottom-0 py-4 px-4 rounded-top-4 d-flex align-items-center justify-content-center">
-                            <h5 class="mb-0 fw-bold"><i class="bi bi-people-fill text-primary me-2"></i> I tuoi Attuali
-                                Atleti ({{ sportiviAttivi.length }})</h5>
+
+                        <div class="card-header bg-white border-bottom-0 py-4 px-4 rounded-top-4 d-flex align-items-center justify-content-center">
+                            <h5 class="mb-0 fw-bold">
+                                <i class="bi bi-people-fill text-primary me-2"></i>
+                                I tuoi Attuali Atleti ({{ sportiviAttivi.length }})
+                            </h5>
                         </div>
+
+                        <!-- bg-light rounded-bottom-4: sfondo grigio chiaro, arrotondamento in basso.
+                             p-4: padding generoso per distanziare il contenuto dai bordi della card. -->
                         <div class="card-body p-4 bg-light rounded-bottom-4">
 
-                            <div v-if="sportiviAttivi.length === 0" class="text-center text-muted py-5">
+                            <!-- Stato vuoto: nessun atleta attivo -->
+                            <div v-if="sportiviAttivi.length === 0"
+                                 class="text-center text-muted py-5">
                                 <i class="bi bi-people fs-1"></i>
                                 <p class="mt-2">Non hai ancora nessun atleta. Accetta le richieste per iniziare.</p>
                             </div>
 
+                            <!-- Griglia atleti: ogni atleta occupa col-md-6 col-xl-4
+                                 (2 colonne su tablet, 3 su schermi grandi) -->
                             <div class="row g-4">
-                                <div v-for="sportivo in sportiviAttivi" :key="sportivo.id_utente"
-                                    class="col-md-6 col-xl-4">
+                                <div v-for="sportivo in sportiviAttivi"
+                                     :key="sportivo.id_utente"
+                                     class="col-md-6 col-xl-4">
+
+                                    <!-- Card atleta: layout verticale centrato -->
                                     <div class="card border-0 bg-white h-100 shadow-sm rounded-4 text-center">
                                         <div class="card-body d-flex flex-column align-items-center p-4">
 
-                                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mb-3 shadow-sm"
-                                                style="width: 80px; height: 80px;">
-                                                <i class="bi bi-person text-primary" style="font-size: 2.5rem;"></i>
+                                            <!-- Avatar circolare con icona utente.
+                                                 rounded-circle: forma circolare tramite Bootstrap.
+                                                 bg-light shadow-sm: sfondo grigio chiaro con ombra leggera.
+                                            -->
+                                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mb-3 shadow-sm avatar-atleta">
+                                                <i class="bi bi-person text-primary icon-avatar"></i>
                                             </div>
 
+                                            <!-- Nome atleta: fw-bold -->
                                             <h5 class="fw-bold mb-1">{{ sportivo.nome }}</h5>
-                                            <p class="mb-3 text-muted small">{{ formattaData(sportivo.data_nascita) }}
-                                                &bull; {{ sportivo.peso }} kg &bull; {{ sportivo.sesso }}</p>
 
-                                            <span class="badge bg-light text-dark border w-100 mb-4 py-2">{{
-                                                sportivo.obiettivo }}</span>
+                                            <!-- Info secondarie: data di nascita formattata tramite il metodo Vue formattaData(), peso e sesso separati da bullet &bull; -->
+                                            <p class="mb-3 text-muted small">
+                                                {{ formattaData(sportivo.data_nascita) }}
+                                                &bull; {{ sportivo.peso }} kg
+                                                &bull; {{ sportivo.sesso }}
+                                            </p>
 
+                                            <!-- Badge obiettivo: bg-light text-dark border: chip neutro
+                                                 w-100: larghezza piena per coerenza visiva tra le card.
+                                                 mb-4 py-2: spazio verticale generoso. -->
+                                            <span class="badge bg-light text-dark border w-100 mb-4 py-2">
+                                                {{ sportivo.obiettivo }}
+                                            </span>
+
+                                            <!-- Bottoni azione: mt-auto spinge i bottoni in fondo alla card
+                                                 indipendentemente dall'altezza del contenuto sopra.
+                                                 gap-2: spazio tra i due bottoni. -->
                                             <div class="d-flex flex-column w-100 gap-2 mt-auto">
+                                                <!-- Apre il modale per creare una nuova scheda di allenamento -->
                                                 <button @click="apriModaleScheda(sportivo)"
-                                                    class="btn btn-primary btn-sm fw-bold rounded-pill shadow-sm">
+                                                        class="btn btn-primary btn-sm fw-bold rounded-pill shadow-sm">
                                                     <i class="bi bi-clipboard2-pulse"></i> Nuova Scheda
                                                 </button>
+                                                <!-- Apre il modale per creare una nuova dieta -->
                                                 <button @click="apriModaleDieta(sportivo)"
-                                                    class="btn btn-primary btn-sm fw-bold rounded-pill shadow-sm">
+                                                        class="btn btn-primary btn-sm fw-bold rounded-pill shadow-sm">
                                                     <i class="bi bi-apple"></i> Nuova Dieta
                                                 </button>
                                             </div>
@@ -126,80 +221,144 @@
             </div>
         </div>
 
-        <!-- Modale Profilo -->
+
+        <!-- MODALE PROFILO COACH -->
+        <!-- modal fade: Bootstrap: modale con animazione fade-in/out.
+             tabindex="-1": il modale non è raggiungibile via Tab quando chiuso.
+             aria-hidden="true": accessibilità: nascosto ai lettori di schermo quando chiuso. -->
         <div class="modal fade" id="modaleProfilo" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content border-0 shadow rounded-4">
+
+                    <!-- Header modale scuro: contrasto visivo rispetto agli altri modali -->
                     <div class="modal-header bg-dark text-white rounded-top-4 py-3">
-                        <h5 class="modal-title fw-bold"><i class="bi bi-person-gear me-2"></i> Modifica Profilo</h5>
+                        <h5 class="modal-title fw-bold">
+                            <i class="bi bi-person-gear me-2"></i> Modifica Profilo
+                        </h5>
+                        <!-- data-bs-dismiss="modal": Bootstrap chiude il modale al click senza bisogno di JavaScript aggiuntivo -->
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
+
+                    <!-- @submit.prevent="salvaProfilo": intercetta il submit, chiama il metodo Vue -->
                     <form @submit.prevent="salvaProfilo">
                         <div class="modal-body bg-light p-4">
                             <div class="row g-3">
 
+                                <!-- Campo Nome (sola lettura: il nome non è modificabile) -->
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold small">Nome</label>
-                                    <input type="text" class="form-control bg-light text-muted" v-model="profilo.nome"
-                                        readonly>
+                                    <!--
+                                      readonly: il campo è visibile ma non editabile.
+                                      text-muted: colore attenuato per segnalare visivamente che il campo non è modificabile.
+                                    -->
+                                    <input type="text"
+                                           class="form-control bg-light text-muted"
+                                           v-model="profilo.nome"
+                                           readonly>
                                 </div>
+
+                                <!-- Campo Cognome (sola lettura) -->
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold small">Cognome</label>
-                                    <input type="text" class="form-control bg-light text-muted"
-                                        v-model="profilo.cognome" readonly>
+                                    <input type="text"
+                                           class="form-control bg-light text-muted"
+                                           v-model="profilo.cognome"
+                                           readonly>
                                 </div>
 
+                                <!-- Campo Email (modificabile) -->
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold small">Email</label>
-                                    <input type="email" class="form-control bg-white" v-model="profilo.email" required>
+                                    <!-- bg-white: sfondo bianco per distinguere i campi modificabili da quelli in sola lettura (bg-light) -->
+                                    <input type="email"
+                                           class="form-control bg-white"
+                                           v-model="profilo.email"
+                                           required>
                                 </div>
+
+                                <!-- Campo Specialità (modificabile) -->
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold small">Specialità</label>
-                                    <input type="text" class="form-control bg-white" v-model="profilo.specialita"
-                                        placeholder="es. Ipertrofia, Dimagrimento...">
+                                    <input type="text"
+                                           class="form-control bg-white"
+                                           v-model="profilo.specialita"
+                                           placeholder="es. Ipertrofia, Dimagrimento...">
                                 </div>
 
+                                <!-- Campo Telefono (modificabile) -->
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold small">Telefono</label>
-                                    <input type="text" class="form-control bg-white" v-model="profilo.telefono">
+                                    <input type="text"
+                                           class="form-control bg-white"
+                                           v-model="profilo.telefono">
                                 </div>
 
+                                <!-- Campo Foto Profilo -->
                                 <div class="col-12 mt-3">
                                     <label class="form-label fw-bold small">Foto Profilo</label>
+                                    <!-- Contenitore foto: d-flex align-items-center gap-3: anteprima a sinistra, input a destra, separati da gap -->
                                     <div class="d-flex align-items-center gap-3 p-2 border rounded bg-white shadow-sm">
-                                        <img v-if="profilo.foto" :src="profilo.foto" alt="Anteprima" class="rounded"
-                                            style="width: 64px; height: 64px; object-fit: cover;">
+
+                                        <!--
+                                          Anteprima foto se presente.
+                                          v-if="profilo.foto": mostra l'immagine solo se l'URL è valorizzato.
+                                          :src="profilo.foto": binding Vue sull'attributo src.
+                                        -->
+                                        <img v-if="profilo.foto"
+                                             :src="profilo.foto"
+                                             alt="Anteprima"
+                                             class="rounded foto-profilo-preview">
+
+                                        <!--
+                                          Placeholder se nessuna foto è caricata.
+                                          v-else: mostrato quando profilo.foto è null/vuoto.
+                                          bi-person-x: icona "persona con X" per indicare assenza foto.
+                                        -->
                                         <div v-else
-                                            class="rounded bg-light d-flex align-items-center justify-content-center text-muted"
-                                            style="width: 64px; height: 64px;">
+                                             class="rounded bg-light d-flex align-items-center justify-content-center text-muted foto-profilo-preview">
                                             <i class="bi bi-person-x fs-3"></i>
                                         </div>
+
                                         <div class="flex-grow-1">
-                                            <input type="file" class="form-control form-control-sm bg-light"
-                                                @change="selezionaFotoProfilo" accept="image/*">
-                                            <div class="form-text mt-1" style="font-size: 0.75rem;">Seleziona
-                                                un'immagine per aggiornare la tua foto.</div>
+                                            <!-- @change="selezionaFotoProfilo": Vue intercetta la selezione del file e carica l'anteprima tramite FileReader -->
+                                            <input type="file"
+                                                   class="form-control form-control-sm bg-light"
+                                                   @change="selezionaFotoProfilo"
+                                                   accept="image/*">
+
+                                            <!-- Nota informativa sotto l'input file. -->
+                                            <div class="form-text mt-1 form-text-xs">
+                                                Seleziona un'immagine per aggiornare la tua foto.
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
+                                <!-- Campo Biografia -->
                                 <div class="col-12 mt-3">
                                     <label class="form-label fw-bold small">Biografia / Descrizione</label>
-                                    <textarea class="form-control bg-white" v-model="profilo.descrizione" rows="4"
-                                        style="resize: none;"
-                                        placeholder="Racconta qualcosa di te ai futuri atleti..."></textarea>
+                                    <!-- rows="4": altezza iniziale di 4 righe. -->
+                                    <textarea class="form-control bg-white textarea-no-resize"
+                                              v-model="profilo.descrizione"
+                                              rows="4"
+                                              placeholder="Racconta qualcosa di te ai futuri atleti...">
+                                    </textarea>
                                 </div>
 
                             </div>
                         </div>
+
                         <div class="modal-footer bg-white rounded-bottom-4">
-                            <button type="button" class="btn btn-light fw-bold px-4"
-                                data-bs-dismiss="modal">Annulla</button>
-                            <button type="submit" class="btn btn-primary fw-bold rounded-pill px-4 shadow-sm"
-                                :disabled="loadingProfilo">
+                            <button type="button"
+                                    class="btn btn-light fw-bold px-4"
+                                    data-bs-dismiss="modal">Annulla</button>
+                            <!-- :disabled="loadingProfilo": disabilita il bottone durante il salvataggio -->
+                            <button type="submit"
+                                    class="btn btn-primary fw-bold rounded-pill px-4 shadow-sm"
+                                    :disabled="loadingProfilo">
                                 <span v-if="loadingProfilo" class="spinner-border spinner-border-sm me-2"></span>
-                                <i v-else class="bi bi-save me-2 text-white"></i> <span class="text-white">Salva
-                                    Modifiche</span>
+                                <i v-else class="bi bi-save me-2 text-white"></i>
+                                <span class="text-white">Salva Modifiche</span>
                             </button>
                         </div>
                     </form>
@@ -207,59 +366,86 @@
             </div>
         </div>
 
-        <!-- Modale Scheda -->
+
+        <!-- MODALE SCHEDA DI ALLENAMENTO -->
+        <!-- modal-xl: modale extra-large per ospitare la griglia di campi esercizi -->
         <div class="modal fade" id="modalScheda" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow">
 
                     <div class="modal-header bg-primary text-white rounded-top-4 py-3">
-                        <h5 class="modal-title fw-bold"><i class="bi bi-clipboard2-pulse me-2"></i> Compila Scheda</h5>
+                        <h5 class="modal-title fw-bold">
+                            <i class="bi bi-clipboard2-pulse me-2"></i> Compila Scheda
+                        </h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
 
                     <div class="modal-body bg-light p-4">
+
+                        <!-- Riga titolo + nome atleta -->
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold small">Titolo Scheda *</label>
-                                <input v-model="schedaCorrente.titolo" type="text" class="form-control bg-white"
-                                    placeholder="Es. Ipertrofia Mese 1">
+                                <input v-model="schedaCorrente.titolo"
+                                       type="text"
+                                       class="form-control bg-white"
+                                       placeholder="Es. Ipertrofia Mese 1">
                             </div>
                             <div class="col-md-6 d-flex align-items-end">
-                                <p class="mb-2 text-muted"><strong>Atleta:</strong> {{ schedaCorrente.nome_sportivo }}
+                                <!-- Nome atleta selezionato: aggiornato da Vue quando si apre il modale -->
+                                <p class="mb-2 text-muted">
+                                    <strong>Atleta:</strong> {{ schedaCorrente.nome_sportivo }}
                                 </p>
                             </div>
                         </div>
 
+                        <!-- Card per aggiungere un esercizio alla scheda -->
                         <div class="card border-0 shadow-sm rounded-4 mb-4 p-4">
                             <div class="row g-2 align-items-end">
+
+                                <!-- Select esercizio con raggruppamento per gruppo muscolare.
+                                     v-for su <optgroup>: itera sui gruppi muscolari.
+                                     v-for su <option>: itera sugli esercizi di ogni gruppo. -->
                                 <div class="col-12 col-md-3">
                                     <label class="form-label small fw-bold">Esercizio</label>
                                     <select v-model="esercizioTemp.id_esercizio" class="form-select">
                                         <option value="" disabled>Scegli...</option>
-                                        <optgroup v-for="(esercizi, gruppo) in eserciziRaggruppati" :key="gruppo"
-                                            :label="gruppo">
+                                        <optgroup v-for="(esercizi, gruppo) in eserciziRaggruppati"
+                                                  :key="gruppo"
+                                                  :label="gruppo">
                                             <option v-for="ex in esercizi" :value="ex.id">{{ ex.nome }}</option>
                                         </optgroup>
                                     </select>
                                 </div>
+
+                                <!-- Campi numerici: serie, ripetizioni, recupero.
+                                     v-model.number: Vue converte automaticamente il valore in numero intero -->
                                 <div class="col-4 col-md-3">
                                     <label class="form-label small fw-bold">Serie</label>
-                                    <input v-model.number="esercizioTemp.serie" type="number" class="form-control"
-                                        placeholder="Es. 4">
+                                    <input v-model.number="esercizioTemp.serie"
+                                           type="number"
+                                           class="form-control"
+                                           placeholder="Es. 4">
                                 </div>
                                 <div class="col-4 col-md-3">
                                     <label class="form-label small fw-bold">Ripetizioni</label>
-                                    <input v-model.number="esercizioTemp.ripetizioni" type="number" class="form-control"
-                                        placeholder="Es. 12">
+                                    <input v-model.number="esercizioTemp.ripetizioni"
+                                           type="number"
+                                           class="form-control"
+                                           placeholder="Es. 12">
                                 </div>
                                 <div class="col-4 col-md-3">
                                     <label class="form-label small fw-bold">Recupero</label>
-                                    <input v-model="esercizioTemp.recupero" type="text" class="form-control"
-                                        placeholder="Es. 90s">
+                                    <!-- type="text" per il recupero: permette valori come "90s" o "2min" -->
+                                    <input v-model="esercizioTemp.recupero"
+                                           type="text"
+                                           class="form-control"
+                                           placeholder="Es. 90s">
                                 </div>
                             </div>
                             <div class="row mt-3">
-                                <div class="col-12 col-md-12">
+                                <div class="col-12">
+                                    <!-- @click="aggiungiEsercizio": aggiunge esercizioTemp alla lista schedaCorrente.listaEsercizi e resetta i campi temp -->
                                     <button @click="aggiungiEsercizio" class="btn btn-dark w-100 fw-bold">
                                         <i class="bi bi-plus-lg me-1"></i> Aggiungi Esercizio
                                     </button>
@@ -267,62 +453,85 @@
                             </div>
                         </div>
 
+                        <!-- Lista esercizi aggiunti alla scheda corrente.
+                             list-group: stile Bootstrap per liste con bordi.
+                             rounded-4 shadow-sm: angoli arrotondati e ombra leggera. -->
                         <ul class="list-group rounded-4 shadow-sm">
                             <li v-for="(ex, index) in schedaCorrente.listaEsercizi"
                                 class="list-group-item d-flex justify-content-between align-items-center">
-                                <div><strong>{{ ex.nome_esercizio }}</strong> - {{ ex.serie }}x{{ ex.ripetizioni }}
+                                <div>
+                                    <!-- Formato: "Nome Esercizio - 4x12" -->
+                                    <strong>{{ ex.nome_esercizio }}</strong> - {{ ex.serie }}x{{ ex.ripetizioni }}
                                 </div>
-                                <button @click="rimuoviEsercizio(index)" class="btn btn-sm btn-outline-danger"><i
-                                        class="bi bi-trash"></i></button>
+                                <!-- @click="rimuoviEsercizio(index)": rimuove l'esercizio dalla lista tramite il suo indice -->
+                                <button @click="rimuoviEsercizio(index)"
+                                        class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
                             </li>
                         </ul>
                     </div>
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Chiudi</button>
-                        <button @click="salvaSchedaDefinitiva" class="btn btn-primary fw-bold rounded-pill"
-                            :disabled="loadingScheda">
-                            <span v-if="loadingScheda" class="spinner-border spinner-border-sm me-2"></span> Salva e
-                            Invia
+                        <!-- @click invece di type="submit": non è dentro un <form>, quindi il salvataggio è gestito direttamente dal metodo Vue -->
+                        <button @click="salvaSchedaDefinitiva"
+                                class="btn btn-primary fw-bold rounded-pill"
+                                :disabled="loadingScheda">
+                            <span v-if="loadingScheda" class="spinner-border spinner-border-sm me-2"></span>
+                            Salva e Invia
                         </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Modale Dieta -->
+
+        <!-- MODALE DIETA -->
+        <!-- Struttura identica al modale scheda, ma per la dieta.
+             Stessi pattern Vue (v-model, v-for, :disabled) e Bootstrap. -->
         <div class="modal fade" id="modalDieta" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow">
 
                     <div class="modal-header bg-primary text-white rounded-top-4 py-3">
-                        <h5 class="modal-title fw-bold"><i class="bi bi-apple me-2"></i> Compila Dieta</h5>
+                        <h5 class="modal-title fw-bold">
+                            <i class="bi bi-apple me-2"></i> Compila Dieta
+                        </h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
 
                     <div class="modal-body bg-light p-4">
+
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold small">Titolo Dieta *</label>
-                                <input v-model="dietaCorrente.titolo" type="text" class="form-control bg-white"
-                                    placeholder="Es. Dieta Definizione">
+                                <input v-model="dietaCorrente.titolo"
+                                       type="text"
+                                       class="form-control bg-white"
+                                       placeholder="Es. Dieta Definizione">
                             </div>
                             <div class="col-md-6 d-flex align-items-end">
-                                <p class="mb-2 text-muted"><strong>Atleta:</strong> {{ dietaCorrente.nome_sportivo }}
+                                <p class="mb-2 text-muted">
+                                    <strong>Atleta:</strong> {{ dietaCorrente.nome_sportivo }}
                                 </p>
                             </div>
                         </div>
 
+                        <!-- Card aggiunta alimento -->
                         <div class="card border-0 shadow-sm rounded-4 mb-4 p-4">
                             <div class="row g-2 align-items-end">
+                                <!-- Select alimento: lista piatta (non raggruppata) dal catalogo -->
                                 <div class="col-12 col-md-4">
                                     <label class="form-label small fw-bold">Alimento</label>
                                     <select v-model="alimentoTemp.id_alimento" class="form-select">
                                         <option value="" disabled>Scegli...</option>
-                                        <option v-for="a in catalogoAlimenti" :key="a.id" :value="a.id">{{ a.nome }}
+                                        <option v-for="a in catalogoAlimenti" :key="a.id" :value="a.id">
+                                            {{ a.nome }}
                                         </option>
                                     </select>
                                 </div>
+                                <!-- Select pasto: fisso (Colazione, Pranzo, Cena, Spuntino) -->
                                 <div class="col-6 col-md-4">
                                     <label class="form-label small fw-bold">Pasto</label>
                                     <select v-model="alimentoTemp.note_pasto" class="form-select">
@@ -333,10 +542,13 @@
                                         <option value="Spuntino">Spuntino</option>
                                     </select>
                                 </div>
+                                <!-- Campo quantità in grammi -->
                                 <div class="col-6 col-md-4">
                                     <label class="form-label small fw-bold">Quantità (g)</label>
-                                    <input v-model.number="alimentoTemp.quantita_grammi" type="number"
-                                        class="form-control" placeholder="Grammi">
+                                    <input v-model.number="alimentoTemp.quantita_grammi"
+                                           type="number"
+                                           class="form-control"
+                                           placeholder="Grammi">
                                 </div>
                             </div>
                             <div class="mt-3">
@@ -346,36 +558,54 @@
                             </div>
                         </div>
 
+                        <!-- Lista alimenti aggiunti alla dieta corrente.
+                             Formato: "Nome Alimento - 150g (Pranzo)" -->
                         <ul class="list-group rounded-4 shadow-sm">
                             <li v-for="(alim, index) in dietaCorrente.listaAlimenti"
                                 class="list-group-item d-flex justify-content-between align-items-center">
-                                <div><strong>{{ alim.nome_alimento }}</strong> - {{ alim.quantita_grammi }}g ({{
-                                    alim.note_pasto }})</div>
-                                <button @click="rimuoviAlimento(index)" class="btn btn-sm btn-outline-danger"><i
-                                        class="bi bi-trash"></i></button>
+                                <div>
+                                    <strong>{{ alim.nome_alimento }}</strong> - {{ alim.quantita_grammi }}g
+                                    ({{ alim.note_pasto }})
+                                </div>
+                                <button @click="rimuoviAlimento(index)"
+                                        class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
                             </li>
                         </ul>
                     </div>
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Chiudi</button>
-                        <button @click="salvaDietaDefinitiva" class="btn btn-primary fw-bold rounded-pill"
-                            :disabled="loadingDieta">
-                            <span v-if="loadingDieta" class="spinner-border spinner-border-sm me-2"></span> Salva e
-                            Invia
+                        <button @click="salvaDietaDefinitiva"
+                                class="btn btn-primary fw-bold rounded-pill"
+                                :disabled="loadingDieta">
+                            <span v-if="loadingDieta" class="spinner-border spinner-border-sm me-2"></span>
+                            Salva e Invia
                         </button>
                     </div>
                 </div>
             </div>
         </div>
 
+
+        <!-- Componente Vue del footer -->
         <app-footer></app-footer>
 
     </div>
 
+
+    <!-- Bootstrap JS: necessario per i modali e il collapse della navbar. Caricato in fondo per non bloccare il rendering dell'HTML -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Vue 3: deve essere caricato PRIMA di components.js e dashboard-allenatore.js -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <!-- Definisce i componenti riutilizzabili (NavbarComponent, FooterComponent) -->
     <script src="js/components.js"></script>
+
+    <!-- Script specifico della pagina Dashboard Allenatore: crea l'istanza Vue, carica richieste e atleti dal backend, gestisce i modali (scheda, dieta, profilo)
+         e monta l'app su #app -->
     <script src="js/dashboard-allenatore.js"></script>
 </body>
 

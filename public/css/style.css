@@ -441,3 +441,34 @@ body {
 .icon-login {
     font-size: 3.5rem;
 }
+
+/* PAGINA DASHBOARD ALLENATORE */
+
+/* Padding superiore dell'header hero per compensare la navbar fixed-top.
+   Valore maggiore rispetto a .navbar-spacer (76px) perché l'header contiene anche un bottone sotto il titolo. */
+.header-dashboard {
+    padding-top: 110px;
+}
+
+/* Contenitore circolare dell'icona atleta nelle card sportivi */
+.avatar-atleta {
+    width: 80px;
+    height: 80px;
+}
+
+/* Icona persona dentro l'avatar circolare */
+.icon-avatar {
+    font-size: 2.5rem;
+}
+
+/* Anteprima quadrata della foto profilo (img e div placeholder) */
+.foto-profilo-preview {
+    width: 64px;
+    height: 64px;
+    object-fit: cover; /* ha effetto solo sull'<img>, ignorato dai <div> */
+}
+
+/* Testo nota sotto l'input file della foto profilo */
+.form-text-xs {
+    font-size: 0.75rem;
+}
