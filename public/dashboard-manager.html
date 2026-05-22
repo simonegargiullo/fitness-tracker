@@ -3,39 +3,76 @@
 
 <head>
     <meta charset="UTF-8">
+    <!-- Ottimizzazione per dispositivi mobili -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fitness Tracker - Area Manager</title>
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="img/logo.svg">
+    <!-- Font Montserrat da Google Fonts (400 normale, 600 semibold, 800 extrabold) -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5.3: griglia, utilità e componenti responsive -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons: permette di usare <i class="bi bi-..."> -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Foglio di stile personalizzato: sovrascrive e integra Bootstrap con il tema verde -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 
+<!--
+  bg-light: sfondo grigio chiaro.
+  d-flex flex-column min-vh-100: layout a colonna alta almeno tutta la viewport, così il footer rimane sempre in fondo.
+-->
 <body class="bg-light d-flex flex-column min-vh-100">
 
+    <!-- Radice Vue: tutto ciò che è dentro #app è gestito dall'istanza Vue creata in dashboard-manager.js -->
     <div id="app" class="d-flex flex-column min-vh-100">
 
+        <!-- Componente Vue della navbar: definito in js/components.js -->
         <app-navbar></app-navbar>
 
-        <header class="bg-primary text-white text-center pb-4" style="padding-top: 110px;">
+        <!--
+          bg-primary text-white: sfondo verde del tema, testo bianco.
+          pb-4: padding inferiore per distanziare il testo dal bordo.
+          header-manager: classe custom che applica padding-top per compensare la navbar fissa.
+        -->
+        <header class="bg-primary text-white text-center pb-4 header-manager">
             <div class="container">
+                <!-- display-6 fw-bold: titolo grande e grassetto.
+                     bi-shield-lock-fill: icona lucchetto accanto al titolo. -->
                 <h1 class="display-6 fw-bold mb-1"><i class="bi bi-shield-lock-fill text-white"></i> Pannello Manager</h1>
                 <p class="mb-0 opacity-75 text-light">Gestisci il team, i cataloghi e i messaggi</p>
             </div>
         </header>
 
-        <!-- SPINNER CARICAMENTO -->
+        <!-- STATO DI CARICAMENTO -->
+        <!--
+          v-if="loadingDati": Vue mostra questo blocco SOLO durante il caricamento iniziale dei dati.
+          Nasconde il contenuto principale finché i dati non sono pronti, evitando un flash di interfaccia vuota.
+          spinner-overlay: classe custom in style.css: overlay centrato a schermo intero.
+          spinner-lg: classe custom: dimensione grande dello spinner.
+        -->
         <div v-if="loadingDati" class="spinner-overlay flex-grow-1">
             <div class="spinner-border text-primary spinner-lg" role="status"></div>
             <p class="mt-3">Caricamento...</p>
         </div>
 
-        <!-- CONTENUTO PRINCIPALE -->
+        <!-- CONTENUTO PRINCIPALE (visibile solo dopo il caricamento) -->
+        <!--
+          v-else: Vue mostra questo blocco solo quando loadingDati è false.
+          my-4: margine verticale.
+          flex-grow-1: occupa tutto lo spazio tra header e footer.
+        -->
         <div v-else class="container my-4 flex-grow-1">
 
+            <!-- Barra di navigazione a tab per le tre sezioni principali -->
+            <!--
+              nav-pills nav-fill: stile a pillola che occupa tutta la larghezza disponibile.
+              rounded-pill: bordi completamente arrotondati per la barra contenitore.
+            -->
             <ul class="nav nav-pills nav-fill bg-white shadow-sm rounded-pill p-2 mb-5">
                 <li class="nav-item">
+                    <!-- Tab "Inserimento Dati": attiva quando vistaAttiva === 'inserimento'.
+                         :class: Vue aggiunge/rimuove le classi dinamicamente in base al valore di vistaAttiva. -->
                     <button class="nav-link rounded-pill fw-bold"
                         :class="{ 'active bg-primary text-white': vistaAttiva === 'inserimento', 'text-dark': vistaAttiva !== 'inserimento' }"
                         @click="cambiaVista('inserimento')">
@@ -43,6 +80,7 @@
                     </button>
                 </li>
                 <li class="nav-item">
+                    <!-- Tab "Gestione Cataloghi" -->
                     <button class="nav-link rounded-pill fw-bold"
                         :class="{ 'active bg-primary text-white': vistaAttiva === 'cataloghi', 'text-dark': vistaAttiva !== 'cataloghi' }"
                         @click="cambiaVista('cataloghi')">
@@ -50,21 +88,29 @@
                     </button>
                 </li>
                 <li class="nav-item">
+                    <!-- Tab "Messaggi" con badge per i messaggi non letti.
+                         position-relative: necessario per posizionare il badge in modo assoluto rispetto al bottone. -->
                     <button class="nav-link rounded-pill fw-bold position-relative"
                         :class="{ 'active bg-primary text-white': vistaAttiva === 'messaggi', 'text-dark': vistaAttiva !== 'messaggi' }"
                         @click="cambiaVista('messaggi')">
                         <i class="bi bi-envelope me-2"></i> Messaggi
+                        <!-- Badge contatore messaggi non letti: visibile solo se > 0.
+                             position-absolute top-0 start-100 translate-middle: lo posiziona in alto a destra del bottone.
+                             badge-counter: classe custom che imposta font-size ridotto. -->
                         <span v-if="messaggiNonLetti > 0"
-                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                            style="font-size: 0.65rem;">
+                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger badge-counter">
                             {{ messaggiNonLetti }}
                         </span>
                     </button>
                 </li>
             </ul>
 
+            <!-- VISTA: INSERIMENTO DATI -->
+            <!-- v-if="vistaAttiva === 'inserimento'": Vue mostra questa sezione solo quando il tab attivo è "inserimento" -->
             <div class="row g-4" v-if="vistaAttiva === 'inserimento'">
 
+                <!-- COLONNA SINISTRA: Creazione nuovo allenatore -->
+                <!-- col-lg-6: metà larghezza su schermi grandi -->
                 <div class="col-lg-6">
                     <div class="card shadow-sm h-100 border-0 rounded-4">
                         <div class="card-header bg-dark text-white rounded-top-4 p-3">
@@ -72,6 +118,8 @@
                         </div>
                         <div class="card-body bg-white p-4 d-flex flex-column">
                             <p class="text-muted small mb-3 fst-italic">I campi contrassegnati da * sono obbligatori.</p>
+                            <!-- d-flex flex-column flex-grow-1: layout verticale che occupa tutto lo spazio disponibile,
+                                 così il bottone "Crea Profilo" rimane sempre in fondo alla card. -->
                             <form @submit.prevent="creaAllenatore" class="d-flex flex-column flex-grow-1">
                                 <div class="row g-3">
                                     <div class="col-md-6">
@@ -88,6 +136,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label fw-bold small">Password *</label>
+                                        <!-- minlength="8": impone la lunghezza minima della password -->
                                         <input type="password" class="form-control bg-light" v-model="coach.password" minlength="8" required>
                                     </div>
                                     <div class="col-md-6">
@@ -100,16 +149,24 @@
                                     </div>
                                     <div class="col-12">
                                         <label class="form-label fw-bold small">Foto Profilo (File)</label>
+                                        <!-- accept="image/*": limita la selezione alle sole immagini.
+                                             @change="selezionaFotoCoach": Vue intercetta la selezione del file. -->
                                         <input type="file" class="form-control bg-light" id="file-coach" @change="selezionaFotoCoach" accept="image/*">
                                     </div>
                                     <div class="col-12 flex-grow-1 d-flex flex-column">
                                         <label class="form-label fw-bold small">Biografia / Descrizione</label>
-                                        <textarea class="form-control bg-light flex-grow-1" rows="6" v-model="coach.descrizione" style="resize: none;"></textarea>
+                                        <!-- textarea-no-resize: classe custom che disabilita il ridimensionamento manuale -->
+                                        <textarea class="form-control bg-light flex-grow-1 textarea-no-resize" rows="6" v-model="coach.descrizione"></textarea>
                                     </div>
                                 </div>
-                                <button type="submit" class="btn bg-primary w-100 fw-bold mt-auto text-white"
-                                    style="margin-top: 1.5rem !important; padding-top: 0.5rem !important; padding-bottom: 0.5rem !important;"
+                                <!--
+                                  mt-auto: spinge il bottone in fondo alla card indipendentemente dall'altezza del contenuto sopra.
+                                  btn-form-submit: classe custom che applica margine e padding verticale.
+                                  :disabled="loadingCoach": blocca il bottone durante la richiesta al server.
+                                -->
+                                <button type="submit" class="btn bg-primary w-100 fw-bold mt-auto text-white btn-form-submit"
                                     :disabled="loadingCoach">
+                                    <!-- spinner-border-sm: spinner piccolo inline nel bottone -->
                                     <span v-if="loadingCoach" class="spinner-border spinner-border-sm me-2"></span>
                                     <span v-else>Crea Profilo</span>
                                 </button>
@@ -118,8 +175,11 @@
                     </div>
                 </div>
 
+                <!-- COLONNA DESTRA: Aggiunta esercizi e alimenti al catalogo -->
+                <!-- d-flex flex-column gap-4: impila le due card verticalmente con spazio tra di loro -->
                 <div class="col-lg-6 d-flex flex-column gap-4">
 
+                    <!-- Card: Aggiunta nuovo esercizio al catalogo -->
                     <div class="card shadow-sm border-0 rounded-4">
                         <div class="card-header bg-dark text-white rounded-top-4 p-3">
                             <h5 class="mb-0 fw-bold"><i class="bi bi-activity me-2"></i> Aggiungi Esercizio</h5>
@@ -149,6 +209,7 @@
                                     <input type="file" id="file-esercizio" class="form-control bg-light" @change="selezionaFotoEsercizio" accept="image/*">
                                 </div>
                                 <div class="col-12 mt-4">
+                                    <!-- :disabled="loadingEsercizio": blocca il bottone durante il salvataggio -->
                                     <button type="submit" class="btn bg-primary w-100 fw-bold text-white" :disabled="loadingEsercizio">
                                         <span v-if="loadingEsercizio" class="spinner-border spinner-border-sm me-2"></span>
                                         <span v-else>Aggiungi Esercizio</span>
@@ -158,6 +219,8 @@
                         </div>
                     </div>
 
+                    <!-- Card: Aggiunta nuovo alimento al catalogo (valori su 100g) -->
+                    <!-- flex-grow-1: questa card si espande per riempire lo spazio rimanente nella colonna -->
                     <div class="card shadow-sm border-0 rounded-4 flex-grow-1">
                         <div class="card-header bg-dark text-white rounded-top-4 p-3">
                             <h5 class="mb-0 fw-bold"><i class="bi bi-apple me-2"></i> Aggiungi Alimento (100g)</h5>
@@ -169,6 +232,8 @@
                                     <label class="form-label fw-bold small">Nome Alimento *</label>
                                     <input type="text" class="form-control bg-light" v-model="alimento.nome" required>
                                 </div>
+                                <!-- Quattro colonne per i valori nutrizionali: Kcal, Proteine, Carboidrati, Grassi.
+                                     px-1 text-center: padding ridotto e testo centrato per i campi numerici stretti. -->
                                 <div class="col-3">
                                     <label class="form-label fw-bold small text-muted">Kcal *</label>
                                     <input type="number" class="form-control bg-light px-1 text-center" v-model="alimento.calorie" required>
@@ -185,6 +250,7 @@
                                     <label class="form-label fw-bold small text-muted">Fat(g)*</label>
                                     <input type="number" class="form-control bg-light px-1 text-center" step="0.1" v-model="alimento.grassi" required>
                                 </div>
+                                <!-- mt-auto: spinge il bottone in fondo alla card -->
                                 <div class="col-12 mt-auto pt-4">
                                     <button type="submit" class="btn bg-primary w-100 fw-bold text-white" :disabled="loadingAlimento">
                                         <span v-if="loadingAlimento" class="spinner-border spinner-border-sm me-2"></span>
@@ -198,10 +264,16 @@
                 </div>
             </div>
 
+            <!-- VISTA: GESTIONE CATALOGHI  -->
+            <!-- v-if="vistaAttiva === 'cataloghi'": Vista visibile solo quando il tab attivo è "cataloghi" -->
             <div class="card shadow-sm border-0 rounded-4" v-if="vistaAttiva === 'cataloghi'">
+
+                <!-- Tab interni: Allenatori / Esercizi / Alimenti -->
+                <!-- card-header-tabs: allinea i tab al bordo inferiore dell'header della card -->
                 <div class="card-header bg-white border-bottom-0 pt-4 px-4">
                     <ul class="nav nav-tabs card-header-tabs">
                         <li class="nav-item">
+                            <!-- :class: aggiunge "active bg-light border-bottom-0" al tab attivo per fonderlo visivamente con il body -->
                             <button class="nav-link fw-bold text-dark"
                                 :class="{ 'active bg-light border-bottom-0': tabCatalogo === 'allenatori' }"
                                 @click="tabCatalogo = 'allenatori'">Allenatori</button>
@@ -219,9 +291,12 @@
                     </ul>
                 </div>
 
+                <!-- rounded-bottom-4: arrotondamento solo in basso (il top è gestito dall'header) -->
                 <div class="card-body bg-light p-3 p-md-4 rounded-bottom-4">
 
+                    <!-- TAB ALLENATORI: tabella su desktop, card su mobile -->
                     <div v-if="tabCatalogo === 'allenatori'">
+                        <!-- Tabella visibile solo su schermi larghi (d-none d-lg-block) -->
                         <div class="table-responsive d-none d-lg-block">
                             <table class="table table-hover align-middle mb-0 bg-white shadow-sm rounded">
                                 <thead class="table-dark">
@@ -233,14 +308,18 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    <!-- Riga di stato vuoto: colspan="4" copre tutte le colonne -->
                                     <tr v-if="listaAllenatori.length === 0">
                                         <td colspan="4" class="text-center py-4">Nessun allenatore trovato.</td>
                                     </tr>
+                                    <!-- v-for: itera sulla lista degli allenatori.
+                                         :key="'desk-coach-'+c.id": prefisso per evitare conflitti con le key della vista mobile. -->
                                     <tr v-for="c in listaAllenatori" :key="'desk-coach-'+c.id">
                                         <td class="fw-bold">{{ c.nome }} {{ c.cognome }}</td>
                                         <td>{{ c.email }}</td>
                                         <td><span class="badge bg-primary">{{ c.specialita || 'N/A' }}</span></td>
                                         <td class="text-end">
+                                            <!-- Gruppo pulsanti Modifica / Elimina -->
                                             <div class="btn-group shadow-sm">
                                                 <button class="btn btn-sm btn-outline-dark" @click="apriModificaCoach(c)" title="Modifica"><i class="bi bi-pencil"></i></button>
                                                 <button class="btn btn-sm btn-outline-danger" @click="chiediConferma(c.id, 'coach')" title="Elimina"><i class="bi bi-trash"></i></button>
@@ -250,13 +329,16 @@
                                 </tbody>
                             </table>
                         </div>
+                        <!-- Vista a card per schermi piccoli (visibile solo sotto lg) -->
                         <div class="d-lg-none d-flex flex-column gap-3">
                             <div v-if="listaAllenatori.length === 0" class="text-center py-4 bg-white shadow-sm rounded">Nessun allenatore trovato.</div>
+                            <!-- :key="'mob-coach-'+c.id": prefisso distinto dalla versione desktop -->
                             <div class="card border-0 shadow-sm rounded-4" v-for="c in listaAllenatori" :key="'mob-coach-'+c.id">
                                 <div class="card-body">
                                     <h6 class="fw-bold">{{ c.nome }} {{ c.cognome }} <span class="badge bg-primary ms-1">{{ c.specialita || 'N/A' }}</span></h6>
                                     <p class="text-muted small mb-3">{{ c.email }}</p>
                                     <div class="d-flex gap-2">
+                                        <!-- flex-grow-1: il bottone "Modifica" occupa tutto lo spazio disponibile -->
                                         <button class="btn btn-sm btn-outline-dark flex-grow-1" @click="apriModificaCoach(c)">Modifica</button>
                                         <button class="btn btn-sm btn-outline-danger px-3" @click="chiediConferma(c.id, 'coach')"><i class="bi bi-trash"></i></button>
                                     </div>
@@ -265,7 +347,9 @@
                         </div>
                     </div>
 
+                    <!-- TAB ESERCIZI: tabella su desktop, card su mobile -->
                     <div v-if="tabCatalogo === 'esercizi'">
+                        <!-- Tabella visibile solo su schermi larghi -->
                         <div class="table-responsive d-none d-lg-block">
                             <table class="table table-hover align-middle mb-0 bg-white shadow-sm rounded">
                                 <thead class="table-dark">
@@ -292,6 +376,7 @@
                                 </tbody>
                             </table>
                         </div>
+                        <!-- Vista a card per schermi piccoli -->
                         <div class="d-lg-none d-flex flex-column gap-3">
                             <div v-if="listaEsercizi.length === 0" class="text-center py-4 bg-white shadow-sm rounded">Nessun esercizio trovato.</div>
                             <div class="card border-0 shadow-sm rounded-4" v-for="e in listaEsercizi" :key="'mob-ese-'+e.id">
@@ -306,7 +391,9 @@
                         </div>
                     </div>
 
+                    <!-- TAB ALIMENTI: tabella su desktop, card su mobile -->
                     <div v-if="tabCatalogo === 'alimenti'">
+                        <!-- Tabella visibile solo su schermi larghi -->
                         <div class="table-responsive d-none d-lg-block">
                             <table class="table table-hover align-middle mb-0 bg-white shadow-sm rounded">
                                 <thead class="table-dark">
@@ -324,6 +411,7 @@
                                     <tr v-for="a in listaAlimenti" :key="'desk-ali-'+a.id">
                                         <td class="fw-bold">{{ a.nome }}</td>
                                         <td>{{ a.calorie }}</td>
+                                        <!-- Macronutrienti separati da slash per leggibilità -->
                                         <td class="text-muted small">{{ a.proteine }}g / {{ a.carboidrati }}g / {{ a.grassi }}g</td>
                                         <td class="text-end">
                                             <div class="btn-group shadow-sm">
@@ -335,6 +423,7 @@
                                 </tbody>
                             </table>
                         </div>
+                        <!-- Vista a card per schermi piccoli -->
                         <div class="d-lg-none d-flex flex-column gap-3">
                             <div v-if="listaAlimenti.length === 0" class="text-center py-4 bg-white shadow-sm rounded">Nessun alimento trovato.</div>
                             <div class="card border-0 shadow-sm rounded-4" v-for="a in listaAlimenti" :key="'mob-ali-'+a.id">
@@ -353,33 +442,51 @@
                 </div>
             </div>
 
+            <!-- VISTA: MESSAGGI     -->
+            <!-- v-if="vistaAttiva === 'messaggi'": Vista visibile solo quando il tab attivo è "messaggi" -->
             <div v-if="vistaAttiva === 'messaggi'">
 
+                <!-- Stato vuoto: nessun messaggio ricevuto -->
                 <div v-if="listaMessaggi.length === 0" class="text-center py-5 text-muted">
                     <i class="bi bi-inbox display-1 opacity-25"></i>
                     <h4 class="mt-3">Nessun messaggio ricevuto</h4>
                     <p>I messaggi inviati dalla pagina Contatti appariranno qui.</p>
                 </div>
 
+                <!-- Lista messaggi: una card per ogni messaggio -->
                 <div v-else class="row g-3">
                     <div class="col-12" v-for="msg in listaMessaggi" :key="msg.id">
-                        <div class="card border-0 shadow-sm rounded-4 hover-card"
+                        <!--
+                          msg-card-clickable: classe custom che imposta cursor: pointer.
+                          hover-card: classe custom per l'effetto hover.
+                          :class: Vue aggiunge il bordo sinistro ai messaggi non letti.
+                          @click="apriMessaggio(msg)": apre il modale di dettaglio passando il messaggio selezionato.
+                        -->
+                        <div class="card border-0 shadow-sm rounded-4 hover-card msg-card-clickable"
                             :class="msg.letto ? 'bg-white' : 'border-start border-primary border-3'"
-                            style="cursor: pointer;"
                             @click="apriMessaggio(msg)">
                             <div class="card-body p-3 p-md-4">
                                 <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
                                     <div class="d-flex align-items-center gap-3 flex-grow-1 min-w-0">
-                                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-                                            :class="msg.letto ? 'bg-light text-muted' : 'bg-primary text-white'"
-                                            style="width: 46px; height: 46px;">
+                                        <!--
+                                          Avatar circolare: colore dinamico in base allo stato di lettura.
+                                          avatar-msg: classe custom che imposta width e height fissi a 46px.
+                                          flex-shrink-0: impedisce all'avatar di restringersi su schermi piccoli.
+                                        -->
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 avatar-msg"
+                                            :class="msg.letto ? 'bg-light text-muted' : 'bg-primary text-white'">
                                             <i class="bi" :class="msg.letto ? 'bi-envelope-open' : 'bi-envelope-fill'"></i>
                                         </div>
                                         <div class="min-w-0">
                                             <div class="d-flex align-items-center gap-2 flex-wrap">
+                                                <!-- text-truncate: tronca il nome con "..." se troppo lungo -->
                                                 <h6 class="fw-bold mb-0 text-truncate">{{ msg.nome }}</h6>
-                                                <span v-if="!msg.letto" class="badge bg-primary" style="font-size: 0.65rem;">Nuovo</span>
-                                                <span class="badge bg-light text-dark border" style="font-size: 0.7rem;">{{ msg.oggetto }}</span>
+                                                <!-- Badge "Nuovo": visibile solo per i messaggi non letti.
+                                                     badge-counter: classe custom con font-size ridotto. -->
+                                                <span v-if="!msg.letto" class="badge bg-primary badge-counter">Nuovo</span>
+                                                <!-- Badge oggetto del messaggio.
+                                                     badge-oggetto: classe custom con font-size leggermente più grande del badge-counter. -->
+                                                <span class="badge bg-light text-dark border badge-oggetto">{{ msg.oggetto }}</span>
                                             </div>
                                             <small class="text-muted">{{ msg.email }}</small>
                                         </div>
@@ -388,7 +495,12 @@
                                         <small class="text-muted d-block mb-1">
                                             <i class="bi bi-clock me-1"></i>{{ formattaData(msg.data_invio) }}
                                         </small>
-                                        <small class="text-muted fst-italic text-truncate d-block" style="max-width: 220px;">
+                                        <!--
+                                          Anteprima delle prime 60 lettere del messaggio.
+                                          msg-preview: classe custom che limita la larghezza massima a 220px.
+                                          text-truncate: tronca il testo con "..." se supera la larghezza.
+                                        -->
+                                        <small class="text-muted fst-italic text-truncate d-block msg-preview">
                                             {{ msg.messaggio.substring(0, 60) }}{{ msg.messaggio.length > 60 ? '...' : '' }}
                                         </small>
                                     </div>
@@ -402,15 +514,25 @@
 
         </div>
 
-        <!-- MODALI (fuori dal v-else, sempre nel DOM) -->
+        <!-- MODALI (fuori dal v-else) -->
+        <!-- Sono posizionati qui per evitare che v-if li rimuova quando la vista cambia, preservando lo stato. -->
 
+        <!-- MODALE: Modifica allenatore esistente -->
+        <!--
+          modal fade: Bootstrap: modale con animazione fade-in/out.
+          tabindex="-1": il modale non è raggiungibile via Tab quando chiuso.
+          aria-hidden="true": accessibilità: nascosto ai lettori di schermo quando chiuso.
+        -->
         <div class="modal fade" id="modalEditCoach" tabindex="-1" aria-hidden="true">
+            <!-- modal-lg: modale largo per ospitare la griglia di campi -->
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow">
                     <div class="modal-header bg-dark text-white rounded-top-4">
                         <h5 class="modal-title fw-bold">Modifica Allenatore</h5>
+                        <!-- data-bs-dismiss="modal": Bootstrap chiude il modale al click senza JavaScript aggiuntivo -->
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
+                    <!-- @submit.prevent="salvaModificaCoach": intercetta il submit, chiama il metodo Vue -->
                     <form @submit.prevent="salvaModificaCoach">
                         <div class="modal-body p-4">
                             <div class="row g-3">
@@ -434,27 +556,42 @@
                                     <label class="form-label small fw-bold">Telefono</label>
                                     <input type="text" class="form-control" v-model="editCoach.telefono">
                                 </div>
+                                <!-- Contenitore anteprima foto + input per sostituirla -->
                                 <div class="col-12 mt-3">
                                     <label class="form-label small fw-bold">Foto Profilo</label>
+                                    <!-- d-flex align-items-center gap-3: anteprima a sinistra, input a destra, separati da gap -->
                                     <div class="d-flex align-items-center gap-3 p-2 border rounded bg-light">
-                                        <img v-if="editCoach.foto" :src="editCoach.foto" alt="Anteprima" class="rounded shadow-sm" style="width: 64px; height: 64px; object-fit: cover;">
-                                        <div v-else class="rounded shadow-sm bg-white d-flex align-items-center justify-content-center text-muted" style="width: 64px; height: 64px;">
+                                        <!--
+                                          v-if="editCoach.foto": mostra l'immagine solo se l'URL è valorizzato.
+                                          :src="editCoach.foto": binding Vue sull'attributo src.
+                                          img-preview-modal: classe custom che imposta 64x64px con object-fit: cover.
+                                        -->
+                                        <img v-if="editCoach.foto" :src="editCoach.foto" alt="Anteprima" class="rounded shadow-sm img-preview-modal">
+                                        <!--
+                                          v-else: placeholder mostrato quando non c'è nessuna foto.
+                                          bi-person-x: icona "persona con X" per indicare assenza foto.
+                                        -->
+                                        <div v-else class="rounded shadow-sm bg-white d-flex align-items-center justify-content-center text-muted img-preview-modal">
                                             <i class="bi bi-person-x fs-3"></i>
                                         </div>
                                         <div class="flex-grow-1">
+                                            <!-- @change="selezionaFotoEditCoach": Vue intercetta la selezione del nuovo file -->
                                             <input type="file" class="form-control form-control-sm" @change="selezionaFotoEditCoach" accept="image/*">
-                                            <div class="form-text mt-1" style="font-size: 0.75rem;">Lascia vuoto per mantenere la foto attuale.</div>
+                                            <!-- form-hint-text: classe custom con font-size ridotto per il testo di supporto -->
+                                            <div class="form-text mt-1 form-hint-text">Lascia vuoto per mantenere la foto attuale.</div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-12 mt-3">
                                     <label class="form-label small fw-bold">Biografia / Descrizione</label>
-                                    <textarea class="form-control" rows="4" v-model="editCoach.descrizione" style="resize: none;"></textarea>
+                                    <!-- textarea-no-resize: classe custom che disabilita il ridimensionamento manuale -->
+                                    <textarea class="form-control textarea-no-resize" rows="4" v-model="editCoach.descrizione"></textarea>
                                 </div>
                             </div>
                         </div>
                         <div class="modal-footer bg-light rounded-bottom-4">
                             <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">Annulla</button>
+                            <!-- :disabled="loadingEdit": blocca il bottone durante il salvataggio -->
                             <button type="submit" class="btn btn-primary fw-bold" :disabled="loadingEdit">
                                 <span v-if="loadingEdit" class="spinner-border spinner-border-sm"></span> Salva Modifiche
                             </button>
@@ -464,6 +601,7 @@
             </div>
         </div>
 
+        <!-- MODALE: Modifica esercizio esistente -->
         <div class="modal fade" id="modalEditEsercizio" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow">
@@ -490,16 +628,23 @@
                                         <option value="Cardio">Cardio</option>
                                     </select>
                                 </div>
+                                <!-- Contenitore anteprima immagine esercizio + input per sostituirla -->
                                 <div class="col-12 mt-3">
                                     <label class="form-label small fw-bold">Immagine / GIF</label>
                                     <div class="d-flex align-items-center gap-3 p-2 border rounded bg-light">
-                                        <img v-if="editEsercizio.url_immagine" :src="editEsercizio.url_immagine" alt="Anteprima" class="rounded shadow-sm" style="width: 64px; height: 64px; object-fit: cover;">
-                                        <div v-else class="rounded shadow-sm bg-white d-flex align-items-center justify-content-center text-muted" style="width: 64px; height: 64px;">
+                                        <!--
+                                          v-if="editEsercizio.url_immagine": mostra l'immagine solo se presente.
+                                          img-preview-modal: classe custom che imposta 64x64px con object-fit: cover.
+                                        -->
+                                        <img v-if="editEsercizio.url_immagine" :src="editEsercizio.url_immagine" alt="Anteprima" class="rounded shadow-sm img-preview-modal">
+                                        <!-- v-else: placeholder se non è presente nessuna immagine -->
+                                        <div v-else class="rounded shadow-sm bg-white d-flex align-items-center justify-content-center text-muted img-preview-modal">
                                             <i class="bi bi-image fs-3"></i>
                                         </div>
                                         <div class="flex-grow-1">
                                             <input type="file" class="form-control form-control-sm" @change="selezionaFotoEditEsercizio" accept="image/*">
-                                            <div class="form-text mt-1" style="font-size: 0.75rem;">Lascia vuoto per mantenere l'immagine attuale.</div>
+                                            <!-- form-hint-text: classe custom con font-size ridotto per il testo di supporto -->
+                                            <div class="form-text mt-1 form-hint-text">Lascia vuoto per mantenere l'immagine attuale.</div>
                                         </div>
                                     </div>
                                 </div>
@@ -516,6 +661,7 @@
             </div>
         </div>
 
+        <!-- MODALE: Modifica alimento esistente -->
         <div class="modal fade" id="modalEditAlimento" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow">
@@ -530,6 +676,7 @@
                                     <label class="form-label small fw-bold">Nome Alimento</label>
                                     <input type="text" class="form-control" v-model="editAlimento.nome" required>
                                 </div>
+                                <!-- Due colonne per i valori numerici -->
                                 <div class="col-6">
                                     <label class="form-label small fw-bold">Calorie</label>
                                     <input type="number" class="form-control" v-model="editAlimento.calorie" required>
@@ -559,6 +706,8 @@
             </div>
         </div>
 
+        <!-- MODALE: Conferma eliminazione (allenatore, esercizio o alimento) -->
+        <!-- Il titolo e il messaggio sono dinamici: impostati dal metodo Vue chiediConferma() in base al tipo di elemento da eliminare -->
         <div class="modal fade" id="modalConfermaEliminazione" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow">
@@ -567,73 +716,86 @@
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body p-4 text-center">
-                        <i class="bi bi-trash text-danger mb-3" style="font-size: 3rem;"></i>
-                        <p class="fs-5 mb-0">{{ deleteModal.testo }}</p>
+                        <!-- icon-delete-modal: classe custom che imposta font-size a 3rem -->
+                        <i class="bi bi-trash text-danger mb-3 icon-delete-modal"></i>
+                        <p class="fw-bold fs-5">{{ deleteModal.messaggio }}</p>
+                        <p class="text-muted small">Questa azione è irreversibile.</p>
                     </div>
-                    <div class="modal-footer bg-light rounded-bottom-4 justify-content-center">
-                        <button type="button" class="btn btn-secondary fw-bold px-4" data-bs-dismiss="modal">Annulla</button>
-                        <button type="button" class="btn btn-danger fw-bold px-4" @click="eseguiEliminazione" :disabled="deleteModal.loading">
-                            <span v-if="deleteModal.loading" class="spinner-border spinner-border-sm me-2"></span>
-                            <i v-else class="bi bi-trash me-2 text-white"></i>Sì, Elimina
+                    <div class="modal-footer bg-light rounded-bottom-4">
+                        <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">Annulla</button>
+                        <!-- @click="confermaEliminazione": chiama il metodo Vue che esegue la DELETE sul server.
+                             :disabled="loadingElimina": blocca il bottone durante la richiesta. -->
+                        <button type="button" class="btn btn-danger fw-bold" @click="confermaEliminazione" :disabled="loadingElimina">
+                            <span v-if="loadingElimina" class="spinner-border spinner-border-sm me-1"></span>
+                            Elimina
                         </button>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- MODALE: Visualizzazione completa di un messaggio -->
+        <!-- modal-lg: modale largo per ospitare il testo completo del messaggio -->
         <div class="modal fade" id="modalMessaggio" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content rounded-4 border-0 shadow" v-if="messaggioSelezionato">
-                    <div class="modal-header bg-dark text-white rounded-top-4">
-                        <div>
-                            <h5 class="modal-title fw-bold mb-0">
-                                <i class="bi bi-envelope-open me-2"></i>{{ messaggioSelezionato.oggetto }}
-                            </h5>
-                        </div>
+                <div class="modal-content rounded-4 border-0 shadow">
+                    <div class="modal-header bg-primary text-white rounded-top-4">
+                        <h5 class="modal-title fw-bold"><i class="bi bi-envelope-open-fill me-2"></i>Dettaglio Messaggio</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
-                    <div class="modal-body p-4 p-md-5">
-                        <div class="d-flex align-items-center gap-3 mb-4 pb-4 border-bottom">
-                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0 fs-4 fw-bold"
-                                style="width: 54px; height: 54px;">
-                                {{ messaggioSelezionato.nome.charAt(0).toUpperCase() }}
+                    <!-- v-if="messaggioAperto": evita errori di rendering se il modale si apre prima che Vue carichi il messaggio -->
+                    <div class="modal-body p-4" v-if="messaggioAperto">
+                        <!-- Intestazione: avatar con iniziale, nome, email e data di invio -->
+                        <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+                            <!--
+                              Avatar con iniziale del mittente.
+                              avatar-msg-modal: classe custom che imposta width e height fissi a 54px.
+                              charAt(0).toUpperCase(): estrae e capitalizza la prima lettera del nome.
+                            -->
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold fs-5 flex-shrink-0 avatar-msg-modal">
+                                {{ messaggioAperto.nome.charAt(0).toUpperCase() }}
                             </div>
                             <div>
-                                <h5 class="fw-bold mb-0">{{ messaggioSelezionato.nome }}</h5>
-                                <a :href="'mailto:' + messaggioSelezionato.email" class="text-primary small text-decoration-none">
-                                    <i class="bi bi-envelope me-1"></i>{{ messaggioSelezionato.email }}
-                                </a>
+                                <h6 class="fw-bold mb-0">{{ messaggioAperto.nome }}</h6>
+                                <small class="text-muted">{{ messaggioAperto.email }}</small>
                             </div>
+                            <!-- ms-auto: spinge data e oggetto a destra dell'intestazione -->
                             <div class="ms-auto text-end">
-                                <small class="text-muted d-block">
-                                    <i class="bi bi-clock me-1"></i>{{ formattaData(messaggioSelezionato.data_invio) }}
-                                </small>
-                                <span class="badge bg-secondary mt-1">{{ messaggioSelezionato.oggetto }}</span>
+                                <small class="text-muted d-block"><i class="bi bi-clock me-1"></i>{{ formattaData(messaggioAperto.data_invio) }}</small>
+                                <span class="badge bg-secondary mt-1">{{ messaggioAperto.oggetto }}</span>
                             </div>
                         </div>
-                        <div class="bg-light rounded-3 p-4" style="white-space: pre-wrap; line-height: 1.8;">
-                            {{ messaggioSelezionato.messaggio }}
-                        </div>
-                        <div class="mt-4 text-end">
-                            <a :href="'mailto:' + messaggioSelezionato.email + '?subject=Re: ' + messaggioSelezionato.oggetto"
-                                class="btn btn-primary fw-bold rounded-pill px-4">
-                                <i class="bi bi-reply-fill me-2 text-white"></i>
-                                <span class="text-white">Rispondi via Email</span>
-                            </a>
-                        </div>
+                        <!--
+                          msg-body-content: classe custom che applica white-space: pre-wrap (rispetta le andate a capo
+                          del testo originale) e line-height: 1.8 per una lettura più comoda.
+                        -->
+                        <div class="msg-body-content">{{ messaggioAperto.messaggio }}</div>
+                    </div>
+                    <div class="modal-footer bg-light rounded-bottom-4">
+                        <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">Chiudi</button>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Componente Vue del footer -->
         <app-footer></app-footer>
 
     </div>
 
+    <!-- Bootstrap JS: necessario per i modali e il collapse della navbar.
+         Caricato in fondo per non bloccare il rendering dell'HTML. -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="js/components.js"></script>
-    <script src="js/dashboard-manager.js"></script>
-</body>
 
+    <!-- Vue 3: deve essere caricato PRIMA di components.js e dashboard-manager.js -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <!-- Definisce i componenti riutilizzabili (NavbarComponent, FooterComponent) -->
+    <script src="js/components.js"></script>
+
+    <!-- Script specifico della pagina Dashboard Manager: crea l'istanza Vue, carica allenatori/esercizi/alimenti/messaggi
+         dal backend, gestisce i modali di modifica ed eliminazione e monta l'app su #app -->
+    <script src="js/dashboard-manager.js"></script>
+
+</body>
 </html>

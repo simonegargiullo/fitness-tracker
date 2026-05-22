@@ -573,3 +573,77 @@ body {
 .text-gold {
     color: #d39e00 !important;
 }
+
+/* DASHBOARD MANAGER */
+
+/* Padding-top dell'header per compensare la navbar fissa */
+.header-manager {
+    padding-top: 110px;
+}
+
+/* Badge contatore messaggi non letti e badge "Nuovo" */
+.badge-counter {
+    font-size: 0.65rem;
+}
+
+/* Badge oggetto del messaggio */
+.badge-oggetto {
+    font-size: 0.7rem;
+}
+
+/* Textarea non ridimensionabile (biografia, descrizione) */
+.textarea-no-resize {
+    resize: none;
+}
+
+/* Bottone di submit nei form principali */
+.btn-form-submit {
+    margin-top: 1.5rem !important;
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+}
+
+/* Card messaggio cliccabile */
+.msg-card-clickable {
+    cursor: pointer;
+}
+
+/* Avatar circolare nella lista messaggi */
+.avatar-msg {
+    width: 46px;
+    height: 46px;
+}
+
+/* Avatar circolare nel modal dettaglio messaggio */
+.avatar-msg-modal {
+    width: 54px;
+    height: 54px;
+}
+
+/* Anteprima immagine/foto nei modal di modifica */
+.img-preview-modal {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+}
+
+/* Testo hint sotto l'input file nei modal */
+.form-hint-text {
+    font-size: 0.75rem;
+}
+
+/* Anteprima testo messaggio nella lista */
+.msg-preview {
+    max-width: 220px;
+}
+
+/* Corpo del messaggio nel modal dettaglio */
+.msg-body-content {
+    white-space: pre-wrap;
+    line-height: 1.8;
+}
+
+/* Icona cestino nel modal di conferma eliminazione */
+.icon-delete-modal {
+    font-size: 3rem;
+}
