@@ -472,3 +472,104 @@ body {
 .form-text-xs {
     font-size: 0.75rem;
 }
+
+/* PAGINA DASHBOARD SPORTIVO */
+
+/* Immagine esercizio nella tabella della scheda: dimensioni fluide con clamp() per adattarsi alla viewport senza media query esplicite */
+.esercizio-img {
+    width: clamp(60px, 10vw, 120px);
+    height: clamp(60px, 7.5vw, 90px);
+    object-fit: cover;
+    transition: width 0.1s ease-out, height 0.1s ease-out;
+}
+
+/* Avatar circolare del coach nella griglia di selezione */
+.avatar-coach {
+    width: 100px;
+    height: 100px;
+    object-fit: cover; /* ha effetto solo sull'<img>, ignorato dai <div> */
+}
+
+/* Icona grande nella schermata "richiesta in attesa" */
+.icon-attesa {
+    font-size: 5rem;
+}
+
+/* Icona decorativa negli stati vuoti e nel modale conferma coach */
+.icon-empty {
+    font-size: 3rem;
+}
+
+/* Lista schede/diete con altezza massima e scroll verticale */
+.lista-schede-scroll {
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+/* Badge "ATTUALE" sulla scheda/dieta più recente */
+.badge-attuale {
+    font-size: 0.65rem;
+}
+
+/* Bottone "Apri" nelle liste schede/diete: larghezza minima garantita */
+.btn-apri {
+    min-width: 70px;
+}
+
+/* Contenitore del documento PDF (scheda e dieta) */
+.area-pdf {
+    max-width: 900px;
+}
+
+/* Sottotitolo del documento PDF (es. "Programma per Mario") */
+.pdf-subtitle {
+    font-size: 0.9rem;
+}
+
+/* Riga metadati del documento PDF (data di creazione e nome coach) */
+.pdf-meta {
+    font-size: 0.75rem;
+}
+
+/* Colonna immagine nella tabella scheda:
+   width:1% + nowrap = si restringe al minimo senza mandare "Img" a capo */
+.col-img {
+    width: 1%;
+    white-space: nowrap;
+}
+
+/* Colonna Ser/Rip/Rec nella tabella scheda */
+.col-prog {
+    min-width: 90px;
+}
+
+/* Badge piccoli (gruppo muscolare, tipo pasto) */
+.badge-small {
+    font-size: 0.7rem;
+}
+
+/* Note dell'esercizio sotto il badge gruppo muscolare */
+.note-esercizio {
+    font-size: 0.85rem;
+}
+
+/* Etichette abbreviate (Ser, Rip, Rec, Proteine, Carbo, Grassi) */
+.label-stat {
+    font-size: 0.65rem;
+}
+
+/* Colonna quantità nella tabella dieta */
+.col-qta {
+    width: 15%;
+}
+
+/* Colonna macros nella tabella dieta */
+.col-macros {
+    width: 30%;
+}
+
+/* Colore oro scurito per i grassi: .text-warning su sfondo bianco
+   ha contrasto insufficiente, questo valore garantisce la leggibilità */
+.text-gold {
+    color: #d39e00 !important;
+}
