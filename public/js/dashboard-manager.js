@@ -263,7 +263,7 @@ const app = createApp({
     },
 
     // Esegue l'eliminazione dell'elemento (alimento, esercizio o coach) chiamando l'endpoint DELETE corrispondente. Al termine, mostra notifica e ricarica i cataloghi.
-    async eseguiEliminazione() {
+    async confermaEliminazione() {
       this.deleteModal.loading = true;
       let url = '';
       if (this.deleteModal.tipo === 'alimento') url = `/api/manager/alimenti/${this.deleteModal.id}`;

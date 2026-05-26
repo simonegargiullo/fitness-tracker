@@ -326,8 +326,9 @@ const app = createApp({
         }
       } catch (err) {
         mostraNotifica("Errore di connessione.", "danger");
+      } finally {
+          this.loadingScheda = false;
       }
-      this.loadingDati = false;
     },
 
     // LOGICA PIANI ALIMENTARI
@@ -403,8 +404,9 @@ const app = createApp({
         }
       } catch (err) {
         mostraNotifica("Errore di connessione.", "danger");
+      } finally{
+      this.loadingDieta = false;
       }
-      this.loadingDati = false;
     },
   },
 });
