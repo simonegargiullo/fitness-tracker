@@ -718,7 +718,7 @@
                     <div class="modal-body p-4 text-center">
                         <!-- icon-delete-modal: classe custom che imposta font-size a 3rem -->
                         <i class="bi bi-trash text-danger mb-3 icon-delete-modal"></i>
-                        <p class="fw-bold fs-5">{{ deleteModal.messaggio }}</p>
+                        <p class="fw-bold fs-5">{{ deleteModal.testo }}</p>
                         <p class="text-muted small">Questa azione è irreversibile.</p>
                     </div>
                     <div class="modal-footer bg-light rounded-bottom-4">
@@ -736,47 +736,55 @@
 
         <!-- MODALE: Visualizzazione completa di un messaggio -->
         <!-- modal-lg: modale largo per ospitare il testo completo del messaggio -->
-        <div class="modal fade" id="modalMessaggio" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content rounded-4 border-0 shadow">
-                    <div class="modal-header bg-primary text-white rounded-top-4">
-                        <h5 class="modal-title fw-bold"><i class="bi bi-envelope-open-fill me-2"></i>Dettaglio Messaggio</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <!-- MODALE: Visualizzazione completa di un messaggio -->
+<div class="modal fade" id="modalMessaggio" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header bg-primary text-white rounded-top-4">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-envelope-open-fill me-2"></i>Dettaglio Messaggio
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- v-if su messaggioSelezionato (NON messaggioAperto) -->
+            <div class="modal-body p-4" v-if="messaggioSelezionato">
+                <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold fs-5 flex-shrink-0 avatar-msg-modal">
+                        {{ messaggioSelezionato.nome.charAt(0).toUpperCase() }}
                     </div>
-                    <!-- v-if="messaggioAperto": evita errori di rendering se il modale si apre prima che Vue carichi il messaggio -->
-                    <div class="modal-body p-4" v-if="messaggioAperto">
-                        <!-- Intestazione: avatar con iniziale, nome, email e data di invio -->
-                        <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
-                            <!--
-                              Avatar con iniziale del mittente.
-                              avatar-msg-modal: classe custom che imposta width e height fissi a 54px.
-                              charAt(0).toUpperCase(): estrae e capitalizza la prima lettera del nome.
-                            -->
-                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold fs-5 flex-shrink-0 avatar-msg-modal">
-                                {{ messaggioAperto.nome.charAt(0).toUpperCase() }}
-                            </div>
-                            <div>
-                                <h6 class="fw-bold mb-0">{{ messaggioAperto.nome }}</h6>
-                                <small class="text-muted">{{ messaggioAperto.email }}</small>
-                            </div>
-                            <!-- ms-auto: spinge data e oggetto a destra dell'intestazione -->
-                            <div class="ms-auto text-end">
-                                <small class="text-muted d-block"><i class="bi bi-clock me-1"></i>{{ formattaData(messaggioAperto.data_invio) }}</small>
-                                <span class="badge bg-secondary mt-1">{{ messaggioAperto.oggetto }}</span>
-                            </div>
-                        </div>
-                        <!--
-                          msg-body-content: classe custom che applica white-space: pre-wrap (rispetta le andate a capo
-                          del testo originale) e line-height: 1.8 per una lettura più comoda.
-                        -->
-                        <div class="msg-body-content">{{ messaggioAperto.messaggio }}</div>
+                    <div>
+                        <h6 class="fw-bold mb-0">{{ messaggioSelezionato.nome }}</h6>
+                        <!-- Email cliccabile come mailto -->
+                        <a :href="'mailto:' + messaggioSelezionato.email" class="text-primary small text-decoration-none">
+                            <i class="bi bi-envelope me-1"></i>{{ messaggioSelezionato.email }}
+                        </a>
                     </div>
-                    <div class="modal-footer bg-light rounded-bottom-4">
-                        <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">Chiudi</button>
+                    <div class="ms-auto text-end">
+                        <small class="text-muted d-block">
+                            <i class="bi bi-clock me-1"></i>{{ formattaData(messaggioSelezionato.data_invio) }}
+                        </small>
+                        <span class="badge bg-secondary mt-1">{{ messaggioSelezionato.oggetto }}</span>
                     </div>
                 </div>
+
+                <div class="msg-body-content">{{ messaggioSelezionato.messaggio }}</div>
+
+                <!-- Pulsante Rispondi via Email -->
+                <div class="mt-4 text-end">
+                    <a :href="'mailto:' + messaggioSelezionato.email + '?subject=Re: ' + messaggioSelezionato.oggetto"
+                       class="btn btn-primary fw-bold rounded-pill px-4">
+                        <i class="bi bi-reply-fill me-2"></i>Rispondi via Email
+                    </a>
+                </div>
+            </div>
+
+            <div class="modal-footer bg-light rounded-bottom-4">
+                <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">Chiudi</button>
             </div>
         </div>
+    </div>
+</div>
 
         <!-- Componente Vue del footer -->
         <app-footer></app-footer>
