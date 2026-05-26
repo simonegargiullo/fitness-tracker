@@ -152,14 +152,6 @@ body {
     }
 }
 
-/* Page-header su mobile portrait */
-@media (max-width: 768px) {
-    .page-header {
-        margin-top: 0; /* Rimuove il margine superiore per evitare spazi vuoti eccessivi su schermi piccoli */
-        padding: 110px 0 50px 0; /* Riduce il padding per adattarsi meglio a schermi piccoli */
-    }
-}
-
 /* PILLOLE DASHBOARD MANAGER */
 
 /* Tab-pill del manager su schermi molto piccoli (portrait) */
