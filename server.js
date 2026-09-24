@@ -4,7 +4,7 @@
 //   - connect-pg-simple (salva le sessioni nel database PostgreSQL)
 //   - bcrypt (cifratura sicura delle password)
 //   - multer (upload di file (foto profilo, immagini esercizi))
-//   - pg (Pool) (connessione al database Supabase (PostgreSQL))
+//   - pg (Pool) (connessione al database PostgreSQL (Neon))
 //   - dotenv (variabili d'ambiente da file .env (sicurezza))
 //   - fs (file system, usato da PDFKit per generare i PDF)
 //   - PDFKit (generazione PDF per esportazione schede e diete)
@@ -23,46 +23,48 @@ const PDFDocument = require("pdfkit");
 
 // UPLOAD FILE — Multer
 // Gestisce l'upload delle immagini (foto profilo allenatore, immagini esercizi).
-// I file vengono salvati nella cartella public/uploads/
-// Il nome file è reso unico aggiungendo un timestamp + numero casuale.
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "public/uploads/"); // Salva i file in questa cartella
-  },
-  filename: function (req, file, cb) {
-    // Genera un nome unico (data_attuale + nome_originale) per evitare che due foto si sovrascrivano
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  },
+// I file vengono tenuti in memoria e poi salvati nel database (tabella "immagini"),
+// perché sull'hosting (Render) il disco non è permanente: i file salvati su disco
+// andrebbero persi a ogni riavvio.
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // Massimo 10 MB per immagine
 });
-const upload = multer({ storage: storage });
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000; // Sull'hosting la porta viene assegnata tramite variabile d'ambiente
+app.set("trust proxy", 1); // Render sta dietro un proxy HTTPS
 
 // CONNESSIONE AL DATABASE — Pool PostgreSQL (Supabase)
 // Pool = gruppo di connessioni riutilizzabili (più efficiente di una connessione singola).
 // I parametri sensibili vengono letti dal file .env tramite process.env.*
+// DATABASE_URL è la stringa di connessione fornita da Neon (postgresql://utente:password@host/db?sslmode=require)
 const pool = new Pool({
-  host: "aws-0-eu-west-1.pooler.supabase.com",
-  port: 6543,
-  user: "postgres.zgsmezhausuhdflhfnuq",
-  password: process.env.DB_PASSWORD, 
-  database: "postgres",
+  connectionString: process.env.DATABASE_URL,
   ssl: {
     rejectUnauthorized: false,
   },
 });
 
 // Verifica della connessione al database all'avvio del server
-pool.connect((err, client, release) => {
-  if (err) {
-    console.error("Impossibile connettersi al database:", err.stack);
-  } else {
-    console.log("Connessione al database PostgreSQL riuscita.");
-    release(); // Rilascia subito la connessione al pool
-  }
-});
+// e creazione della tabella per le immagini caricate (se non esiste)
+pool
+  .query(`CREATE TABLE IF NOT EXISTS immagini (
+    nome TEXT PRIMARY KEY,
+    mime TEXT NOT NULL,
+    dati BYTEA NOT NULL
+  )`)
+  .then(() => console.log("Connessione al database PostgreSQL riuscita."))
+  .catch((err) => console.error("Impossibile connettersi al database:", err.stack));
+
+// Salva un'immagine caricata con multer nella tabella "immagini" e restituisce il suo URL (/uploads/<nome>).
+// Il nome è reso unico aggiungendo un timestamp + numero casuale.
+async function salvaImmagine(file) {
+  if (!file) return null;
+  const nome = Date.now() + "-" + Math.round(Math.random() * 1e9) + path.extname(file.originalname);
+  await pool.query("INSERT INTO immagini (nome, mime, dati) VALUES ($1, $2, $3)", [nome, file.mimetype, file.buffer]);
+  return "/uploads/" + nome;
+}
 
 // SESSIONI — express-session + connect-pg-simple
 // Le sessioni tengono traccia di chi è loggato sul sito.
@@ -87,6 +89,29 @@ app.use(
 app.use(express.json()); // Legge il body JSON delle richieste (es. dati login/registrazione)
 app.use(express.urlencoded({ extended: true })); // Legge i dati inviati da form HTML classici
 app.use(express.static(path.join(__dirname, "public"))); // Serve tutti i file HTML/CSS/JS/img dalla cartella public/
+
+// Immagini caricate: se non esistono come file in public/uploads/ (quelle vecchie), vengono lette dal database
+app.get("/uploads/:nome", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT mime, dati FROM immagini WHERE nome = $1", [req.params.nome]);
+    if (result.rows.length === 0) return res.status(404).end();
+    res.set("Content-Type", result.rows[0].mime);
+    res.set("Cache-Control", "public, max-age=31536000, immutable"); // Il nome è unico, quindi l'immagine non cambia mai
+    res.send(result.rows[0].dati);
+  } catch (err) {
+    res.status(500).end();
+  }
+});
+
+// Health check: usato da un servizio esterno (cron-job.org) per tenere attivi server e database
+app.get("/health", async (req, res) => {
+  try {
+    await pool.query("SELECT 1");
+    res.send("ok");
+  } catch (err) {
+    res.status(500).send("database non raggiungibile");
+  }
+});
 
 // REGISTRAZIONE E ACCESSO
 // API:
@@ -248,10 +273,10 @@ app.post("/api/manager/allenatori", verificaManager, upload.single("foto"), asyn
     return res.status(400).json({ message: "La password deve essere di almeno 8 caratteri." });
   }
 
-  const foto_url = req.file ? "/uploads/" + req.file.filename : null;
-  // Se è stata caricata una foto, costruisce l'URL relativo; altrimenti, lascia null
-
   try {
+    const foto_url = await salvaImmagine(req.file);
+    // Se è stata caricata una foto, la salva e ottiene il suo URL; altrimenti, lascia null
+
     const client = await pool.connect();
     try {
       await client.query("BEGIN"); 
@@ -303,11 +328,11 @@ app.put("/api/manager/allenatori/:id", verificaManager, upload.single("foto"), a
   const descrizione = pulisci(req.body.descrizione);
   const telefono = pulisci(req.body.telefono);
 
-  const nuovaFotoUrl = req.file ? "/uploads/" + req.file.filename : null;
-  // Se è stata caricata una nuova foto, costruisce l'URL relativo; altrimenti,
-  // lascia null (così non si sovrascrive la foto esistente)
-
   try {
+    const nuovaFotoUrl = await salvaImmagine(req.file);
+    // Se è stata caricata una nuova foto, la salva e ottiene il suo URL; altrimenti,
+    // lascia null (così non si sovrascrive la foto esistente)
+
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
@@ -356,10 +381,10 @@ app.put("/api/manager/allenatori/:id", verificaManager, upload.single("foto"), a
 app.post("/api/manager/esercizi", verificaManager, upload.single("immagine_file"), async (req, res) => {
   const { nome, gruppo_muscolare } = req.body;
   //nome e gruppo_muscolare vengono inviati come campi del form, mentre l'immagine viene gestita da multer (req.file)
-  const url_immagine = req.file ? "/uploads/" + req.file.filename : null;
-  // Se è stata caricata un'immagine, costruisce l'URL relativo; altrimenti, lascia null
-
   try {
+    const url_immagine = await salvaImmagine(req.file);
+    // Se è stata caricata un'immagine, la salva e ottiene il suo URL; altrimenti, lascia null
+
     await pool.query(
       "INSERT INTO esercizi (nome, gruppo_muscolare, url_immagine) VALUES ($1, $2, $3)",
       [nome, gruppo_muscolare, url_immagine],
@@ -380,7 +405,7 @@ app.put("/api/manager/esercizi/:id", verificaManager, upload.single("immagine_fi
 
   try {
     if (req.file) {
-      const url_immagine = "/uploads/" + req.file.filename;
+      const url_immagine = await salvaImmagine(req.file);
       await pool.query(
         "UPDATE esercizi SET nome=$1, gruppo_muscolare=$2, url_immagine=$3 WHERE id=$4",
         [nome, gruppo_muscolare, url_immagine, id],
@@ -776,11 +801,11 @@ app.put("/api/allenatore/profilo", verificaAllenatore, upload.single("foto"), as
   const descrizione = pulisci(req.body.descrizione);
   const telefono = pulisci(req.body.telefono);
   
-  const nuovaFotoUrl = req.file ? "/uploads/" + req.file.filename : null;
-  // Se è stata caricata una nuova foto, costruisce l'URL relativo; altrimenti, lascia null
-  // (così non si sovrascrive la foto esistente)
-
   try {
+      const nuovaFotoUrl = await salvaImmagine(req.file);
+      // Se è stata caricata una nuova foto, la salva e ottiene il suo URL; altrimenti, lascia null
+      // (così non si sovrascrive la foto esistente)
+
       const client = await pool.connect(); // Ottiene una connessione dal pool per eseguire una transazione
       try {
           await client.query("BEGIN"); // Inizio transazione: se qualcosa va storto, si annullano tutte le operazioni
@@ -1038,6 +1063,19 @@ app.get("/api/scarica-scheda/:id", async (req, res) => {
         const scheda = dati[0];
         // Prende la prima riga per ottenere i dati generali della scheda (titolo, nome sportivo, nome allenatore, data creazione), che sono uguali per tutte le righe
 
+        // Carica le immagini degli esercizi: dalla cartella public/uploads/ se esistono come file, altrimenti dal database
+        const immagini = {};
+        for (const ex of dati) {
+            if (!ex.url_immagine || immagini[ex.url_immagine]) continue;
+            const imagePath = path.join(__dirname, 'public', ex.url_immagine);
+            if (fs.existsSync(imagePath)) {
+                immagini[ex.url_immagine] = imagePath;
+            } else {
+                const img = await pool.query("SELECT dati FROM immagini WHERE nome = $1", [path.basename(ex.url_immagine)]);
+                if (img.rows.length > 0) immagini[ex.url_immagine] = img.rows[0].dati;
+            }
+        }
+
         const doc = new PDFDocument({ margin: 0, size: 'A4' }); // Crea un nuovo documento PDF con margine 0 e formato A4
 
         res.setHeader('Content-disposition', `attachment; filename="${scheda.titolo.replace(/ /g, "_")}.pdf"`);
@@ -1074,11 +1112,11 @@ app.get("/api/scarica-scheda/:id", async (req, res) => {
             // Immagine dell'esercizio (se esiste)
             let imageOffset = 50;
             if (ex.url_immagine) {
-                // Costruisce il percorso completo dell'immagine basandosi sulla URL memorizzata nel database (che è relativa alla cartella "public")
-                const imagePath = path.join(__dirname, 'public', ex.url_immagine);
-                if (fs.existsSync(imagePath)) {
+                // Immagine già caricata prima del ciclo (percorso del file o dati letti dal database)
+                const immagine = immagini[ex.url_immagine];
+                if (immagine) {
                     // Disegna l'immagine 60x60
-                    doc.image(imagePath, 50, startY, { fit: [60, 60] });
+                    doc.image(immagine, 50, startY, { fit: [60, 60] });
                     imageOffset = 125; // Sposta il testo più a destra se c'è l'immagine
                 }
             } else {
@@ -1226,7 +1264,7 @@ app.use((req, res) => {
 });
 
 // Avvio del server
-// Il server si mette in ascolto sulla porta 3000.
+// Il server si mette in ascolto sulla porta indicata da PORT (3000 in locale).
 app.listen(PORT, () => {
   console.log(`Server in ascolto sulla porta ${PORT}`);
 });
