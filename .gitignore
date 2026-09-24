@@ -1,3 +1,20 @@
+# Dipendenze
 node_modules/
+
+# Variabili d'ambiente (contengono credenziali)
 .env
+.env.*
+!.env.example
+
+# Log
+*.log
+npm-debug.log*
+
+# File di sistema ed editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Appunti personali
 istruzioni_github.txt

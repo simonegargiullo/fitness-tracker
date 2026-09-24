@@ -1,9 +1,0 @@
-Comandi per salvare modifiche GitHub:
-
-git add .
-git commit -m "testo per commentare"
-git push origin main
-
-Per aggiornare modifiche degli altri:
-
-git pull origin main

@@ -11,22 +11,29 @@
   },
   "name": "fitness-tracker",
   "version": "1.0.0",
-  "description": "",
+  "description": "Web app per gestire schede di allenamento e piani alimentari tra sportivi, allenatori e manager",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/simonegargiullo/fitness-tracker.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "fitness",
+    "express",
+    "postgresql",
+    "nodejs"
+  ],
+  "author": "Simone Gargiullo, Andrea Lepone",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
     "url": "https://github.com/simonegargiullo/fitness-tracker/issues"
   },
-  "homepage": "https://github.com/simonegargiullo/fitness-tracker#readme"
+  "homepage": "https://github.com/simonegargiullo/fitness-tracker#readme",
+  "engines": {
+    "node": ">=18"
+  }
 }
